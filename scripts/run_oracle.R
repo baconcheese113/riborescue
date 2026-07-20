@@ -3,7 +3,7 @@
 # The reproduction oracle: the authors' own drug-specific readthrough model, run against their
 # published data, exported as golden fixtures. Everything downstream is tested for parity against
 # these artifacts rather than against the summary statistics printed in the paper — identical
-# predictions on identical folds is the only evidence that counts.
+# predictions on identical rounds is the only evidence that counts.
 #
 # The model, the eligibility filter, the seed and the partition scheme are transcribed from
 # Fig4_extdataFig4.Rmd of lehner-lab/Stop_codon_readthrough and must not be "improved" here.
@@ -76,10 +76,10 @@ for (drug in DRUGS) {
   )]
   fwrite(features, file.path(outdir, sprintf("features_%s.tsv.gz", drug)), sep = "\t")
 
-  folds <- rbindlist(lapply(seq_len(ncol(partitions)), function(round) {
+  rounds <- rbindlist(lapply(seq_len(ncol(partitions)), function(round) {
     data.table(round = round, row = partitions[, round])
   }))
-  fwrite(folds, file.path(outdir, sprintf("folds_%s.tsv.gz", drug)), sep = "\t")
+  fwrite(rounds, file.path(outdir, sprintf("rounds_%s.tsv.gz", drug)), sep = "\t")
 
   coefficients <- data.table()
   predictions <- data.table()

@@ -26,9 +26,9 @@ def features() -> pd.DataFrame:
 def test_a_split_holds_out_a_tenth_of_the_rows_each_round(
     features: pd.DataFrame, config: EvalConfig
 ):
-    folds = split(features, config)
-    assert sorted(folds["round"].unique()) == list(range(1, ROUNDS + 1))
-    for _, group in folds.groupby("round"):
+    rounds = split(features, config)
+    assert sorted(rounds["round"].unique()) == list(range(1, ROUNDS + 1))
+    for _, group in rounds.groupby("round"):
         assert group["row"].is_unique
         assert set(group["row"]) <= set(features.index)
         assert 0 < len(features) - len(group) < len(features)

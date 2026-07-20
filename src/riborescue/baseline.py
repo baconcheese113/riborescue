@@ -2,7 +2,7 @@
 
 Toledano's model is a binomial GLM with a logit link over four terms, where the nucleotides on
 either side of the premature stop enter as triplets rather than as separate positional terms. It is
-reproduced here on the oracle's own fold assignments, so the Python fit is judged by whether it
+reproduced here on the oracle's own round assignments, so the Python fit is judged by whether it
 returns the authors' predictions rather than by whether it lands near their published r².
 
 Performance is squared Pearson correlation on held-out data, matching the authors' definition; it is
@@ -17,11 +17,11 @@ import pandas as pd
 import statsmodels.api as sm
 from patsy.highlevel import build_design_matrices, dmatrices
 
-__all__ = ["FORMULA", "FoldPrediction", "cross_validate", "fit_fold", "r_squared"]
+__all__ = ["FORMULA", "RoundPrediction", "cross_validate", "fit_round", "r_squared"]
 
 FORMULA = "RT_binomial ~ 0 + stop_type + down_123nt + up_123nt + stop_type:down_123nt"
 
-# A triplet-by-stop-codon cell missing from a training fold leaves its column linearly dependent on
+# A triplet-by-stop-codon cell missing from a training round leaves its column linearly dependent on
 # the others. R's pivoted QR keeps the earlier column and aliases the later one to NA, which
 # `predict` then treats as zero; least squares by pseudo-inverse would instead spread the fit across
 # both. Reproducing the authors' predictions means reproducing their choice.
@@ -29,7 +29,7 @@ _RANK_TOLERANCE = 1e-7
 
 
 @dataclass(frozen=True)
-class FoldPrediction:
+class RoundPrediction:
     """One cross-validation round: the fitted coefficients and the held-out predictions."""
 
     round: int
@@ -64,11 +64,11 @@ def identifiable_columns(design: pd.DataFrame) -> list[str]:
     return [str(name) for name, keep in zip(design.columns, identifiable, strict=True) if keep]
 
 
-def fit_fold(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> FoldPrediction:
+def fit_round(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> RoundPrediction:
     """Fit one round on the given training rows and predict the rows left out of them.
 
-    `features` is indexed by the oracle's `row` numbering, so a fold is named by the rows it trains
-    on and the complement is the held-out set.
+    `features` is indexed by the oracle's `row` numbering, so a round is named by the rows it
+    trains on and the complement is the held-out set.
     """
 
     held_in = features.index.isin(train_rows)
@@ -86,7 +86,7 @@ def fit_fold(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> Fold
     )
     predicted = fitted.predict(held_out[identifiable])
 
-    return FoldPrediction(
+    return RoundPrediction(
         round=round_,
         coefficients=fitted.params,
         predictions=pd.Series(predicted, index=test.index, name="predicted"),
@@ -94,10 +94,11 @@ def fit_fold(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> Fold
     )
 
 
-def cross_validate(features: pd.DataFrame, folds: pd.DataFrame) -> list[FoldPrediction]:
+def cross_validate(features: pd.DataFrame, rounds: pd.DataFrame) -> list[RoundPrediction]:
     """Fit every round the oracle defined, in its order."""
 
-    rounds = sorted(int(r) for r in folds["round"].unique())
+    numbered = sorted(int(r) for r in rounds["round"].unique())
     return [
-        fit_fold(features, folds.loc[folds["round"] == round_, "row"], round_) for round_ in rounds
+        fit_round(features, rounds.loc[rounds["round"] == round_, "row"], round_)
+        for round_ in numbered
     ]

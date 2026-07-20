@@ -3,7 +3,7 @@
 A split is named in configuration and generated from a seed, never improvised at a call site, so
 that every reported number says which protocol produced it. The published protocol holds out random
 variants; the grouped protocols hold out whole genes, because a gene contributes many variants with
-near-identical local context and a random fold puts those on both sides of the split.
+near-identical local context, and a random draw puts those on both sides of the split.
 
 The controls are the most important tests in the project and the ones most likely to be quietly
 dropped. Their signatures live here so the protected control suite can assert against them before
@@ -87,7 +87,7 @@ def split(
 ) -> pd.DataFrame:
     """Generate the training rows of each round under a named evaluation config.
 
-    The result carries the same `round` and `row` columns the oracle's fold assignments use, so a
+    The result carries the same `round` and `row` columns the oracle's own assignments use, so a
     generated split and a published one are consumed identically.
     """
 
@@ -102,12 +102,12 @@ def split(
     ).reset_index(drop=True)
 
 
-def evaluate(features: pd.DataFrame, folds: pd.DataFrame) -> pd.DataFrame:
+def evaluate(features: pd.DataFrame, rounds: pd.DataFrame) -> pd.DataFrame:
     """Fit and score every round of a split, one row per round."""
 
     return pd.DataFrame(
         {"round": fit.round, "r2": fit.r2, "held_out": len(fit.predictions)}
-        for fit in cross_validate(features, folds)
+        for fit in cross_validate(features, rounds)
     )
 
 

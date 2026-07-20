@@ -1,8 +1,8 @@
 """Reproduction parity against the R oracle.
 
-The Python baseline is judged against the authors' own fold assignments and predictions, exported as
-committed golden fixtures, not against numbers copied from the paper. Matching a summary statistic
-is weak evidence; producing identical predictions on identical folds is strong evidence.
+The Python baseline is judged against the authors' own round assignments and predictions, exported
+not against numbers copied from the paper. Matching a summary statistic is weak evidence;
+as committed goldens; producing identical predictions on identical rounds is strong evidence.
 
 The check runs unconditionally and fails — never skips — if a fixture is absent, because a skipped
 check is a check that has quietly vanished. Regenerate the fixtures with `pixi run oracle`.
@@ -14,7 +14,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from riborescue.baseline import FORMULA, cross_validate, fit_fold
+from riborescue.baseline import FORMULA, cross_validate, fit_round
 from riborescue.contracts import REPORTER_DOWNSTREAM_NT, REPORTER_UPSTREAM_NT
 from riborescue.inputs import INPUTS
 from riborescue.tables import read_table
@@ -24,7 +24,7 @@ PROVENANCE = json.loads((ORACLE / "provenance.json").read_text())
 DRUGS = ("CC90009", "Clitocine", "DAP", "G418", "SJ6986", "SRI")
 
 # The fits agree to floating-point noise, so the tolerance is tight enough that a real difference in
-# encoding, fold membership or link function cannot hide beneath it.
+# encoding, round membership or link function cannot hide beneath it.
 TOLERANCE = 1e-8
 
 
@@ -52,9 +52,9 @@ def _metric(drug: str, round_: int) -> float:
 @pytest.mark.parity
 @pytest.mark.parametrize("drug", DRUGS)
 def test_python_baseline_reproduces_the_oracle_predictions(drug: str):
-    folds = _fixture("folds", drug)
-    first = folds[folds["round"] == 1]["row"]
-    fit = fit_fold(_features(drug), first, 1)
+    rounds = _fixture("rounds", drug)
+    first = rounds[rounds["round"] == 1]["row"]
+    fit = fit_round(_features(drug), first, 1)
     oracle = _oracle_round(drug, 1)
 
     assert list(fit.predictions.index) == list(oracle.index)
@@ -88,7 +88,7 @@ def test_the_reporter_window_contract_matches_the_measured_library():
 @pytest.mark.parametrize("drug", DRUGS)
 def test_python_baseline_reproduces_every_cross_validation_round(drug: str):
     features = _features(drug)
-    for fit in cross_validate(features, _fixture("folds", drug)):
+    for fit in cross_validate(features, _fixture("rounds", drug)):
         oracle = _oracle_round(drug, fit.round)
         assert (fit.predictions - oracle["predicted"]).abs().max() < TOLERANCE
         assert abs(fit.r2 - _metric(drug, fit.round)) < TOLERANCE
