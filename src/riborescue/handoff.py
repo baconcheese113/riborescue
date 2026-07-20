@@ -5,7 +5,6 @@ relative to the results root, so no analysis step can reach into an arbitrary lo
 else's results tree, and the upstream revision is a pin rather than a moving branch.
 """
 
-import json
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -78,7 +77,7 @@ class UpstreamHandoff(BaseModel):
 
     @classmethod
     def from_json(cls, path: Path) -> "UpstreamHandoff":
-        return cls.model_validate(json.loads(path.read_text()))
+        return cls.model_validate_json(path.read_text())
 
     def outputs(self) -> Iterator[HandoffOutput]:
         """Yield each declared output as a field name and a path under the results root."""

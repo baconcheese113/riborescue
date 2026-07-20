@@ -11,6 +11,8 @@
 suppressPackageStartupMessages({
   library(data.table)
   library(caret)
+  library(jsonlite)
+  library(optparse)
 })
 
 FORMULA <- RT_binomial ~ 0 + stop_type + down_123nt + up_123nt + stop_type:down_123nt
@@ -21,13 +23,15 @@ TRAIN_FRACTION <- 0.9
 # The six drugs the paper models: those triggering >1% readthrough for >3% of PTCs.
 DRUGS <- c("CC90009", "Clitocine", "DAP", "G418", "SJ6986", "SRI")
 
-args <- commandArgs(trailingOnly = TRUE)
-arg <- function(flag, default) {
-  hit <- match(flag, args)
-  if (is.na(hit)) default else args[hit + 1]
-}
-input <- arg("--input", file.path(Sys.getenv("RIBORESCUE_DATA", "data"), "toledano", "treated_samples.rds"))
-outdir <- arg("--out", file.path("tests", "fixtures", "oracle"))
+options <- parse_args(OptionParser(option_list = list(
+  make_option("--input", default = file.path(
+    Sys.getenv("RIBORESCUE_DATA", "data"), "toledano", "treated_samples.rds"
+  ), help = "The published readthrough measurements [default %default]"),
+  make_option("--out", default = file.path("tests", "fixtures", "oracle"),
+    help = "Where the golden fixtures are written [default %default]")
+)))
+input <- options$input
+outdir <- options$out
 
 if (!file.exists(input)) {
   stop(sprintf("%s is absent; fetch it with `riborescue fetch toledano_treated_samples`", input))
@@ -103,15 +107,4 @@ provenance <- list(
   caret = as.character(packageVersion("caret")),
   data_table = as.character(packageVersion("data.table"))
 )
-writeLines(
-  c("{", paste0(
-    "  \"", names(provenance), "\": ",
-    vapply(provenance, function(v) {
-      if (is.numeric(v) && length(v) == 1) as.character(v)
-      else if (length(v) > 1) paste0("[", paste0("\"", v, "\"", collapse = ", "), "]")
-      else paste0("\"", v, "\"")
-    }, character(1)),
-    c(rep(",", length(provenance) - 1), "")
-  ), "}"),
-  file.path(outdir, "provenance.json")
-)
+write_json(provenance, file.path(outdir, "provenance.json"), auto_unbox = TRUE, pretty = TRUE)

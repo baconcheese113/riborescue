@@ -287,6 +287,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-future-1.70.0-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-future.apply-1.20.2-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-generics-0.1.4-r45hc72bb7e_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/r-getopt-1.21.1-r45ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.3-r45h785f33e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-globals-0.19.1-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-gtable-0.3.6-r45hc72bb7e_1.conda
@@ -301,6 +302,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-listenv-1.0.0-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-munsell-0.5.1-r45hc72bb7e_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-numderiv-2016.8_1.1-r45hc72bb7e_7.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/r-optparse-1.8.2-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-pillar-1.11.1-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-pkgbuild-1.4.8-r45hc72bb7e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-pkgconfig-2.0.3-r45hc72bb7e_5.conda
@@ -361,6 +363,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/02/08/9c41fb51ab5b43eb21674aff13df270e8ba6c4b29c8624e328dc7a9482af/distlib-0.4.3-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0b/e0/99ec5b02203c4e9ce878bc63d8caa06ac1f891e4d63bded9a5ced70fcb4f/pandas_stubs-3.0.3.260530-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/24/25/1de2678b631f5a49215c6c96fff41ba892b0a34df68d6d80292b1b48aa7f/pytest-9.1.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/55/0e/cd705c042bc4fe7022478db577fcab4abdcfabb9bc37ab7a75556b3fcb2b/pyarrow-25.0.0-cp312-cp312-manylinux_2_28_x86_64.whl
@@ -4630,6 +4633,17 @@ packages:
   run_exports: {}
   size: 88225
   timestamp: 1757455977192
+- conda: https://conda.anaconda.org/conda-forge/noarch/r-getopt-1.21.1-r45ha770c72_0.conda
+  sha256: 20c4ea52e72cb2e50907f9e5a446f16b0fce467fec4edab236eeb3b46890f3dd
+  md5: b3a121ed6a71f3b674859ccbb15ad56b
+  depends:
+  - r-base >=4.5,<4.6.0a0
+  license: GPL-2.0-or-later
+  license_family: GPL3
+  purls: []
+  run_exports: {}
+  size: 67477
+  timestamp: 1777325952298
 - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.3-r45h785f33e_0.conda
   sha256: 3a91d5334b7d99bc247386eaf0d331e119852e381e769e266f70df20eab22689
   md5: 866fbbf3f356140922d618f26f2b889c
@@ -4831,6 +4845,18 @@ packages:
   run_exports: {}
   size: 128918
   timestamp: 1757459948489
+- conda: https://conda.anaconda.org/conda-forge/noarch/r-optparse-1.8.2-r45hc72bb7e_0.conda
+  sha256: 09df5e8326b04412a26b6c4d896e04adbceba45194457c6d30f370d5ccb4b397
+  md5: 0c015ba0c5444777a683c05e4a000f21
+  depends:
+  - r-base >=4.5,<4.6.0a0
+  - r-getopt >=1.20.2
+  license: GPL-2.0-or-later
+  license_family: GPL2
+  purls: []
+  run_exports: {}
+  size: 119289
+  timestamp: 1776419503742
 - conda: https://conda.anaconda.org/conda-forge/noarch/r-pillar-1.11.1-r45hc72bb7e_0.conda
   sha256: b3f281041ecff2d4a9f40073ad5e7ec6fa7e0c841068ce85c550bcce0ff8938d
   md5: 807ef77a70fc5156f830d6c683d07a29
@@ -5647,6 +5673,7 @@ packages:
   - pandera>=0.20
   - pandas>=2.2
   - statsmodels>=0.14
+  - pooch>=1.8
   - pyarrow>=16
   - biopython>=1.83
   - click>=8.1
@@ -5688,6 +5715,20 @@ packages:
   - setuptools ; extra == 'dev'
   - xmlschema ; extra == 'dev'
   requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/2a/2d/d4bf65e47cea8ff2c794a600c4fd1273a7902f268757c531e0ee9f18aa58/pooch-1.9.0-py3-none-any.whl
+  name: pooch
+  version: 1.9.0
+  sha256: f265597baa9f760d25ceb29d0beb8186c243d6607b0f60b83ecf14078dbc703b
+  requires_dist:
+  - platformdirs>=2.5.0
+  - packaging>=20.0
+  - requests>=2.19.0
+  - tqdm>=4.41.0,<5.0.0 ; extra == 'progress'
+  - paramiko>=2.7.0 ; extra == 'sftp'
+  - xxhash>=1.4.3 ; extra == 'xxhash'
+  - pytest-httpserver ; extra == 'test'
+  - pytest-localftpserver ; extra == 'test'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl
   name: sortedcontainers
   version: 2.4.0

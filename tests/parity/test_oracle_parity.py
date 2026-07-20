@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 
 from riborescue.baseline import cross_validate, fit_fold
+from riborescue.tables import read_table
 
 ORACLE = Path(__file__).resolve().parents[1] / "fixtures" / "oracle"
 DRUGS = ("CC90009", "Clitocine", "DAP", "G418", "SJ6986", "SRI")
@@ -26,7 +27,7 @@ TOLERANCE = 1e-8
 def _fixture(kind: str, drug: str) -> pd.DataFrame:
     path = ORACLE / f"{kind}_{drug}.tsv.gz"
     assert path.exists(), f"{path.name} is absent — regenerate the fixtures with `pixi run oracle`"
-    return pd.read_csv(path, sep="\t")
+    return read_table(path)
 
 
 def _features(drug: str) -> pd.DataFrame:
@@ -39,7 +40,7 @@ def _oracle_round(drug: str, round_: int) -> pd.DataFrame:
 
 
 def _metric(drug: str, round_: int) -> float:
-    metrics = pd.read_csv(ORACLE / "metrics.tsv", sep="\t")
+    metrics = read_table(ORACLE / "metrics.tsv")
     row = metrics[(metrics["drug"] == drug) & (metrics["round"] == round_)]
     return float(row["r2"].iloc[0])
 

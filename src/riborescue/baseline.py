@@ -51,21 +51,17 @@ def r_squared(predicted: pd.Series, observed: pd.Series) -> float:
 def identifiable_columns(design: pd.DataFrame) -> list[str]:
     """Return the design columns that are not linear combinations of the ones before them.
 
-    Columns are considered left to right and the first of an aliased pair wins, which is the rule
-    R's pivoted QR applies when it reports a coefficient as NA.
+    The R factor of an unpivoted QR carries, on its diagonal, the norm of each column once the
+    columns before it have been projected out. A negligible diagonal entry therefore marks a column
+    that adds nothing the earlier ones do not already span, so the first of an aliased pair wins —
+    the rule R applies when it reports a coefficient as NA.
     """
 
-    kept: list[str] = []
-    basis: list[np.ndarray] = []
-    for name in design.columns:
-        column = design[name].to_numpy(dtype=float)
-        residual = column.copy()
-        for direction in basis:
-            residual -= (direction @ residual) * direction
-        if np.linalg.norm(residual) > _RANK_TOLERANCE * max(float(np.linalg.norm(column)), 1.0):
-            kept.append(str(name))
-            basis.append(residual / np.linalg.norm(residual))
-    return kept
+    matrix = design.to_numpy(dtype=float)
+    residual = np.abs(np.diag(np.linalg.qr(matrix, mode="r")))
+    scale = np.maximum(np.linalg.norm(matrix, axis=0), 1.0)
+    identifiable = residual > _RANK_TOLERANCE * scale
+    return [str(name) for name, keep in zip(design.columns, identifiable, strict=True) if keep]
 
 
 def fit_fold(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> FoldPrediction:

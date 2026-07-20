@@ -3,9 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from riborescue.inputs import INPUTS, Input, UnknownInputError, data_root, digest, fetch
-
-EMPTY_MD5 = "d41d8cd98f00b204e9800998ecf8427e"
+from riborescue import inputs
+from riborescue.inputs import INPUTS, Input, UnknownInputError, data_root, fetch
 
 
 def test_every_declared_input_names_its_source_licence_and_checksum():
@@ -24,59 +23,55 @@ def test_the_data_root_follows_the_environment(monkeypatch: pytest.MonkeyPatch):
     assert data_root() == Path("data")
 
 
-def test_digest_matches_the_content(tmp_path: Path):
-    empty = tmp_path / "empty"
-    empty.write_bytes(b"")
-    assert digest(empty) == EMPTY_MD5
-
-
 def test_an_undeclared_input_is_refused(tmp_path: Path):
     with pytest.raises(UnknownInputError):
         fetch("nothing_of_the_sort", tmp_path)
 
 
-def _probe(monkeypatch: pytest.MonkeyPatch) -> Input:
-    """Declare an input that hashes to the digest of an empty file, so tests need no network."""
+def _record(monkeypatch: pytest.MonkeyPatch) -> dict[str, object]:
+    """Capture what fetch asks the downloader for, without touching the network."""
 
+    seen: dict[str, object] = {}
+
+    def retrieve(url: str, known_hash: str, fname: str, path: Path) -> str:
+        seen.update(url=url, known_hash=known_hash, fname=fname, path=path)
+        return str(Path(path) / fname)
+
+    monkeypatch.setattr(inputs.pooch, "retrieve", retrieve)
+    return seen
+
+
+def test_an_input_is_fetched_to_its_declared_path_under_its_published_digest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    seen = _record(monkeypatch)
+    declared = INPUTS["toledano_treated_samples"]
+
+    assert fetch(declared.name, tmp_path) == declared.resolve(tmp_path)
+    assert seen["url"] == declared.url
+    assert seen["known_hash"] == f"md5:{declared.md5}"
+    assert seen["fname"] == "treated_samples.rds"
+    assert seen["path"] == tmp_path / "toledano"
+
+
+def test_forcing_a_fetch_discards_the_file_already_there(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    _record(monkeypatch)
     probe = Input(
         name="probe",
         url="https://example.invalid/probe",
-        md5=EMPTY_MD5,
-        size=0,
+        md5="d41d8cd98f00b204e9800998ecf8427e",
         path=Path("probe/file.bin"),
         source="the test suite",
         licence="none",
     )
-    monkeypatch.setitem(INPUTS, "probe", probe)
-    return probe
-
-
-def test_a_download_whose_digest_is_wrong_is_deleted(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-):
-    probe = _probe(monkeypatch)
-
-    def wrong(_: str, destination: Path) -> None:
-        destination.write_bytes(b"not the published file")
-
-    with pytest.raises(OSError, match="expected"):
-        fetch(probe.name, tmp_path, retrieve=wrong)
-    assert not probe.resolve(tmp_path).exists()
-
-
-def test_a_verified_file_is_not_fetched_again(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    probe = _probe(monkeypatch)
+    monkeypatch.setitem(INPUTS, probe.name, probe)
     present = probe.resolve(tmp_path)
     present.parent.mkdir(parents=True)
-    present.write_bytes(b"")
-    calls = 0
+    present.write_bytes(b"stale")
 
-    def counted(_: str, destination: Path) -> None:
-        nonlocal calls
-        calls += 1
-        destination.write_bytes(b"")
-
-    assert fetch(probe.name, tmp_path, retrieve=counted) == present
-    assert calls == 0
-    fetch(probe.name, tmp_path, retrieve=counted, force=True)
-    assert calls == 1
+    fetch(probe.name, tmp_path)
+    assert present.read_bytes() == b"stale"
+    fetch(probe.name, tmp_path, force=True)
+    assert not present.exists()
