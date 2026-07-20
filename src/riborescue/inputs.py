@@ -51,6 +51,28 @@ INPUTS: dict[str, Input] = {
         source="NCBI ClinVar weekly release 2026-07-15, GRCh38",
         licence="public domain (NCBI)",
     ),
+    "mane_annotation": Input(
+        name="mane_annotation",
+        url=(
+            "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.5/"
+            "MANE.GRCh38.v1.5.refseq_genomic.gff.gz"
+        ),
+        md5="011190055c489f332fb8995fe00822c7",
+        path=Path("mane/MANE.GRCh38.v1.5.refseq_genomic.gff.gz"),
+        source="NCBI MANE release 1.5, GRCh38",
+        licence="public domain (NCBI)",
+    ),
+    "mane_transcripts": Input(
+        name="mane_transcripts",
+        url=(
+            "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.5/"
+            "MANE.GRCh38.v1.5.refseq_rna.fna.gz"
+        ),
+        md5="f4e69d96b9c9d2698541c41452bc16b9",
+        path=Path("mane/MANE.GRCh38.v1.5.refseq_rna.fna.gz"),
+        source="NCBI MANE release 1.5, GRCh38",
+        licence="public domain (NCBI)",
+    ),
 }
 
 
