@@ -17,7 +17,15 @@ import pandas as pd
 import statsmodels.api as sm
 from patsy.highlevel import build_design_matrices, dmatrices
 
-__all__ = ["FORMULA", "RoundPrediction", "cross_validate", "fit_round", "r_squared"]
+__all__ = [
+    "FORMULA",
+    "FittedModel",
+    "RoundPrediction",
+    "cross_validate",
+    "fit",
+    "fit_round",
+    "r_squared",
+]
 
 FORMULA = "RT_binomial ~ 0 + stop_type + down_123nt + up_123nt + stop_type:down_123nt"
 
@@ -62,6 +70,60 @@ def identifiable_columns(design: pd.DataFrame) -> list[str]:
     scale = np.maximum(np.linalg.norm(matrix, axis=0), 1.0)
     identifiable = residual > _RANK_TOLERANCE * scale
     return [str(name) for name, keep in zip(design.columns, identifiable, strict=True) if keep]
+
+
+@dataclass(frozen=True)
+class FittedModel:
+    """A model fitted on every measured variant, ready to score variants it has never seen.
+
+    The encoding is the one the fit was built with, so a context carrying a triplet absent from the
+    training library has no coefficient and cannot be scored. Those rows are reported rather than
+    given a number, because a level the assay never measured is missing evidence, not zero effect.
+    """
+
+    identifiable: tuple[str, ...]
+    encoding: Any
+    fitted: Any
+    levels: dict[str, frozenset[str]]
+
+    def known_levels(self, features: pd.DataFrame) -> pd.Series:
+        """Which rows carry only feature levels the training library contained."""
+
+        known = pd.Series(True, index=features.index)
+        for name, levels in self.levels.items():
+            known &= features[name].isin(levels)
+        return known
+
+    def predict(self, features: pd.DataFrame) -> pd.Series:
+        """Predict readthrough for rows whose levels the fit knows."""
+
+        design = cast(
+            pd.DataFrame,
+            build_design_matrices([self.encoding], features, return_type="dataframe")[0],
+        )
+        return pd.Series(
+            self.fitted.predict(design[list(self.identifiable)]),
+            index=features.index,
+            name="readthrough_predicted",
+        )
+
+
+def fit(features: pd.DataFrame) -> FittedModel:
+    """Fit the published model on every measured variant."""
+
+    response, built = dmatrices(FORMULA, features, return_type="dataframe")
+    design = cast(pd.DataFrame, built)
+    identifiable = identifiable_columns(design)
+    fitted = sm.GLM(response, design[identifiable], family=sm.families.Binomial()).fit()
+    return FittedModel(
+        identifiable=tuple(identifiable),
+        encoding=cast(Any, built).design_info,
+        fitted=fitted,
+        levels={
+            name: frozenset(features[name].unique())
+            for name in ("stop_type", "up_123nt", "down_123nt")
+        },
+    )
 
 
 def fit_round(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> RoundPrediction:

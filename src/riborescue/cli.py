@@ -8,6 +8,7 @@ import pandera.errors
 import pandera.pandas
 
 from riborescue._version import __version__
+from riborescue.baseline import fit
 from riborescue.clinvar import pathogenic_nonsense
 from riborescue.context import contexts_for, disagreements_with_protein
 from riborescue.contracts import Consequence, EvalConfig
@@ -239,6 +240,60 @@ def variant_contexts(
     click.echo(f"{scoreable} of {len(found)} variants have a scoreable context")
     for reason, count in found.loc[~found["scoreable"], "reason"].value_counts().items():
         click.echo(f"  {count} {reason}")
+
+
+@main.command("score")
+@click.argument("contexts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument(
+    "training",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
+@_OUT
+def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> None:
+    """Predict readthrough for every context in CONTEXTS, under each measured therapy.
+
+    A therapy is named after its TRAINING table, so `features_G418.tsv.gz` scores as G418.
+    """
+
+    variants = read_table(contexts)
+    scoreable = variants[variants["scoreable"]].set_index("variant_id")
+    scored = []
+
+    for path in training:
+        therapy = path.name.split(".")[0].removeprefix("features_")
+        model = fit(read_table(path))
+        known = model.known_levels(scoreable)
+        predicted = model.predict(scoreable[known])
+        rows = scoreable.assign(therapy_id=therapy, readthrough_predicted=predicted)
+        rows["status"] = pd.Series(
+            ["present" if seen else "missing" for seen in known], index=scoreable.index
+        )
+        rows["reason"] = ["" if seen else "not_available" for seen in known]
+        scored.append(rows.reset_index())
+        click.echo(f"{therapy:<12} scored {int(known.sum())} of {len(scoreable)} contexts")
+
+    table = pd.concat(scored, ignore_index=True)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(
+        table[
+            [
+                "variant_id",
+                "gene_symbol",
+                "transcript_id",
+                "protein_position",
+                "stop_type",
+                "therapy_id",
+                "readthrough_predicted",
+                "status",
+                "reason",
+                "review_stars",
+            ]
+        ],
+        out,
+    )
+    click.echo(f"wrote {len(table)} variant by therapy rows to {out}")
 
 
 def _validated(
