@@ -1,0 +1,14 @@
+{
+  "source": "lehner-lab/Stop_codon_readthrough, Fig4_extdataFig4.Rmd",
+  "input": "treated_samples.rds",
+  "input_md5": "bb3474efa01f074466912a36964827c2",
+  "formula": "RT_binomial ~ 0 + stop_type + down_123nt + up_123nt + stop_type:down_123nt",
+  "family": "binomial",
+  "seed": 721,
+  "rounds": 10,
+  "train_fraction": 0.9,
+  "drugs": ["CC90009", "Clitocine", "DAP", "G418", "SJ6986", "SRI"],
+  "r_version": "R version 4.5.3 (2026-03-11)",
+  "caret": "7.0.1",
+  "data_table": "1.18.4"
+}

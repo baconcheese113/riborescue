@@ -10,6 +10,7 @@ import pandera.pandas
 from riborescue._version import __version__
 from riborescue.contracts import Consequence
 from riborescue.handoff import UpstreamHandoff
+from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
 from riborescue.tables import ReadthroughLabels, TriageInput, TriageOutput, read_table, write_table
 from riborescue.triage import classify, classify_table
 
@@ -96,6 +97,29 @@ def validate_handoff(manifest: Path, check_files: bool, results_root: Path | Non
         raise click.ClickException(f"{manifest} declares outputs that are not present\n{listed}")
     declared = len(tuple(handoff.outputs()))
     click.echo(f"{manifest}: {handoff.pipeline} {handoff.revision}, {declared} declared outputs")
+
+
+@main.command("fetch")
+@click.argument("names", nargs=-1, type=click.Choice(list(INPUTS)))
+@click.option(
+    "--data-root",
+    "data_root_",
+    type=click.Path(file_okay=False, path_type=Path),
+    help="Where inputs are kept, overriding RIBORESCUE_DATA.",
+)
+@click.option("--force", is_flag=True, help="Fetch again even if the file already verifies.")
+def fetch_inputs(names: tuple[str, ...], data_root_: Path | None, force: bool) -> None:
+    """Fetch declared public inputs by NAME, or all of them, and verify their checksums."""
+
+    root = data_root_ if data_root_ is not None else data_root()
+    for name in names or tuple(INPUTS):
+        declared = INPUTS[name]
+        click.echo(f"{name}: {declared.source} ({declared.licence})")
+        try:
+            path = fetch(name, root, force=force)
+        except (UnknownInputError, OSError) as error:
+            raise click.ClickException(str(error)) from error
+        click.echo(f"  {path} verified")
 
 
 def _validated(

@@ -7,6 +7,7 @@ dependencies = [
     "pydantic>=2.7",
     "pandera>=0.20",
     "pandas>=2.2",
+    "statsmodels>=0.14",
     "pyarrow>=16",
     "biopython>=1.83",
     "click>=8.1",
@@ -42,6 +43,11 @@ pyright = "*"
 nextflow = ">=24.10"
 nf-test = ">=0.9"
 nf-core = ">=3.1"
+r-base = ">=4.5.3,<4.6"
+"r-data.table" = ">=1.18.4,<2"
+r-caret = ">=7.0_1,<8"
+r-dplyr = ">=1.2.1,<2"
+r-languageserver = ">=0.3.18,<0.4"
 
 [tool.pixi.pypi-dependencies]
 riborescue = { path = ".", editable = true, extras = ["dev"] }
@@ -51,9 +57,12 @@ lint = "ruff check ."
 format = "ruff check --select I --fix . && ruff format ."
 types = "pyright"
 test = "pytest"
+test-slow = "pytest -m slow"
 test-cov = "pytest --cov=riborescue --cov-report=term-missing"
 check = { depends-on = ["lint", "types", "test"] }
 triage = "riborescue triage"
+fetch = "riborescue fetch"
+oracle = { cmd = "Rscript scripts/run_oracle.R", depends-on = ["fetch"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 
@@ -68,7 +77,7 @@ allowed-confusables = ["×"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["--import-mode=importlib", "-ra", "--strict-markers"]
+addopts = ["--import-mode=importlib", "-ra", "--strict-markers", "-m", "not slow"]
 markers = [
     "control: protected negative controls; must not be silently removed",
     "parity: reproduction parity against the R oracle golden fixtures",

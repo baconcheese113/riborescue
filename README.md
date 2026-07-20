@@ -34,6 +34,7 @@ host machine stays clean.
 ```bash
 pixi install        # resolve the pinned toolchain
 pixi run check      # lint, type-check, and run the full test suite
+pixi run oracle     # fetch the published data and regenerate the reproduction fixtures
 pixi run triage --help
 ```
 
