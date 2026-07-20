@@ -1,0 +1,8 @@
+# Commit on Windows, run in Linux containers: force LF so scripts never break on a stray CRLF.
+* text=auto eol=lf
+# SCM syntax highlighting & preventing 3-way merges
+pixi.lock merge=binary linguist-language=YAML linguist-generated=true -diff
+# Binary fixtures and documents — normalising line endings here corrupts the file
+*.bam binary
+*.pdf binary
+*.docx binary

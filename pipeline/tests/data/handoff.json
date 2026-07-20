@@ -1,0 +1,12 @@
+{
+  "pipeline": "nf-core/riboseq",
+  "revision": "1.2.0",
+  "results_root": "tests/data/upstream",
+  "psite_offsets": "psite_offsets.tsv",
+  "codon_coverage": "codon_coverage.tsv",
+  "cds_coverage": "cds_coverage.tsv",
+  "rnaseq_counts": "salmon.merged.gene_counts.tsv",
+  "rnaseq_tpm": "salmon.merged.gene_tpm.tsv",
+  "alignments": ["star/sample_A.sorted.bam"],
+  "multiqc": "multiqc/multiqc_report.html"
+}

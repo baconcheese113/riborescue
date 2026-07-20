@@ -1,0 +1,4 @@
+variant_id	gene_id	therapy_id	stop_codon	readthrough_efficiency	replicate_sd	censored
+CFTR:c.1477C>T	ENSG00000001626	G418	UGA	0.041	0.006	False
+CFTR:c.1477C>T	ENSG00000001626	clitocine	UGA	0.062	0.004	True
+TPP1:c.622C>T	ENSG00000166340	G418	UAA	0.008		False

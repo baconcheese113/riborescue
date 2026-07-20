@@ -1,0 +1,42 @@
+# Pixi — project-local environments, never committed
+.pixi/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+
+# Nextflow
+.nextflow/
+.nf-test/
+.nf-test.log
+.nextflow.log*
+work/
+results/
+
+# Data — fetched from public sources, never committed. Anchored, so test fixtures under
+# pipeline/tests/data stay in git
+/data/
+
+# Docs — the decision records are the tracked ones; design documents and course material stay local
+/docs/*
+!/docs/decisions/
+
+# OS / editor — settings hold machine-local paths; only the extension list is shared
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

@@ -1,0 +1,52 @@
+nextflow_pipeline {
+
+    name "RiboRescue entry workflows"
+    script "main.nf"
+
+    test("SCORE triages the fixture variants") {
+        when {
+            params {
+                step = "score"
+                outdir = "$outputDir"
+            }
+        }
+        then {
+            assert workflow.success
+            def triaged = path("$outputDir/triage/triaged.tsv").readLines()
+            assert triaged.size() == 6
+            assert triaged[0].endsWith("triage_class\tapplies\treason")
+            assert triaged.count { it.contains("supported_nonsense") } == 2
+            assert triaged.any { it.startsWith("DMD:") && it.contains("unsupported_transcript") }
+        }
+    }
+
+    test("TRAIN validates the labels it will fit against") {
+        when {
+            params {
+                step = "train"
+                outdir = "$outputDir"
+            }
+        }
+        then {
+            assert workflow.success
+            assert path("$outputDir/labels/labels.log").text.contains("3 labels, 1 at the assay ceiling")
+            assert path("$outputDir/handoff/handoff.log").text.contains("nf-core/riboseq 1.2.0")
+        }
+    }
+
+    test("a handoff naming an absent upstream output fails the run") {
+        when {
+            params {
+                step = "score"
+                handoff = "$projectDir/tests/data/handoff.json"
+                results_root = "$projectDir/tests/data"
+                outdir = "$outputDir"
+            }
+        }
+        then {
+            assert workflow.failed
+            assert workflow.trace.failed().any { it.name.contains("VALIDATE_HANDOFF") }
+            assert workflow.trace.succeeded().isEmpty()
+        }
+    }
+}

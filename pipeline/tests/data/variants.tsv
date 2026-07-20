@@ -1,0 +1,6 @@
+variant_id	consequence	transcript_supported
+CFTR:c.1477C>T	stop_gained	True
+IDUA:c.1205G>A	missense_variant	True
+TPP1:c.622C>T	stop_gained	True
+DMD:c.4375C>T	stop_gained	False
+COL7A1:c.425A>G	splice_donor_variant	True

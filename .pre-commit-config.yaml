@@ -1,0 +1,20 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: pixi run -q ruff check --fix
+        language: system
+        types: [python]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: pixi run -q ruff format
+        language: system
+        types: [python]
+      - id: pyright
+        name: pyright
+        entry: pixi run -q pyright
+        language: system
+        types: [python]
+        pass_filenames: false
