@@ -43,6 +43,14 @@ INPUTS: dict[str, Input] = {
         source="doi:10.6084/m9.figshare.25138712.v6",
         licence="CC BY 4.0",
     ),
+    "clinvar_grch38": Input(
+        name="clinvar_grch38",
+        url="https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar_20260715.vcf.gz",
+        md5="5151e8d3ca7ffb26ecfc296040bc4f48",
+        path=Path("clinvar/clinvar_20260715.vcf.gz"),
+        source="NCBI ClinVar weekly release 2026-07-15, GRCh38",
+        licence="public domain (NCBI)",
+    ),
 }
 
 

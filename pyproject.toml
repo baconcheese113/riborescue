@@ -53,6 +53,7 @@ r-dplyr = ">=1.2.1,<2"
 r-languageserver = ">=0.3.18,<0.4"
 r-jsonlite = ">=2.0.0,<3"
 r-optparse = ">=1.8.2,<2"
+cyvcf2 = ">=0.34.0,<0.35"
 
 [tool.pixi.pypi-dependencies]
 riborescue = { path = ".", editable = true, extras = ["dev"] }
@@ -69,6 +70,7 @@ triage = "riborescue triage"
 fetch = "riborescue fetch"
 oracle = { cmd = "Rscript scripts/run_oracle.R", depends-on = ["fetch"] }
 evaluate = { cmd = "riborescue evaluate tests/fixtures/oracle/features_*.tsv.gz --out results/evaluation.tsv", env = { OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1" } }
+clinvar = "riborescue clinvar data/clinvar/clinvar_20260715.vcf.gz --out results/clinvar_nonsense.tsv"
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 

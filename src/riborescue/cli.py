@@ -8,6 +8,7 @@ import pandera.errors
 import pandera.pandas
 
 from riborescue._version import __version__
+from riborescue.clinvar import pathogenic_nonsense
 from riborescue.contracts import Consequence, EvalConfig
 from riborescue.evaluation import (
     SEED,
@@ -18,7 +19,14 @@ from riborescue.evaluation import (
 )
 from riborescue.handoff import UpstreamHandoff
 from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
-from riborescue.tables import ReadthroughLabels, TriageInput, TriageOutput, read_table, write_table
+from riborescue.tables import (
+    PathogenicNonsense,
+    ReadthroughLabels,
+    TriageInput,
+    TriageOutput,
+    read_table,
+    write_table,
+)
 from riborescue.triage import classify, classify_table
 
 __all__ = ["main"]
@@ -174,6 +182,26 @@ def evaluate_features(
         out.parent.mkdir(parents=True, exist_ok=True)
         write_table(pd.concat(rounds), out)
         click.echo(f"wrote {out}")
+
+
+@main.command("clinvar")
+@click.argument("vcf", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@_OUT
+def clinvar_variants(vcf: Path, out: Path) -> None:
+    """Extract the pathogenic nonsense substitutions from a ClinVar VCF."""
+
+    found = pathogenic_nonsense(vcf)
+    variants = _validated(PathogenicNonsense, found.variants, vcf)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(variants, out)
+    genes = variants["gene_symbol"].nunique()
+    reviewed = int((variants["review_stars"] >= 2).sum())
+    click.echo(
+        f"{len(variants)} pathogenic nonsense variants across {genes} genes; "
+        f"{reviewed} with two or more review stars"
+    )
+    if found.ambiguous_alleles:
+        click.echo(f"excluded {found.ambiguous_alleles} with an ambiguous alternate allele")
 
 
 def _validated(

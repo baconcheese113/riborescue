@@ -1,0 +1,20 @@
+##fileformat=VCFv4.1
+##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description="the ClinVar Allele ID">
+##INFO=<ID=CLNDN,Number=.,Type=String,Description="ClinVar's preferred disease name">
+##INFO=<ID=CLNHGVS,Number=.,Type=String,Description="Top-level genomic HGVS expression">
+##INFO=<ID=CLNREVSTAT,Number=.,Type=String,Description="ClinVar review status">
+##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Clinical significance">
+##INFO=<ID=CLNVC,Number=1,Type=String,Description="Variant type">
+##INFO=<ID=GENEINFO,Number=1,Type=String,Description="Gene symbol and NCBI ID">
+##INFO=<ID=MC,Number=.,Type=String,Description="Molecular consequence">
+##contig=<ID=7>
+##contig=<ID=4>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+7	117530975	1	C	T	.	.	ALLELEID=100001;CLNDN=Cystic_fibrosis;CLNHGVS=NC_000007.14:g.117530975C>T;CLNREVSTAT=reviewed_by_expert_panel;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;GENEINFO=CFTR:1080;MC=SO:0001587|nonsense
+4	987654	2	G	A	.	.	ALLELEID=100002;CLNDN=Mucopolysaccharidosis_type_I;CLNHGVS=NC_000004.12:g.987654G>A;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Likely_pathogenic;CLNVC=single_nucleotide_variant;GENEINFO=IDUA:3425;MC=SO:0001587|nonsense
+7	117530999	3	G	A	.	.	ALLELEID=100003;CLNDN=not_specified;CLNHGVS=NC_000007.14:g.117530999G>A;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Benign;CLNVC=single_nucleotide_variant;GENEINFO=CFTR:1080;MC=SO:0001587|nonsense
+7	117531010	4	A	G	.	.	ALLELEID=100004;CLNDN=Cystic_fibrosis;CLNHGVS=NC_000007.14:g.117531010A>G;CLNREVSTAT=practice_guideline;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;GENEINFO=CFTR:1080;MC=SO:0001583|missense_variant
+7	117531020	5	CT	C	.	.	ALLELEID=100005;CLNDN=Cystic_fibrosis;CLNHGVS=NC_000007.14:g.117531021del;CLNREVSTAT=practice_guideline;CLNSIG=Pathogenic;CLNVC=Deletion;GENEINFO=CFTR:1080;MC=SO:0001587|nonsense
+7	117531030	6	C	T	.	.	ALLELEID=100006;CLNDN=Cystic_fibrosis;CLNHGVS=NC_000007.14:g.117531030C>T;CLNREVSTAT=criteria_provided,_conflicting_classifications;CLNSIG=Conflicting_classifications_of_pathogenicity;CLNVC=single_nucleotide_variant;GENEINFO=CFTR:1080;MC=SO:0001587|nonsense
+7	117531040	7	C	T	.	.	ALLELEID=100007;CLNDN=Cystic_fibrosis;CLNHGVS=NC_000007.14:g.117531040C>T;CLNREVSTAT=criteria_provided,_multiple_submitters,_no_conflicts;CLNSIG=Pathogenic/Likely_pathogenic;CLNVC=single_nucleotide_variant;GENEINFO=CFTR:1080|CFTR-AS1:102723688;MC=SO:0001587|nonsense,SO:0001627|intron_variant
+7	117531050	8	C	N	.	.	ALLELEID=100008;CLNDN=Cystic_fibrosis;CLNHGVS=NC_000007.14:g.117531050C>R;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Pathogenic;CLNVC=single_nucleotide_variant;GENEINFO=CFTR:1080;MC=SO:0001587|nonsense

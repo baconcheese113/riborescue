@@ -14,6 +14,7 @@ from pandera.typing import Series
 from riborescue.contracts import Consequence, StopCodon, TriageClass
 
 __all__ = [
+    "PathogenicNonsense",
     "ReadthroughLabels",
     "TriageInput",
     "TriageOutput",
@@ -48,6 +49,27 @@ class ReadthroughLabels(_Strict):
     censored: Series[bool]
 
 
+class PathogenicNonsense(_Strict):
+    """Pathogenic nonsense substitutions drawn from ClinVar.
+
+    `review_stars` is ClinVar's own confidence rating, carried through so a one-star assertion and a
+    guideline-backed one stay distinguishable rather than being flattened into one population.
+    """
+
+    variant_id: Series[str]
+    allele_id: Series[int]
+    chrom: Series[str]
+    pos: Series[int] = pa.Field(gt=0)
+    ref: Series[str] = pa.Field(isin=list("ACGT"))
+    alt: Series[str] = pa.Field(isin=list("ACGT"))
+    gene_symbol: Series[str]
+    gene_id: Series[int]
+    clinical_significance: Series[str]
+    review_status: Series[str]
+    review_stars: Series[int] = pa.Field(ge=0, le=4)
+    conditions: Series[str]
+
+
 class TriageInput(_Strict):
     """Variants submitted for triage."""
 
@@ -65,9 +87,14 @@ class TriageOutput(TriageInput):
 
 
 def read_table(path: Path) -> pd.DataFrame:
-    """Read a tab-separated table. Whatever it holds is what the schema then judges."""
+    """Read a tab-separated table. Whatever it holds is what the schema then judges.
 
-    return pd.read_csv(path, sep="\t")
+    Types are inferred over the whole column rather than chunk by chunk: a chromosome column holding
+    both 7 and X would otherwise come back as integers in one chunk and strings in another, and a
+    table would fail to validate on the way in having passed on the way out.
+    """
+
+    return pd.read_csv(path, sep="\t", low_memory=False)
 
 
 def write_table(frame: pd.DataFrame, path: Path) -> None:
