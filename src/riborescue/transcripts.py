@@ -18,6 +18,7 @@ from pathlib import Path
 import pandas as pd
 
 __all__ = [
+    "PRIMARY_CHROMOSOMES",
     "STOP_CODONS",
     "TranscriptModel",
     "load_transcripts",
@@ -27,10 +28,14 @@ __all__ = [
 
 STOP_CODONS = frozenset({"TAA", "TAG", "TGA"})
 
+PRIMARY_CHROMOSOMES = frozenset(f"chr{name}" for name in [*map(str, range(1, 23)), "X", "Y"])
+"""The primary assembly. Alternate and fix patches carry duplicate genes on other coordinates."""
+
 _COMPLEMENT = str.maketrans("ACGTN", "TGCAN")
 # Exons carry transcript_id, coding features only Parent, so the parent names both.
 _TRANSCRIPT_ID = re.compile(r"Parent=rna-([^;]+)")
 _GENE_ID = re.compile(r"GeneID:(\d+)")
+_PROTEIN_ID = re.compile(r"protein_id=([^;]+)")
 
 
 @dataclass(frozen=True)
@@ -46,6 +51,7 @@ class TranscriptModel:
     cds_start: int
     cds_end: int
     sequence: str
+    protein_id: str
 
     @property
     def spliced_length(self) -> int:
@@ -90,7 +96,12 @@ class TranscriptModel:
 
 
 def read_annotation(gff: Path) -> pd.DataFrame:
-    """Read the exon and coding features of every MANE Select transcript from a RefSeq GFF."""
+    """Read the exon and coding features of every MANE Select transcript from a RefSeq GFF.
+
+    MANE Plus Clinical transcripts and the alternate assembly are left out: the transcript policy is
+    one Select transcript per gene on the primary assembly, so no variant is scored twice on two
+    different molecules.
+    """
 
     frame = pd.read_csv(
         gff,
@@ -100,9 +111,14 @@ def read_annotation(gff: Path) -> pd.DataFrame:
         names=["chrom", "source", "feature", "start", "end", "score", "strand", "phase", "attrs"],
         dtype={"chrom": str},
     )
-    frame = frame[frame["feature"].isin({"exon", "CDS"})].copy()
+    frame = frame[
+        frame["feature"].isin({"exon", "CDS"})
+        & frame["attrs"].str.contains("tag=MANE Select", regex=False)
+        & frame["chrom"].isin(PRIMARY_CHROMOSOMES)
+    ].copy()
     frame["transcript_id"] = frame["attrs"].str.extract(_TRANSCRIPT_ID, expand=False)
     frame["gene_id"] = frame["attrs"].str.extract(_GENE_ID, expand=False).astype("Int64")
+    frame["protein_id"] = frame["attrs"].str.extract(_PROTEIN_ID, expand=False)
     return frame.dropna(subset=["transcript_id", "gene_id"]).drop(
         columns=["attrs", "source", "score"]
     )
@@ -149,6 +165,7 @@ def load_transcripts(gff: Path, fasta: Path) -> dict[str, TranscriptModel]:
             cds_start=int(coding["start"].min()),
             cds_end=int(coding["end"].max()),
             sequence=sequence,
+            protein_id=str(coding["protein_id"].iloc[0]),
         )
     return models
 

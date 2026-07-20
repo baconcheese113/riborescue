@@ -73,6 +73,17 @@ INPUTS: dict[str, Input] = {
         source="NCBI MANE release 1.5, GRCh38",
         licence="public domain (NCBI)",
     ),
+    "mane_proteins": Input(
+        name="mane_proteins",
+        url=(
+            "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.5/"
+            "MANE.GRCh38.v1.5.refseq_protein.faa.gz"
+        ),
+        md5="efadce6e19c3c7acfd356cf7915c31bd",
+        path=Path("mane/MANE.GRCh38.v1.5.refseq_protein.faa.gz"),
+        source="NCBI MANE release 1.5, GRCh38",
+        licence="public domain (NCBI)",
+    ),
 }
 
 

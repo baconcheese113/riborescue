@@ -71,6 +71,11 @@ fetch = "riborescue fetch"
 oracle = { cmd = "Rscript scripts/run_oracle.R", depends-on = ["fetch"] }
 evaluate = { cmd = "riborescue evaluate tests/fixtures/oracle/features_*.tsv.gz --out results/evaluation.tsv", env = { OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1" } }
 clinvar = "riborescue clinvar data/clinvar/clinvar_20260715.vcf.gz --out results/clinvar_nonsense.tsv"
+contexts = """riborescue contexts results/clinvar_nonsense.tsv \
+  --annotation data/mane/MANE.GRCh38.v1.5.refseq_genomic.gff.gz \
+  --transcripts data/mane/MANE.GRCh38.v1.5.refseq_rna.fna.gz \
+  --proteins data/mane/MANE.GRCh38.v1.5.refseq_protein.faa.gz \
+  --out results/clinvar_contexts.tsv"""
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 

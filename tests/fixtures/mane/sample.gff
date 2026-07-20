@@ -1,13 +1,17 @@
 ##gff-version 3
 chr9	BestRefSeq	gene	101	210	.	+	.	ID=gene-PLUS1;Dbxref=GeneID:9001;Name=PLUS1
 chr9	BestRefSeq	mRNA	101	210	.	+	.	ID=rna-NM_000001.1;Parent=gene-PLUS1;Dbxref=GeneID:9001;transcript_id=NM_000001.1;tag=MANE Select
-chr9	BestRefSeq	exon	101	110	.	+	.	ID=exon-NM_000001.1-1;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;transcript_id=NM_000001.1
-chr9	BestRefSeq	exon	201	210	.	+	.	ID=exon-NM_000001.1-2;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;transcript_id=NM_000001.1
-chr9	BestRefSeq	CDS	105	110	.	+	0	ID=cds-NP_000001.1;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;protein_id=NP_000001.1
-chr9	BestRefSeq	CDS	201	209	.	+	0	ID=cds-NP_000001.1;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;protein_id=NP_000001.1
+chr9	BestRefSeq	exon	101	110	.	+	.	ID=exon-NM_000001.1-1;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;transcript_id=NM_000001.1;tag=MANE Select
+chr9	BestRefSeq	exon	201	210	.	+	.	ID=exon-NM_000001.1-2;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;transcript_id=NM_000001.1;tag=MANE Select
+chr9	BestRefSeq	CDS	105	110	.	+	0	ID=cds-NP_000001.1;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;protein_id=NP_000001.1;tag=MANE Select
+chr9	BestRefSeq	CDS	201	209	.	+	0	ID=cds-NP_000001.1;Parent=rna-NM_000001.1;Dbxref=GeneID:9001;protein_id=NP_000001.1;tag=MANE Select
 chr9	BestRefSeq	gene	301	410	.	-	.	ID=gene-MINUS1;Dbxref=GeneID:9002;Name=MINUS1
 chr9	BestRefSeq	mRNA	301	410	.	-	.	ID=rna-NM_000002.1;Parent=gene-MINUS1;Dbxref=GeneID:9002;transcript_id=NM_000002.1;tag=MANE Select
-chr9	BestRefSeq	exon	301	310	.	-	.	ID=exon-NM_000002.1-2;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;transcript_id=NM_000002.1
-chr9	BestRefSeq	exon	401	410	.	-	.	ID=exon-NM_000002.1-1;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;transcript_id=NM_000002.1
-chr9	BestRefSeq	CDS	401	406	.	-	0	ID=cds-NP_000002.1;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;protein_id=NP_000002.1
-chr9	BestRefSeq	CDS	302	310	.	-	0	ID=cds-NP_000002.1;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;protein_id=NP_000002.1
+chr9	BestRefSeq	exon	301	310	.	-	.	ID=exon-NM_000002.1-2;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;transcript_id=NM_000002.1;tag=MANE Select
+chr9	BestRefSeq	exon	401	410	.	-	.	ID=exon-NM_000002.1-1;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;transcript_id=NM_000002.1;tag=MANE Select
+chr9	BestRefSeq	CDS	401	406	.	-	0	ID=cds-NP_000002.1;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;protein_id=NP_000002.1;tag=MANE Select
+chr9	BestRefSeq	CDS	302	310	.	-	0	ID=cds-NP_000002.1;Parent=rna-NM_000002.1;Dbxref=GeneID:9002;protein_id=NP_000002.1;tag=MANE Select
+chr9	BestRefSeq	exon	501	520	.	+	.	ID=exon-NM_000003.1-1;Parent=rna-NM_000003.1;Dbxref=GeneID:9001;transcript_id=NM_000003.1;tag=MANE Plus Clinical
+chr9	BestRefSeq	CDS	501	519	.	+	0	ID=cds-NP_000003.1;Parent=rna-NM_000003.1;Dbxref=GeneID:9001;protein_id=NP_000003.1;tag=MANE Plus Clinical
+chr9_KI270823v1_alt	BestRefSeq	exon	101	120	.	+	.	ID=exon-NM_000004.1-1;Parent=rna-NM_000004.1;Dbxref=GeneID:9004;transcript_id=NM_000004.1;tag=MANE Select
+chr9_KI270823v1_alt	BestRefSeq	CDS	101	119	.	+	0	ID=cds-NP_000004.1;Parent=rna-NM_000004.1;Dbxref=GeneID:9004;protein_id=NP_000004.1;tag=MANE Select

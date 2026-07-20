@@ -90,3 +90,18 @@ def test_only_exon_and_coding_features_are_read():
 )
 def test_reverse_complement_reverses_and_complements(sequence, expected):
     assert reverse_complement(sequence) == expected
+
+
+def test_a_mane_plus_clinical_transcript_is_left_out(models):
+    """The policy is one Select transcript per gene, so a second transcript never competes."""
+
+    assert "NM_000003.1" not in models
+    assert [model.gene_id for model in models.values()].count(9001) == 1
+
+
+def test_a_transcript_on_an_alternate_contig_is_left_out(models):
+    assert "NM_000004.1" not in models
+
+
+def test_each_transcript_names_the_protein_it_encodes(plus, minus):
+    assert (plus.protein_id, minus.protein_id) == ("NP_000001.1", "NP_000002.1")

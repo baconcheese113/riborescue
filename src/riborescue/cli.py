@@ -9,6 +9,7 @@ import pandera.pandas
 
 from riborescue._version import __version__
 from riborescue.clinvar import pathogenic_nonsense
+from riborescue.context import contexts_for, disagreements_with_protein
 from riborescue.contracts import Consequence, EvalConfig
 from riborescue.evaluation import (
     SEED,
@@ -27,6 +28,7 @@ from riborescue.tables import (
     read_table,
     write_table,
 )
+from riborescue.transcripts import load_transcripts, read_sequences
 from riborescue.triage import classify, classify_table
 
 __all__ = ["main"]
@@ -202,6 +204,41 @@ def clinvar_variants(vcf: Path, out: Path) -> None:
     )
     if found.ambiguous_alleles:
         click.echo(f"excluded {found.ambiguous_alleles} with an ambiguous alternate allele")
+
+
+@main.command("contexts")
+@click.argument("variants", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--annotation", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option("--transcripts", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option("--proteins", required=True, type=click.Path(exists=True, path_type=Path))
+@_OUT
+def variant_contexts(
+    variants: Path, annotation: Path, transcripts: Path, proteins: Path, out: Path
+) -> None:
+    """Read the stop-codon context of every variant on its gene's MANE Select transcript."""
+
+    models = load_transcripts(annotation, transcripts)
+    by_gene = {model.gene_id: model for model in models.values()}
+    table = read_table(variants)
+
+    disagreeing = disagreements_with_protein(table, by_gene, read_sequences(proteins))
+    if disagreeing:
+        listed = "\n".join(
+            f"  {d.transcript_id} residue {d.protein_position}: "
+            f"{d.codon} translates to {d.translated}, protein carries {d.in_protein}"
+            for d in disagreeing[:10]
+        )
+        raise click.ClickException(
+            f"{len(disagreeing)} placements disagree with the reference protein\n{listed}"
+        )
+
+    found = contexts_for(table, by_gene)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(found, out)
+    scoreable = int(found["scoreable"].sum())
+    click.echo(f"{scoreable} of {len(found)} variants have a scoreable context")
+    for reason, count in found.loc[~found["scoreable"], "reason"].value_counts().items():
+        click.echo(f"  {count} {reason}")
 
 
 def _validated(
