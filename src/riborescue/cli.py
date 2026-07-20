@@ -8,7 +8,14 @@ import pandera.errors
 import pandera.pandas
 
 from riborescue._version import __version__
-from riborescue.contracts import Consequence
+from riborescue.contracts import Consequence, EvalConfig
+from riborescue.evaluation import (
+    SEED,
+    UnsupportedEvalConfigError,
+    bootstrap_ci,
+    evaluate,
+    split,
+)
 from riborescue.handoff import UpstreamHandoff
 from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
 from riborescue.tables import ReadthroughLabels, TriageInput, TriageOutput, read_table, write_table
@@ -120,6 +127,53 @@ def fetch_inputs(names: tuple[str, ...], data_root_: Path | None, force: bool) -
         except (UnknownInputError, OSError) as error:
             raise click.ClickException(str(error)) from error
         click.echo(f"  {path} verified")
+
+
+@main.command("evaluate")
+@click.argument(
+    "features",
+    nargs=-1,
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
+@click.option(
+    "--config",
+    "configs",
+    multiple=True,
+    type=click.Choice([c.value for c in EvalConfig]),
+    default=[EvalConfig.published_random_cv.value, EvalConfig.grouped_by_gene.value],
+    help="Which named evaluation protocols to run.",
+)
+@click.option("--seed", default=SEED, show_default=True, help="Seed the splits are drawn from.")
+@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), help="Write rounds here.")
+def evaluate_features(
+    features: tuple[Path, ...], configs: tuple[str, ...], seed: int, out: Path | None
+) -> None:
+    """Score the baseline on each FEATURES table under each named evaluation protocol.
+
+    A dataset is named after its file, so `features_G418.tsv.gz` reports as G418.
+    """
+
+    rounds = []
+    for path in features:
+        table = read_table(path).set_index("row")
+        dataset = path.name.split(".")[0].removeprefix("features_")
+        for name in configs:
+            config = EvalConfig(name)
+            try:
+                scored = evaluate(table, split(table, config, seed=seed))
+            except UnsupportedEvalConfigError as error:
+                raise click.ClickException(str(error)) from error
+            interval = bootstrap_ci(scored["r2"], seed=seed)
+            rounds.append(scored.assign(dataset=dataset, config=config.value))
+            click.echo(
+                f"{dataset:<12} {config.value:<22} "
+                f"r² {interval.point:.3f}  95% CI [{interval.low:.3f}, {interval.high:.3f}]"
+            )
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        write_table(pd.concat(rounds), out)
+        click.echo(f"wrote {out}")
 
 
 def _validated(

@@ -3,6 +3,8 @@ from pydantic import ValidationError
 
 from riborescue.contracts import (
     CONTRACTS_VERSION,
+    REPORTER_DOWNSTREAM_NT,
+    REPORTER_UPSTREAM_NT,
     AenmdResult,
     BiologicalContext,
     ConfidenceTier,
@@ -16,7 +18,6 @@ from riborescue.contracts import (
     StopCodon,
     TherapyIdentity,
     TranscriptIdentity,
-    UnresolvedReporterWindowError,
     VariantIdentity,
     WindowSpec,
     enforce_modality_comparability,
@@ -144,9 +145,19 @@ def test_nmd_keeps_aenmd_as_rules():
     assert result.aenmd.triggered_rules == ("last_exon", "start_proximal")
 
 
-def test_window_spec_refuses_to_construct_while_context_is_unresolved():
-    with pytest.raises(UnresolvedReporterWindowError):
-        WindowSpec(upstream_nt=72, downstream_nt=72)
+def test_a_window_spanning_the_whole_reporter_context_is_accepted():
+    window = WindowSpec(upstream_nt=REPORTER_UPSTREAM_NT, downstream_nt=min(REPORTER_DOWNSTREAM_NT))
+    assert (window.upstream_nt, window.downstream_nt) == (72, 72)
+
+
+def test_a_window_reaching_past_the_shorter_oligo_design_is_refused():
+    with pytest.raises(ValueError, match="shorter oligo design"):
+        WindowSpec(upstream_nt=72, downstream_nt=max(REPORTER_DOWNSTREAM_NT))
+
+
+def test_a_window_reaching_past_the_upstream_context_is_refused():
+    with pytest.raises(ValueError, match="upstream"):
+        WindowSpec(upstream_nt=REPORTER_UPSTREAM_NT + 1, downstream_nt=0)
 
 
 def test_ranking_across_modalities_requires_acknowledgement():

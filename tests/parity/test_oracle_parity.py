@@ -8,15 +8,19 @@ The check runs unconditionally and fails — never skips — if a fixture is abs
 check is a check that has quietly vanished. Regenerate the fixtures with `pixi run oracle`.
 """
 
+import json
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from riborescue.baseline import cross_validate, fit_fold
+from riborescue.baseline import FORMULA, cross_validate, fit_fold
+from riborescue.contracts import REPORTER_DOWNSTREAM_NT, REPORTER_UPSTREAM_NT
+from riborescue.inputs import INPUTS
 from riborescue.tables import read_table
 
 ORACLE = Path(__file__).resolve().parents[1] / "fixtures" / "oracle"
+PROVENANCE = json.loads((ORACLE / "provenance.json").read_text())
 DRUGS = ("CC90009", "Clitocine", "DAP", "G418", "SJ6986", "SRI")
 
 # The fits agree to floating-point noise, so the tolerance is tight enough that a real difference in
@@ -61,11 +65,22 @@ def test_python_baseline_reproduces_the_oracle_predictions(drug: str):
 
 @pytest.mark.parity
 def test_the_oracle_records_the_provenance_of_its_fixtures():
-    provenance = ORACLE / "provenance.json"
-    assert provenance.exists(), "provenance.json is absent — regenerate with `pixi run oracle`"
-    recorded = provenance.read_text()
-    assert "lehner-lab/Stop_codon_readthrough" in recorded
-    assert "bb3474efa01f074466912a36964827c2" in recorded
+    assert PROVENANCE["source"].startswith("lehner-lab/Stop_codon_readthrough")
+    assert PROVENANCE["input_md5"] == INPUTS["toledano_treated_samples"].md5
+    assert PROVENANCE["formula"] == FORMULA.replace("~", "~ ").replace("  ", " ")
+
+
+@pytest.mark.parity
+def test_the_reporter_window_contract_matches_the_measured_library():
+    """The contract's window is the one the library actually has, not the one either source claims.
+
+    The preprint describes 150 nt as 75 + 75 and the Methods describe 147 nt as 72 + 3 + 72. The
+    library holds both lengths, differing only downstream, so the constants are checked against what
+    the oracle measures rather than against either description.
+    """
+
+    assert PROVENANCE["reporter_upstream_nt"] == REPORTER_UPSTREAM_NT
+    assert tuple(PROVENANCE["reporter_downstream_nt"]) == REPORTER_DOWNSTREAM_NT
 
 
 @pytest.mark.parity

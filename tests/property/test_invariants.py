@@ -3,11 +3,12 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from riborescue.contracts import (
+    REPORTER_DOWNSTREAM_NT,
+    REPORTER_UPSTREAM_NT,
     Consequence,
     FieldStatus,
     Measurement,
     MissingReason,
-    UnresolvedReporterWindowError,
     WindowSpec,
 )
 from riborescue.triage import classify
@@ -40,6 +41,10 @@ def test_absent_measurement_never_holds_a_value(reason):
     st.integers(min_value=0, max_value=200),
     st.integers(min_value=0, max_value=200),
 )
-def test_window_spec_refuses_any_arguments_while_unresolved(upstream, downstream):
-    with pytest.raises(UnresolvedReporterWindowError):
-        WindowSpec(upstream_nt=upstream, downstream_nt=downstream)
+def test_a_window_is_accepted_exactly_when_it_fits_every_reporter(upstream, downstream):
+    fits = upstream <= REPORTER_UPSTREAM_NT and downstream <= min(REPORTER_DOWNSTREAM_NT)
+    if fits:
+        assert WindowSpec(upstream_nt=upstream, downstream_nt=downstream).upstream_nt == upstream
+    else:
+        with pytest.raises(ValueError):
+            WindowSpec(upstream_nt=upstream, downstream_nt=downstream)

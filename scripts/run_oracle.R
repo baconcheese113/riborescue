@@ -47,6 +47,22 @@ eligible_for <- function(drug) {
   ]
 }
 
+# Where the premature stop sits inside the reporter context, measured rather than assumed: the one
+# offset at which the upstream triplet, the stop and the downstream triplet line up for every
+# measured variant. The published sources disagree about this, so the data decides.
+measured <- treated_samples[replicate == 2 & reads_allbins > 15 & viral == "no" & !is.na(RT)]
+sequences <- tolower(measured$nt_seq)
+motifs <- chartr("u", "t", tolower(paste0(
+  measured$up_123nt, measured$stop_type, measured$down_123nt
+)))
+offsets <- Filter(
+  function(offset) all(substr(sequences, offset, offset + 8) == motifs),
+  seq_len(min(nchar(sequences)) - 8)
+)
+stopifnot(length(offsets) == 1)
+upstream_nt <- offsets[1] + 2
+downstream_nt <- sort(unique(nchar(sequences) - (offsets[1] + 5)))
+
 metrics <- data.table()
 for (drug in DRUGS) {
   eligible <- eligible_for(drug)
@@ -56,7 +72,7 @@ for (drug in DRUGS) {
   )
 
   features <- eligible[, .(
-    row = .I, stop_type, up_123nt, down_123nt, RT_binomial
+    row = .I, gene = GENEINFO, stop_type, up_123nt, down_123nt, RT_binomial
   )]
   fwrite(features, file.path(outdir, sprintf("features_%s.tsv.gz", drug)), sep = "\t")
 
@@ -102,6 +118,8 @@ provenance <- list(
   seed = SEED,
   rounds = ROUNDS,
   train_fraction = TRAIN_FRACTION,
+  reporter_upstream_nt = upstream_nt,
+  reporter_downstream_nt = downstream_nt,
   drugs = DRUGS,
   r_version = R.version.string,
   caret = as.character(packageVersion("caret")),

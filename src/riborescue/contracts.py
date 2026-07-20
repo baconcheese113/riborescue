@@ -17,7 +17,8 @@ from riborescue._version import CONTRACTS_VERSION
 
 __all__ = [
     "CONTRACTS_VERSION",
-    "REPORTER_CONTEXT_NT",
+    "REPORTER_DOWNSTREAM_NT",
+    "REPORTER_UPSTREAM_NT",
     "AenmdResult",
     "BiologicalContext",
     "ConfidenceTier",
@@ -36,7 +37,6 @@ __all__ = [
     "TherapyIdentity",
     "TranscriptIdentity",
     "TriageClass",
-    "UnresolvedReporterWindowError",
     "VariantIdentity",
     "WindowSpec",
     "enforce_modality_comparability",
@@ -261,40 +261,42 @@ class NmdResult(BaseModel):
     concordance: Measurement
 
 
-REPORTER_CONTEXT_NT: int | None = None
-"""Reporter context length in nucleotides: 147 (72 + 3 + 72) versus 150 (75 + 75).
+REPORTER_UPSTREAM_NT = 72
+"""Nucleotides between the start of the reporter context and the premature stop codon.
 
-Unresolved until read from the oligo design table. An off-by-three shifts every positional feature,
-so `WindowSpec` refuses to construct while this is None.
+Every measured variant in the library places the stop at the same offset, so upstream context is a
+constant rather than a per-variant quantity.
 """
 
+REPORTER_DOWNSTREAM_NT = (72, 75)
+"""Nucleotides following the premature stop codon, one value per oligo design.
 
-class UnresolvedReporterWindowError(RuntimeError):
-    pass
+The library ships two designs — 147 nt and 150 nt — that differ only downstream. A window reaching
+further than the shorter one cannot be filled for every variant.
+"""
 
 
 @dataclass(frozen=True)
 class WindowSpec:
-    """A feature window around a premature stop codon.
+    """A feature window around a premature stop codon, in nucleotides either side of it.
 
-    Cannot be constructed until the reporter context length is resolved, gating all feature work on
-    a decision that must be made from the oligo design table rather than assumed.
+    A window must fit inside the reporter context of *every* variant, because one that fits only the
+    longer design silently changes which variants a feature can be computed for.
     """
 
     upstream_nt: int
     downstream_nt: int
 
     def __post_init__(self) -> None:
-        if REPORTER_CONTEXT_NT is None:
-            raise UnresolvedReporterWindowError(
-                "reporter context length is unresolved (147 = 72+3+72 vs 150 = 75+75); "
-                "resolve it from the oligo design table before constructing feature windows"
-            )
-        total = self.upstream_nt + 3 + self.downstream_nt
-        if total != REPORTER_CONTEXT_NT:
+        if not 0 <= self.upstream_nt <= REPORTER_UPSTREAM_NT:
             raise ValueError(
-                f"window of {total} nt does not match "
-                f"the reporter context of {REPORTER_CONTEXT_NT} nt"
+                f"{self.upstream_nt} nt upstream exceeds the reporter context of "
+                f"{REPORTER_UPSTREAM_NT} nt"
+            )
+        if not 0 <= self.downstream_nt <= min(REPORTER_DOWNSTREAM_NT):
+            raise ValueError(
+                f"{self.downstream_nt} nt downstream exceeds the {min(REPORTER_DOWNSTREAM_NT)} nt "
+                "available in the shorter oligo design"
             )
 
 
