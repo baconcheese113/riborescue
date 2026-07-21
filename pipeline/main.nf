@@ -19,6 +19,8 @@
 include { ALIGNMENT_SUMMARY } from './modules/local/alignment_summary.nf'
 include { AMENABILITY_LANDSCAPE } from './modules/local/amenability_landscape.nf'
 include { CLINVAR_VARIANTS } from './modules/local/clinvar_variants.nf'
+include { CONTAMINANT_INDEX    } from './modules/local/contaminant_index.nf'
+include { DEPLETE_CONTAMINANTS } from './modules/local/deplete_contaminants.nf'
 include { STAR_ALIGN       } from './modules/local/star_align.nf'
 include { STAR_INDEX       } from './modules/local/star_index.nf'
 include { CUTADAPT         } from './modules/local/cutadapt.nf'
@@ -109,11 +111,23 @@ workflow READS {
     // runnable without the hours an index costs.
     def aligned = params.genome && params.annotation
     if( aligned ) {
+        // Structural RNA is most of a footprint library and aligns to many loci rather than none,
+        // so it is removed before the genome sees the reads.
+        def depleted = CUTADAPT.out.reads
+        if( params.contaminants && params.rdna ) {
+            CONTAMINANT_INDEX(
+                file(params.contaminants, checkIfExists: true),
+                file(params.rdna, checkIfExists: true)
+            )
+            DEPLETE_CONTAMINANTS(CUTADAPT.out.reads, CONTAMINANT_INDEX.out.index)
+            depleted = DEPLETE_CONTAMINANTS.out.reads
+        }
+
         STAR_INDEX(
             file(params.genome, checkIfExists: true),
             file(params.annotation, checkIfExists: true)
         )
-        STAR_ALIGN(CUTADAPT.out.reads, STAR_INDEX.out.index)
+        STAR_ALIGN(depleted, STAR_INDEX.out.index)
         ALIGNMENT_SUMMARY(STAR_ALIGN.out.log.collect())
     }
 

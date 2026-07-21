@@ -10,6 +10,7 @@ import pandera.pandas
 from riborescue._version import __version__
 from riborescue.baseline import fit, relative_error_quantile
 from riborescue.clinvar import pathogenic_nonsense
+from riborescue.contaminants import write_contaminants
 from riborescue.context import contexts_for, disagreements_with_protein
 from riborescue.contracts import Consequence, EvalConfig
 from riborescue.evaluation import (
@@ -200,6 +201,25 @@ def trim_summary(reports: tuple[Path, ...], samplesheet: Path, out: Path) -> Non
             f"{row.sample}: {row.reads_raw:,} raw, {row.reads_cleaned:,} cleaned "
             f"({row.reads_retained:.1%} retained, adapter in {row.adapter_rate:.1%})"
         )
+
+
+@main.command("contaminants")
+@click.argument("transcripts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--include",
+    multiple=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Further FASTA to deplete against, such as the rDNA repeating unit.",
+)
+@_OUT
+def contaminant_sequences(transcripts: Path, include: tuple[Path, ...], out: Path) -> None:
+    """Write the structural RNA in a GENCODE TRANSCRIPTS FASTA, the sequences to deplete."""
+
+    try:
+        written = write_contaminants(transcripts, out, include)
+    except (OSError, ValueError) as error:
+        raise click.ClickException(str(error)) from error
+    click.echo(f"{written:,} contaminant sequences written to {out}")
 
 
 @main.command("alignment-summary")

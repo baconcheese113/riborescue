@@ -118,12 +118,13 @@ _STAR_FIELDS = {
 }
 
 
-def _read_star_log(path: Path) -> dict[str, float | str]:
-    found: dict[str, float | str] = {"sample": path.name.split(".")[0]}
+def _read_star_log(path: Path) -> dict[str, float | int | str]:
+    found: dict[str, float | int | str] = {"sample": path.name.split(".")[0]}
     for line in path.read_text().splitlines():
         label, _, value = line.partition("|")
         if (field := _STAR_FIELDS.get(label.strip())) is not None:
-            found[field] = float(value.strip().rstrip("%"))
+            number = float(value.strip().rstrip("%"))
+            found[field] = int(number) if field.startswith("reads_") else number
     return found
 
 
@@ -133,6 +134,6 @@ def summarise_alignment(logs: list[Path]) -> pd.DataFrame:
     summary = pd.DataFrame(
         sorted((_read_star_log(path) for path in logs), key=lambda r: r["sample"])
     )
-    rates = [c for c in summary.columns if c.endswith("_rate")]
-    summary["mapped_rate"] = summary[rates].drop(columns="unmapped_too_short_rate").sum(axis=1)
+    mapped = ["unique_rate", "multimapped_rate", "over_multimapped_rate"]
+    summary["mapped_rate"] = summary[mapped].sum(axis=1).round(2)
     return summary

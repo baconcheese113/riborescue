@@ -73,6 +73,31 @@ INPUTS: dict[str, Input] = {
         source="GENCODE release 50, GRCh38 primary assembly",
         licence="public domain (GENCODE/EMBL-EBI)",
     ),
+    "gencode_transcripts": Input(
+        name="gencode_transcripts",
+        url=(
+            "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_50/"
+            "gencode.v50.transcripts.fa.gz"
+        ),
+        md5="4d5bd41b247480e12c0b370490f52ddd",
+        path=Path("gencode/gencode.v50.transcripts.fa.gz"),
+        source="GENCODE release 50, transcript sequences",
+        licence="public domain (GENCODE/EMBL-EBI)",
+    ),
+    # GENCODE annotates barely any rRNA, because the rDNA arrays are not assembled into the primary
+    # reference. Without this unit, depletion removes a tenth of a footprint library instead of
+    # three fifths of it.
+    "rdna_repeat": Input(
+        name="rdna_repeat",
+        url=(
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+            "?db=nuccore&id=U13369.1&rettype=fasta&retmode=text"
+        ),
+        md5="353a995716c557db90960058b2c905fe",
+        path=Path("rdna/U13369.1.fasta"),
+        source="GenBank U13369.1, human ribosomal DNA complete repeating unit",
+        licence="public domain (NCBI)",
+    ),
     "mane_annotation": Input(
         name="mane_annotation",
         url=(
