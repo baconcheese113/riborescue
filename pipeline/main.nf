@@ -4,7 +4,8 @@
  * RiboRescue — three workflows, selected with --step.
  *
  *   --step amenability   ClinVar's pathogenic nonsense variants, placed on their MANE Select
- *                        transcripts, scored under each therapy, and ranked by suppressor design
+ *                        transcripts, scored under each therapy, ranked by suppressor design, and
+ *                        joined into the landscape of what is plausibly addressable
  *   --step train         fits the readthrough model from measured labels
  *   --step score         triages submitted variants against the upstream handoff
  *
@@ -13,6 +14,7 @@
  * logic lives in Groovy.
  */
 
+include { AMENABILITY_LANDSCAPE } from './modules/local/amenability_landscape.nf'
 include { CLINVAR_VARIANTS } from './modules/local/clinvar_variants.nf'
 include { SCORE_VARIANTS   } from './modules/local/score_variants.nf'
 include { TRIAGE_VARIANTS  } from './modules/local/triage_variants.nf'
@@ -43,7 +45,7 @@ workflow AMENABILITY {
         training: params.training,
         held_out: params.held_out,
     ]
-    def missing = required.findAll { name, value -> !value }.keySet()
+    def missing = required.findAll { _name, value -> !value }.keySet()
     if( missing )
         error "missing required inputs: ${missing.join(', ')} — fetch them with `riborescue fetch`"
 
@@ -60,6 +62,7 @@ workflow AMENABILITY {
         channel.fromPath(params.held_out, checkIfExists: true).collect()
     )
     TRNA_COVERAGE(VARIANT_CONTEXTS.out.contexts)
+    AMENABILITY_LANDSCAPE(VARIANT_CONTEXTS.out.contexts, SCORE_VARIANTS.out.scored)
 }
 
 workflow TRAIN {

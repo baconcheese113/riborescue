@@ -25,6 +25,8 @@ with uncertainty shown by default.
 | `scripts/` | The R reproduction oracle and data-fetch scripts |
 | `data/` | Working inputs and intermediates — fetched from public sources, never committed |
 | `docs/decisions/` | Architecture decision records — the reasoning behind each major technical choice |
+| `Dockerfile` | The runtime image Nextflow processes use, carrying the `riborescue` command |
+| `.github/workflows/` | The gate that runs on every push: lint, types, tests, reproduction parity, pipeline, image |
 
 ## Getting started
 
@@ -35,6 +37,7 @@ host machine stays clean.
 pixi install        # resolve the pinned toolchain
 pixi run check      # lint, type-check, and run the full test suite
 pixi run oracle     # fetch the published data and regenerate the reproduction fixtures
+pixi run test-slow  # refit the published model on every committed round and check parity
 pixi run triage --help
 ```
 

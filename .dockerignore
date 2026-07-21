@@ -1,0 +1,8 @@
+.pixi/
+data/
+results/
+work/
+.nextflow*
+tests/fixtures/oracle/
+frontend/
+docs/
