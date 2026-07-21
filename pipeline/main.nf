@@ -16,8 +16,11 @@
  * logic lives in Groovy.
  */
 
+include { ALIGNMENT_SUMMARY } from './modules/local/alignment_summary.nf'
 include { AMENABILITY_LANDSCAPE } from './modules/local/amenability_landscape.nf'
 include { CLINVAR_VARIANTS } from './modules/local/clinvar_variants.nf'
+include { STAR_ALIGN       } from './modules/local/star_align.nf'
+include { STAR_INDEX       } from './modules/local/star_index.nf'
 include { CUTADAPT         } from './modules/local/cutadapt.nf'
 include { FASTQC as FASTQC_RAW     } from './modules/local/fastqc.nf'
 include { FASTQC as FASTQC_TRIMMED } from './modules/local/fastqc.nf'
@@ -101,9 +104,26 @@ workflow READS {
     CUTADAPT(runs)
     FASTQC_TRIMMED(CUTADAPT.out.reads, 'trimmed')
     TRIM_SUMMARY(CUTADAPT.out.report.collect(), sheet)
+
+    // Alignment is skipped when no reference is named, so quality control and trimming stay
+    // runnable without the hours an index costs.
+    def aligned = params.genome && params.annotation
+    if( aligned ) {
+        STAR_INDEX(
+            file(params.genome, checkIfExists: true),
+            file(params.annotation, checkIfExists: true)
+        )
+        STAR_ALIGN(CUTADAPT.out.reads, STAR_INDEX.out.index)
+        ALIGNMENT_SUMMARY(STAR_ALIGN.out.log.collect())
+    }
+
     MULTIQC(
         FASTQC_RAW.out.zip
-            .mix(FASTQC_TRIMMED.out.zip, CUTADAPT.out.report)
+            .mix(
+                FASTQC_TRIMMED.out.zip,
+                CUTADAPT.out.report,
+                aligned ? STAR_ALIGN.out.log : channel.empty()
+            )
             .collect()
     )
 }

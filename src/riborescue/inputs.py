@@ -51,6 +51,28 @@ INPUTS: dict[str, Input] = {
         source="NCBI ClinVar weekly release 2026-07-15, GRCh38",
         licence="public domain (NCBI)",
     ),
+    "gencode_genome": Input(
+        name="gencode_genome",
+        url=(
+            "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_50/"
+            "GRCh38.primary_assembly.genome.fa.gz"
+        ),
+        md5="da1a11258be075cfa7af718162c894e7",
+        path=Path("gencode/GRCh38.primary_assembly.genome.fa.gz"),
+        source="GENCODE release 50, GRCh38 primary assembly",
+        licence="public domain (GENCODE/EMBL-EBI)",
+    ),
+    "gencode_annotation": Input(
+        name="gencode_annotation",
+        url=(
+            "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_50/"
+            "gencode.v50.primary_assembly.annotation.gtf.gz"
+        ),
+        md5="289b91e5e95e8b0450d223246f10a12e",
+        path=Path("gencode/gencode.v50.primary_assembly.annotation.gtf.gz"),
+        source="GENCODE release 50, GRCh38 primary assembly",
+        licence="public domain (GENCODE/EMBL-EBI)",
+    ),
     "mane_annotation": Input(
         name="mane_annotation",
         url=(

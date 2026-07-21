@@ -1,10 +1,10 @@
-"""What trimming did to each library, and whether the declared adapter was really there.
+"""What trimming and alignment did to each library.
 
-Cutadapt reports its own counts as JSON. Summarising them gives the raw-against-cleaned comparison
-the read-cleaning step exists to produce, and it gives the check that matters more: an adapter that
-is not in the reads is trimmed from almost none of them, and every read then carries linker sequence
-into alignment. That failure is silent — the reads still align, softly clipped — so the rate at
-which the adapter was found is asserted rather than reported.
+Cutadapt and STAR each report their own counts. Summarising them gives the raw-against-cleaned
+comparison and the alignment metrics, and the trimming summary gives the check that matters more:
+an adapter that is not in the reads is trimmed from almost none of them, and every read then
+carries linker sequence into alignment. That failure is silent — the reads still align, softly
+clipped — so the rate at which the adapter was found is asserted rather than reported.
 """
 
 import json
@@ -19,6 +19,7 @@ __all__ = [
     "MINIMUM_ADAPTER_RATE",
     "AdapterNotFoundError",
     "TrimSummary",
+    "summarise_alignment",
     "summarise_trimming",
 ]
 
@@ -103,3 +104,35 @@ def summarise_trimming(
             "basepairs_cleaned": [s.basepairs_cleaned for s in summaries],
         }
     )
+
+
+# STAR writes its final log as "label |\tvalue", with percentages carrying a trailing sign.
+_STAR_FIELDS = {
+    "Number of input reads": "reads_input",
+    "Uniquely mapped reads number": "reads_unique",
+    "Uniquely mapped reads %": "unique_rate",
+    "% of reads mapped to multiple loci": "multimapped_rate",
+    "% of reads mapped to too many loci": "over_multimapped_rate",
+    "% of reads unmapped: too short": "unmapped_too_short_rate",
+    "Average mapped length": "mapped_length_mean",
+}
+
+
+def _read_star_log(path: Path) -> dict[str, float | str]:
+    found: dict[str, float | str] = {"sample": path.name.split(".")[0]}
+    for line in path.read_text().splitlines():
+        label, _, value = line.partition("|")
+        if (field := _STAR_FIELDS.get(label.strip())) is not None:
+            found[field] = float(value.strip().rstrip("%"))
+    return found
+
+
+def summarise_alignment(logs: list[Path]) -> pd.DataFrame:
+    """Read STAR's final logs into the alignment metrics table, one row per library."""
+
+    summary = pd.DataFrame(
+        sorted((_read_star_log(path) for path in logs), key=lambda r: r["sample"])
+    )
+    rates = [c for c in summary.columns if c.endswith("_rate")]
+    summary["mapped_rate"] = summary[rates].drop(columns="unmapped_too_short_rate").sum(axis=1)
+    return summary

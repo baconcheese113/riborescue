@@ -5,7 +5,12 @@ import pandas as pd
 import pytest
 from pandera.errors import SchemaErrors
 
-from riborescue.reads import ADAPTER_REACHED_BY, AdapterNotFoundError, summarise_trimming
+from riborescue.reads import (
+    ADAPTER_REACHED_BY,
+    AdapterNotFoundError,
+    summarise_alignment,
+    summarise_trimming,
+)
 from riborescue.sequencing import fastq_inputs
 from riborescue.tables import SequencingRuns, read_table
 
@@ -106,6 +111,42 @@ def test_summaries_are_ordered_by_sample_whatever_order_the_reports_arrive_in(tm
     ]
     summary = summarise_trimming(list(reversed(reports)))
     assert list(summary["sample"]) == ["alpha", "middle", "zebra"]
+
+
+STAR_LOG = """\
+                                 Started job on |\tJul 21 01:02:03
+                             Number of input reads |\t25344634
+                         Average input read length |\t31
+                                      UNIQUE READS:
+                      Uniquely mapped reads number |\t18500000
+                           Uniquely mapped reads % |\t73.00%
+                             Average mapped length |\t30.55
+                                MULTI-MAPPING READS:
+        % of reads mapped to multiple loci |\t14.00%
+        % of reads mapped to too many loci |\t3.00%
+                                     UNMAPPED READS:
+                  % of reads unmapped: too short |\t9.50%
+"""
+
+
+def test_alignment_metrics_come_off_the_star_log(tmp_path: Path):
+    log = tmp_path / "calu6_untreated_rep1_riboseq.Log.final.out"
+    log.write_text(STAR_LOG)
+    summary = summarise_alignment([log])
+    assert summary.loc[0, "sample"] == "calu6_untreated_rep1_riboseq"
+    assert summary.loc[0, "reads_input"] == 25344634
+    assert summary.loc[0, "unique_rate"] == pytest.approx(73.0)
+    assert summary.loc[0, "multimapped_rate"] == pytest.approx(14.0)
+    assert summary.loc[0, "mapped_length_mean"] == pytest.approx(30.55)
+
+
+def test_the_mapped_share_counts_every_way_a_read_can_map(tmp_path: Path):
+    """Uniquely, to several loci, and to too many — but never the reads that did not map."""
+
+    log = tmp_path / "s.Log.final.out"
+    log.write_text(STAR_LOG)
+    summary = summarise_alignment([log])
+    assert summary.loc[0, "mapped_rate"] == pytest.approx(90.0)
 
 
 def test_the_declared_read_counts_match_the_archive():

@@ -22,7 +22,12 @@ from riborescue.evaluation import (
 from riborescue.handoff import UpstreamHandoff
 from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
 from riborescue.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
-from riborescue.reads import ADAPTER_REACHED_BY, AdapterNotFoundError, summarise_trimming
+from riborescue.reads import (
+    ADAPTER_REACHED_BY,
+    AdapterNotFoundError,
+    summarise_alignment,
+    summarise_trimming,
+)
 from riborescue.residue import coverage_by_design
 from riborescue.sequencing import FASTQ_SUBDIR, stage
 from riborescue.tables import (
@@ -194,6 +199,24 @@ def trim_summary(reports: tuple[Path, ...], samplesheet: Path, out: Path) -> Non
         click.echo(
             f"{row.sample}: {row.reads_raw:,} raw, {row.reads_cleaned:,} cleaned "
             f"({row.reads_retained:.1%} retained, adapter in {row.adapter_rate:.1%})"
+        )
+
+
+@main.command("alignment-summary")
+@click.argument(
+    "logs", nargs=-1, required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
+@_OUT
+def alignment_summary(logs: tuple[Path, ...], out: Path) -> None:
+    """Summarise STAR's final LOGS into per-library alignment metrics."""
+
+    summary = summarise_alignment(sorted(logs))
+    write_table(summary, out)
+    for row in summary.itertuples():
+        click.echo(
+            f"{row.sample}: {row.reads_input:,.0f} reads, {row.unique_rate:.1f}% unique, "
+            f"{row.multimapped_rate:.1f}% multimapped, "
+            f"mean mapped length {row.mapped_length_mean:.1f}"
         )
 
 
