@@ -25,6 +25,7 @@ __all__ = [
     "fit",
     "fit_round",
     "r_squared",
+    "relative_error_quantile",
 ]
 
 FORMULA = "RT_binomial ~ 0 + stop_type + down_123nt + up_123nt + stop_type:down_123nt"
@@ -48,6 +49,23 @@ class RoundPrediction:
     @property
     def r2(self) -> float:
         return r_squared(self.predictions, self.observed)
+
+
+def relative_error_quantile(held_out: pd.DataFrame, quantile: float = 0.95) -> float:
+    """The relative error within which the given share of held-out predictions fall.
+
+    The model's own standard errors are not usable here: it is fitted on proportions carrying unit
+    weight, so its assumed binomial variance describes a single Bernoulli trial rather than the
+    assay's measurement error, and the intervals it reports span most of the unit interval. The
+    honest measure is how far its held-out predictions actually landed from the observations, which
+    the cross-validation rounds already record.
+
+    Error grows with the prediction, so it is expressed as a fraction of the predicted value rather
+    than as a fixed band.
+    """
+
+    error = (held_out["predicted"] - held_out["observed"]).abs() / held_out["predicted"]
+    return float(error.quantile(quantile))
 
 
 def r_squared(predicted: pd.Series, observed: pd.Series) -> float:

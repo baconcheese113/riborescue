@@ -8,7 +8,7 @@ import pandera.errors
 import pandera.pandas
 
 from riborescue._version import __version__
-from riborescue.baseline import fit
+from riborescue.baseline import fit, relative_error_quantile
 from riborescue.clinvar import pathogenic_nonsense
 from riborescue.context import contexts_for, disagreements_with_protein
 from riborescue.contracts import Consequence, EvalConfig
@@ -266,13 +266,29 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
         model = fit(read_table(path))
         known = model.known_levels(scoreable)
         predicted = model.predict(scoreable[known])
-        rows = scoreable.assign(therapy_id=therapy, readthrough_predicted=predicted)
+
+        held_out = path.with_name(f"predictions_{therapy}.tsv.gz")
+        if not held_out.exists():
+            raise click.ClickException(
+                f"{held_out} is absent; a prediction without its held-out error has no uncertainty"
+            )
+        spread = relative_error_quantile(read_table(held_out))
+
+        rows = scoreable.assign(
+            therapy_id=therapy,
+            readthrough_predicted=predicted,
+            readthrough_low=(predicted * (1 - spread)).clip(lower=0.0),
+            readthrough_high=predicted * (1 + spread),
+        )
         rows["status"] = pd.Series(
             ["present" if seen else "missing" for seen in known], index=scoreable.index
         )
         rows["reason"] = ["" if seen else "not_available" for seen in known]
         scored.append(rows.reset_index())
-        click.echo(f"{therapy:<12} scored {int(known.sum())} of {len(scoreable)} contexts")
+        click.echo(
+            f"{therapy:<12} scored {int(known.sum())} of {len(scoreable)} contexts; "
+            f"95% of held-out predictions landed within {spread * 100:.0f}% of the value"
+        )
 
     table = pd.concat(scored, ignore_index=True)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -286,6 +302,8 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
                 "stop_type",
                 "therapy_id",
                 "readthrough_predicted",
+                "readthrough_low",
+                "readthrough_high",
                 "status",
                 "reason",
                 "review_stars",
