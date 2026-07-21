@@ -6,6 +6,7 @@ replicate standard deviation stays missing rather than arriving as zero.
 """
 
 from pathlib import Path
+from typing import cast
 
 import pandas as pd
 import pandera.pandas as pa
@@ -16,6 +17,8 @@ from riborescue.contracts import Consequence, StopCodon, TriageClass
 __all__ = [
     "PathogenicNonsense",
     "ReadthroughLabels",
+    "SequencingRuns",
+    "StagedRuns",
     "TriageInput",
     "TriageOutput",
     "read_table",
@@ -84,6 +87,60 @@ class TriageOutput(TriageInput):
     triage_class: Series[str] = pa.Field(isin=_TRIAGE_CLASSES)
     applies: Series[bool]
     reason: Series[str]
+
+
+class _Runs(_Strict):
+    """One sequencing run per row, with the biology it came from.
+
+    `assay` is recorded rather than derived: SRA labels ribosome-footprint libraries RNA-Seq
+    alongside the transcriptome ones, so its library strategy cannot tell them apart. `variant` is
+    the disease allele the cell line carries, absent for a wild-type background.
+    """
+
+    sample: Series[str] = pa.Field(unique=True)
+    run_accession: Series[str] = pa.Field(unique=True)
+    cell_line: Series[str]
+    variant: Series[str] = pa.Field(nullable=True)
+    treatment: Series[str]
+    replicate: Series[int] = pa.Field(gt=0)
+    assay: Series[str] = pa.Field(isin=["riboseq", "rnaseq"])
+    layout: Series[str] = pa.Field(isin=["single", "paired"])
+    read_count: Series[int] = pa.Field(gt=0)
+    adapter_3p: Series[str] = pa.Field(str_matches=r"^[ACGTN]+$")
+    # A wholly single-end sheet leaves this empty, and an empty column carries no type to infer.
+    adapter_3p_2: Series[str] = pa.Field(str_matches=r"^[ACGTN]+$", nullable=True, coerce=True)
+    adapter_overlap: Series[int] = pa.Field(gt=0)
+    cut_5p: Series[int] = pa.Field(ge=0)
+
+    @pa.dataframe_check
+    def overlap_exceeds_degenerate_prefix(cls, runs: pd.DataFrame) -> Series[bool]:
+        """A required overlap no longer than the adapter's leading Ns matches any read end."""
+
+        degenerate = runs["adapter_3p"].str.len() - runs["adapter_3p"].str.lstrip("N").str.len()
+        return cast(Series[bool], runs["adapter_overlap"] > degenerate)
+
+    @pa.dataframe_check
+    def second_read_matches_layout(cls, runs: pd.DataFrame) -> Series[bool]:
+        """A paired run carries a second read file and a single-end run does not."""
+
+        second = runs.filter(like="fastq_2").notna().any(axis=1)
+        return cast(Series[bool], second == (runs["layout"] == "paired"))
+
+
+class SequencingRuns(_Runs):
+    """Runs as declared, naming where each FASTQ is published and what it must hash to."""
+
+    fastq_1_url: Series[str]
+    fastq_1_md5: Series[str]
+    fastq_2_url: Series[str] = pa.Field(nullable=True, coerce=True)
+    fastq_2_md5: Series[str] = pa.Field(nullable=True, coerce=True)
+
+
+class StagedRuns(_Runs):
+    """Runs whose FASTQ are on disk, verified, and ready for the pipeline to read."""
+
+    fastq_1: Series[str]
+    fastq_2: Series[str] = pa.Field(nullable=True, coerce=True)
 
 
 def read_table(path: Path) -> pd.DataFrame:

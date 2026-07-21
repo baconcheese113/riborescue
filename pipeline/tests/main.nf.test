@@ -34,6 +34,48 @@ nextflow_pipeline {
         }
     }
 
+    test("READS trims both library types and reports raw against cleaned") {
+        when {
+            params {
+                step = "reads"
+                outdir = "$outputDir"
+            }
+        }
+        then {
+            assert workflow.success
+            def summary = path("$outputDir/qc/trim_summary.tsv").readLines()
+            assert summary.size() == 3
+            assert summary[0].startsWith("sample\treads_raw\treads_cleaned")
+
+            // The footprint library reaches its linker on every read; the transcriptome library
+            // only on the fragments shorter than the read, and is not held to a floor for it.
+            def rates = summary.drop(1).collectEntries { line ->
+                def field = line.split("\t")
+                [(field[0]): field[5] as double]
+            }
+            assert rates["riboseq_test"] == 1.0
+            assert rates["rnaseq_test"] < 0.5
+
+            assert path("$outputDir/qc/multiqc_report.html").exists()
+            assert path("$outputDir/trimmed/riboseq_test_1.trimmed.fastq.gz").exists()
+            assert path("$outputDir/trimmed/rnaseq_test_2.trimmed.fastq.gz").exists()
+        }
+    }
+
+    test("a library whose declared adapter is absent fails rather than trimming nothing") {
+        when {
+            params {
+                step = "reads"
+                samplesheet = "$projectDir/tests/data/staged_runs_wrong_adapter.tsv"
+                outdir = "$outputDir"
+            }
+        }
+        then {
+            assert workflow.failed
+            assert workflow.trace.failed().any { it.name.contains("TRIM_SUMMARY") }
+        }
+    }
+
     test("the amenability workflow names every input it is missing") {
         when {
             params {

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pooch
 
-__all__ = ["INPUTS", "Input", "UnknownInputError", "data_root", "fetch"]
+__all__ = ["INPUTS", "Input", "UnknownInputError", "data_root", "fetch", "retrieve"]
 
 
 class UnknownInputError(KeyError):
@@ -93,15 +93,12 @@ def data_root() -> Path:
     return Path(os.environ.get("RIBORESCUE_DATA", "data"))
 
 
-def fetch(name: str, root: Path | None = None, *, force: bool = False) -> Path:
-    """Fetch a declared input into the data root and return its path.
+def retrieve(declared: Input, root: Path | None = None, *, force: bool = False) -> Path:
+    """Fetch one input into the data root and return its path.
 
     A file already present with the right digest is left alone; one with the wrong digest is
     fetched again.
     """
-
-    if (declared := INPUTS.get(name)) is None:
-        raise UnknownInputError(f"{name!r} is not a declared input; known: {', '.join(INPUTS)}")
 
     destination = declared.resolve(root if root is not None else data_root())
     if force:
@@ -113,3 +110,11 @@ def fetch(name: str, root: Path | None = None, *, force: bool = False) -> Path:
         path=destination.parent,
     )
     return destination
+
+
+def fetch(name: str, root: Path | None = None, *, force: bool = False) -> Path:
+    """Fetch a declared input by name."""
+
+    if (declared := INPUTS.get(name)) is None:
+        raise UnknownInputError(f"{name!r} is not a declared input; known: {', '.join(INPUTS)}")
+    return retrieve(declared, root, force=force)

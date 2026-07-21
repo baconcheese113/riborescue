@@ -67,6 +67,15 @@ nextflow = ">=24.10"
 nf-test = ">=0.9"
 nf-core = ">=3.1"
 
+[tool.pixi.feature.riboseq.dependencies]
+fastqc = ">=0.12"
+multiqc = ">=1.25"
+cutadapt = ">=4.9"
+# A letter suffix sorts before the bare version in conda, so >=2.7.11 would exclude 2.7.11b.
+star = ">=2.7"
+samtools = ">=1.21"
+subread = ">=2.0.6"
+
 [tool.pixi.feature.oracle.dependencies]
 r-base = ">=4.5.3,<4.6"
 "r-data.table" = ">=1.18.4,<2"
@@ -78,7 +87,7 @@ r-optparse = ">=1.8.2,<2"
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
 [tool.pixi.environments]
-default = { features = ["dev", "pipeline", "oracle"], solve-group = "riborescue" }
+default = { features = ["dev", "pipeline", "oracle", "riboseq"], solve-group = "riborescue" }
 runtime = { features = [], solve-group = "riborescue" }
 
 [tool.pixi.tasks]
@@ -102,6 +111,8 @@ contexts = """riborescue contexts results/clinvar_nonsense.tsv \
 score = { cmd = "riborescue score results/clinvar_contexts.tsv tests/fixtures/oracle/features_*.tsv.gz --out results/amenability.tsv", env = { OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1" } }
 landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenability.tsv --out results/landscape.tsv --summary results/landscape_summary.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
+stage-runs = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv"
+reads = { cmd = "nextflow run . --step reads --samplesheet ../results/staged_runs.tsv -profile local", cwd = "pipeline", depends-on = ["stage-runs"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 
@@ -113,6 +124,10 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "RUF"]
 allowed-confusables = ["×"]
+
+[tool.ruff.lint.pep8-naming]
+# pandera passes the schema class to its checks
+classmethod-decorators = ["pandera.pandas.dataframe_check"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

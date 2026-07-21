@@ -6,6 +6,8 @@
  *   --step amenability   ClinVar's pathogenic nonsense variants, placed on their MANE Select
  *                        transcripts, scored under each therapy, ranked by suppressor design, and
  *                        joined into the landscape of what is plausibly addressable
+ *   --step reads         quality control, adapter trimming and quality control again over the
+ *                        staged Ribo-seq and RNA-seq runs
  *   --step train         fits the readthrough model from measured labels
  *   --step score         triages submitted variants against the upstream handoff
  *
@@ -16,12 +18,23 @@
 
 include { AMENABILITY_LANDSCAPE } from './modules/local/amenability_landscape.nf'
 include { CLINVAR_VARIANTS } from './modules/local/clinvar_variants.nf'
+include { CUTADAPT         } from './modules/local/cutadapt.nf'
+include { FASTQC as FASTQC_RAW     } from './modules/local/fastqc.nf'
+include { FASTQC as FASTQC_TRIMMED } from './modules/local/fastqc.nf'
+include { MULTIQC          } from './modules/local/multiqc.nf'
+include { TRIM_SUMMARY     } from './modules/local/trim_summary.nf'
 include { SCORE_VARIANTS   } from './modules/local/score_variants.nf'
 include { TRIAGE_VARIANTS  } from './modules/local/triage_variants.nf'
 include { TRNA_COVERAGE    } from './modules/local/trna_coverage.nf'
 include { VALIDATE_HANDOFF } from './modules/local/validate_handoff.nf'
 include { VALIDATE_LABELS  } from './modules/local/validate_labels.nf'
 include { VARIANT_CONTEXTS } from './modules/local/variant_contexts.nf'
+
+// A read named relatively is found beside the sheet naming it, so a staged sheet stays valid
+// wherever it is mounted.
+def locate(sheet, String read) {
+    read.startsWith('/') ? file(read) : sheet.parent.resolve(read)
+}
 
 workflow HANDOFF {
     main:
@@ -33,6 +46,9 @@ workflow HANDOFF {
         channel.fromPath(params.handoff, checkIfExists: true),
         file(params.results_root, checkIfExists: true)
     )
+
+    emit:
+    VALIDATE_HANDOFF.out.manifest
 }
 
 workflow AMENABILITY {
@@ -65,13 +81,46 @@ workflow AMENABILITY {
     AMENABILITY_LANDSCAPE(VARIANT_CONTEXTS.out.contexts, SCORE_VARIANTS.out.scored)
 }
 
+workflow READS {
+    main:
+    if( !params.samplesheet )
+        error '--samplesheet is required: the staged runs written by `riborescue stage-runs`'
+
+    def sheet = file(params.samplesheet, checkIfExists: true)
+    def runs = channel.of(sheet)
+        .splitCsv(header: true, sep: '\t')
+        .map { row ->
+            def reads = row.layout == 'paired'
+                ? [locate(sheet, row.fastq_1), locate(sheet, row.fastq_2)]
+                : [locate(sheet, row.fastq_1)]
+            tuple(row.subMap('sample', 'assay', 'layout', 'adapter_3p', 'adapter_3p_2',
+                             'adapter_overlap', 'cut_5p'), reads)
+        }
+
+    FASTQC_RAW(runs, 'raw')
+    CUTADAPT(runs)
+    FASTQC_TRIMMED(CUTADAPT.out.reads, 'trimmed')
+    TRIM_SUMMARY(CUTADAPT.out.report.collect(), sheet)
+    MULTIQC(
+        FASTQC_RAW.out.zip
+            .mix(FASTQC_TRIMMED.out.zip, CUTADAPT.out.report)
+            .collect()
+    )
+}
+
 workflow TRAIN {
     main:
     if( !params.labels )
         error '--labels is required: the measured readthrough efficiency table to fit against'
 
+    // Combining with the validated manifest makes the handoff a prerequisite rather than a
+    // neighbour: an invalid one stops the run before any label is read.
     HANDOFF()
-    VALIDATE_LABELS(channel.fromPath(params.labels, checkIfExists: true))
+    VALIDATE_LABELS(
+        HANDOFF.out
+            .combine(channel.fromPath(params.labels, checkIfExists: true))
+            .map { _manifest, labels -> labels }
+    )
 }
 
 workflow SCORE {
@@ -80,17 +129,23 @@ workflow SCORE {
         error '--variants is required: the variant table to score'
 
     HANDOFF()
-    TRIAGE_VARIANTS(channel.fromPath(params.variants, checkIfExists: true))
+    TRIAGE_VARIANTS(
+        HANDOFF.out
+            .combine(channel.fromPath(params.variants, checkIfExists: true))
+            .map { _manifest, variants -> variants }
+    )
 }
 
 workflow {
     main:
     if( params.step == 'amenability' )
         AMENABILITY()
+    else if( params.step == 'reads' )
+        READS()
     else if( params.step == 'train' )
         TRAIN()
     else if( params.step == 'score' )
         SCORE()
     else
-        error "--step must be 'amenability', 'train' or 'score', not '${params.step}'"
+        error "--step must be 'amenability', 'reads', 'train' or 'score', not '${params.step}'"
 }

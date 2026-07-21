@@ -1,0 +1,2 @@
+sample	run_accession	cell_line	variant	treatment	replicate	assay	layout	read_count	adapter_3p	adapter_3p_2	adapter_overlap	cut_5p	fastq_1	fastq_2
+riboseq_test	SRRTEST01	Calu-6	TP53:p.Arg196Ter	untreated	1	riboseq	single	200	GGGGGGGGGGGGGGGGG		5	0	reads/riboseq_test_1.fastq.gz	

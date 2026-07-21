@@ -1,10 +1,10 @@
 # The RiboRescue pipeline
 
-Three workflows, selected with `--step`. `amenability` places ClinVar's pathogenic nonsense variants
+Four workflows, selected with `--step`. `amenability` places ClinVar's pathogenic nonsense variants
 on their MANE Select transcripts, scores them under each therapy and ranks suppressor designs;
-`train` fits the readthrough model from measured labels; `score` triages submitted variants. Every
-process calls the installed `riborescue` command, so all scientific logic lives in Python and is
-tested there.
+`reads` takes the sequencing runs through quality control and adapter trimming; `train` fits the
+readthrough model from measured labels; `score` triages submitted variants. Every process calls the
+installed `riborescue` command, so all scientific logic lives in Python and is tested there.
 
 Only the workflows consuming Ribo-seq output need the upstream handoff. The amenability path runs
 from public annotation alone:
@@ -19,6 +19,21 @@ nextflow run pipeline --step amenability -profile local \
     --held_out 'tests/fixtures/oracle/predictions_*.tsv.gz' \
     --outdir results/pipeline
 ```
+
+## Reads
+
+`pipeline/assets/riboseq_samples.tsv` declares the sequencing runs with the checksums ENA publishes
+for them. Staging fetches each one and writes a sheet naming it on disk; nothing is committed.
+
+```bash
+pixi run stage-runs      # fetch the FASTQ, verifying every digest
+pixi run reads           # FastQC, cutadapt, FastQC again, MultiQC
+```
+
+The adapter is declared per run rather than detected, because the archive's own record of it is not
+reliable, and `riborescue trim-summary` refuses a footprint library whose declared adapter was found
+in under half its reads. A transcriptome library is not held to that floor: most of its fragments
+are longer than the read, so the adapter is never reached.
 
 ## Upstream
 
@@ -48,7 +63,8 @@ environment inside the container is the one the tests ran against; `-profile loc
 
 | Parameter | What it names |
 |---|---|
-| `--step` | `amenability`, `train` or `score` |
+| `--step` | `amenability`, `reads`, `train` or `score` |
+| `--samplesheet` | The staged runs to take through quality control and trimming (`reads`) |
 | `--clinvar` | The ClinVar VCF to draw the variant population from |
 | `--mane_annotation`, `--mane_transcripts`, `--mane_proteins` | MANE Select annotation, sequences and reference proteins |
 | `--training`, `--held_out` | The oracle's per-therapy feature tables and held-out rounds |

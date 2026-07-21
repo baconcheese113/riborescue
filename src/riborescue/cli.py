@@ -22,10 +22,14 @@ from riborescue.evaluation import (
 from riborescue.handoff import UpstreamHandoff
 from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
 from riborescue.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
+from riborescue.reads import ADAPTER_REACHED_BY, AdapterNotFoundError, summarise_trimming
 from riborescue.residue import coverage_by_design
+from riborescue.sequencing import FASTQ_SUBDIR, stage
 from riborescue.tables import (
     PathogenicNonsense,
     ReadthroughLabels,
+    SequencingRuns,
+    StagedRuns,
     TriageInput,
     TriageOutput,
     read_table,
@@ -140,6 +144,57 @@ def fetch_inputs(names: tuple[str, ...], data_root_: Path | None, force: bool) -
         except (UnknownInputError, OSError) as error:
             raise click.ClickException(str(error)) from error
         click.echo(f"  {path} verified")
+
+
+@main.command("stage-runs")
+@click.argument("samplesheet", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@_OUT
+@click.option(
+    "--data-root",
+    "data_root_",
+    type=click.Path(file_okay=False, path_type=Path),
+    help="Where inputs are kept, overriding RIBORESCUE_DATA.",
+)
+@click.option("--force", is_flag=True, help="Fetch again even if the file already verifies.")
+def stage_runs(samplesheet: Path, out: Path, data_root_: Path | None, force: bool) -> None:
+    """Fetch the FASTQ named by SAMPLESHEET and write a sheet naming them on disk."""
+
+    runs = _validated(SequencingRuns, read_table(samplesheet), samplesheet)
+    root = data_root_ if data_root_ is not None else data_root()
+    try:
+        staged = stage(runs, root, force=force)
+    except OSError as error:
+        raise click.ClickException(str(error)) from error
+    write_table(_validated(StagedRuns, staged, out), out)
+    click.echo(f"{len(staged)} runs staged under {root / FASTQ_SUBDIR}")
+
+
+@main.command("trim-summary")
+@click.argument(
+    "reports", nargs=-1, required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
+@click.option(
+    "--samplesheet",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The staged runs the reports came from, naming each library's assay.",
+)
+@_OUT
+def trim_summary(reports: tuple[Path, ...], samplesheet: Path, out: Path) -> None:
+    """Summarise cutadapt REPORTS into raw-against-cleaned counts per library."""
+
+    runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
+    expected = set(runs.loc[runs["assay"].isin(ADAPTER_REACHED_BY), "sample"])
+    try:
+        summary = summarise_trimming(sorted(reports), expected)
+    except AdapterNotFoundError as error:
+        raise click.ClickException(str(error)) from error
+    write_table(summary, out)
+    for row in summary.itertuples():
+        click.echo(
+            f"{row.sample}: {row.reads_raw:,} raw, {row.reads_cleaned:,} cleaned "
+            f"({row.reads_retained:.1%} retained, adapter in {row.adapter_rate:.1%})"
+        )
 
 
 @main.command("evaluate")
