@@ -43,8 +43,13 @@ than replaces the choice above.
 
 ## Consequences
 
-Alignment must fit a 30 GB machine, which a stock human STAR index does not; the index is built
-sparse.
+The index is built sampling every second suffix array entry. That halves what an alignment holds in
+memory, so two samples align at once rather than one; each search is slower and the pair is not.
+
+Two thirds of a footprint library is structural RNA and it aligns to many loci rather than none, so
+it is depleted before the genome sees the reads. GENCODE annotates almost no rRNA — the rDNA arrays
+are not in the primary assembly — so the repeating unit comes from its own accession, `U13369.1`.
+Selecting GENCODE biotypes alone removes a tenth of the library; with the repeat unit, three fifths.
 
 Read length is not uniform across the project — 50 nt and 100 nt single-end footprints, 2×100
 paired transcriptome — so trimming is parameterised per run rather than set once.

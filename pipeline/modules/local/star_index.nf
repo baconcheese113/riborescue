@@ -11,8 +11,8 @@ process STAR_INDEX {
     path 'star_index', emit: index
 
     script:
-    // A dense human index needs more memory than this machine has. Sampling every second suffix
-    // array entry halves that, at the cost of slower alignment.
+    // Sampling every second suffix array entry halves the memory an alignment holds, which buys
+    // concurrency across samples at the cost of a slower search within each.
     """
     gzip -cd ${genome} > genome.fa
     gzip -cd ${gtf} > annotation.gtf
