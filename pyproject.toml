@@ -3,14 +3,20 @@ name = "riborescue"
 version = "0.1.0"
 description = "Match nonsense variants to candidate readthrough therapies."
 requires-python = ">= 3.12"
+# Every module the package imports directly is named here, including those a dependency happens to
+# install today: statsmodels is migrating off patsy, and an import that survives only by transitive
+# luck breaks without warning.
 dependencies = [
     "pydantic>=2.7",
     "pandera>=0.20",
     "pandas>=2.2",
+    "numpy>=1.26",
+    "scipy>=1.11",
     "statsmodels>=0.14",
-    "pooch>=1.8",
+    "patsy>=0.5",
     "scikit-learn>=1.5",
-    "pyarrow>=16",
+    "cyvcf2>=0.30",
+    "pooch>=1.8",
     "biopython>=1.83",
     "click>=8.1",
 ]
@@ -40,23 +46,40 @@ packages = ["src/riborescue"]
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64"]
 
+# Only what the package needs to run. Everything else belongs to a feature, so the environment that
+# ships in the container is the one the tests ran against, minus the tools that exist to develop it.
 [tool.pixi.dependencies]
 python = "3.12.*"
+cyvcf2 = ">=0.34.0,<0.35"
+
+[tool.pixi.pypi-dependencies]
+riborescue = { path = "." }
+
+[tool.pixi.feature.dev.dependencies]
 pyright = "*"
+r-languageserver = ">=0.3.18,<0.4"
+
+[tool.pixi.feature.dev.pypi-dependencies]
+riborescue = { path = ".", editable = true, extras = ["dev"] }
+
+[tool.pixi.feature.pipeline.dependencies]
 nextflow = ">=24.10"
 nf-test = ">=0.9"
 nf-core = ">=3.1"
+
+[tool.pixi.feature.oracle.dependencies]
 r-base = ">=4.5.3,<4.6"
 "r-data.table" = ">=1.18.4,<2"
 r-caret = ">=7.0_1,<8"
 r-dplyr = ">=1.2.1,<2"
-r-languageserver = ">=0.3.18,<0.4"
 r-jsonlite = ">=2.0.0,<3"
 r-optparse = ">=1.8.2,<2"
-cyvcf2 = ">=0.34.0,<0.35"
 
-[tool.pixi.pypi-dependencies]
-riborescue = { path = ".", editable = true, extras = ["dev"] }
+# One solve group, so the runtime environment resolves to the versions the development environment
+# did. A container built from a different resolution proves nothing about what was tested.
+[tool.pixi.environments]
+default = { features = ["dev", "pipeline", "oracle"], solve-group = "riborescue" }
+runtime = { features = [], solve-group = "riborescue" }
 
 [tool.pixi.tasks]
 lint = "ruff check ."

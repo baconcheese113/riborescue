@@ -42,8 +42,9 @@ nextflow run pipeline --step score -profile docker \
     --handoff handoff.json --results_root results/riboseq --variants variants.tsv
 ```
 
-`-profile docker` runs every process in the pinned `riborescue` image; `-profile local` uses the
-`riborescue` on `PATH`, which is how the Pixi environment and the tests run it.
+`-profile docker` runs every process in the `riborescue` image, built from `pixi.lock` so the
+environment inside the container is the one the tests ran against; `-profile local` uses the
+`riborescue` on `PATH`. Both produce byte-identical artifacts.
 
 | Parameter | What it names |
 |---|---|
