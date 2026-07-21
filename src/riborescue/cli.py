@@ -21,6 +21,7 @@ from riborescue.evaluation import (
 )
 from riborescue.handoff import UpstreamHandoff
 from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
+from riborescue.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
 from riborescue.residue import coverage_by_design
 from riborescue.tables import (
     PathogenicNonsense,
@@ -334,6 +335,39 @@ def trna_coverage(contexts: Path, out: Path) -> None:
         click.echo(
             f"  {row.design_id:<7} {row.conservative:>6} conservative, "
             f"{row.restores_exactly:>6} restored exactly"
+        )
+
+
+@main.command("landscape")
+@click.argument("contexts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument("scores", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@_OUT
+@click.option(
+    "--summary", type=click.Path(dir_okay=False, path_type=Path), help="Where to write the counts."
+)
+def amenability_landscape(contexts: Path, scores: Path, out: Path, summary: Path | None) -> None:
+    """Bring transcript survival, readthrough and residue tolerance together, variant by variant."""
+
+    table = landscape(read_table(contexts), read_table(scores))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(table, out)
+
+    counts = summarise(table, Thresholds())
+    if summary is not None:
+        write_table(counts, summary)
+
+    click.echo(f"{len(table)} variants placed")
+    tolerable = int((table["tolerable_insertion_share"] >= TOLERABLE_SHARE).sum())
+    click.echo(
+        f"  {int(table['escapes_decay_by_rule'].sum())} expected to escape decay; "
+        f"{tolerable} where most insertions are tolerable"
+    )
+    for row in counts.to_dict("records"):
+        click.echo(
+            f"  readthrough >= {row['readthrough_threshold'] * 100:.1f}%: "
+            f"{row['reaches_threshold']:>6} reach it, "
+            f"{row['all_conditions']:>5} meet every condition "
+            f"({row['all_conditions_lower_bound']} on the interval's lower bound)"
         )
 
 

@@ -77,6 +77,7 @@ contexts = """riborescue contexts results/clinvar_nonsense.tsv \
   --proteins data/mane/MANE.GRCh38.v1.5.refseq_protein.faa.gz \
   --out results/clinvar_contexts.tsv"""
 score = { cmd = "riborescue score results/clinvar_contexts.tsv tests/fixtures/oracle/features_*.tsv.gz --out results/amenability.tsv", env = { OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1" } }
+landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenability.tsv --out results/landscape.tsv --summary results/landscape_summary.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
