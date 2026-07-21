@@ -72,6 +72,27 @@ class TranscriptModel:
             travelled += end - start + 1
         return None
 
+    @property
+    def exon_lengths(self) -> tuple[int, ...]:
+        """Exon lengths in transcript order, reversing the genomic order on the minus strand."""
+
+        ordered = self.exons if self.strand == "+" else tuple(reversed(self.exons))
+        return tuple(end - start + 1 for start, end in ordered)
+
+    @property
+    def junction_offsets(self) -> tuple[int, ...]:
+        """Transcript offsets where one exon ends and the next begins.
+
+        The exon junction complex is deposited near these, and how far a premature stop sits from
+        the last of them is what every nonsense-mediated decay rule turns on.
+        """
+
+        offsets, running = [], 0
+        for length in self.exon_lengths[:-1]:
+            running += length
+            offsets.append(running)
+        return tuple(offsets)
+
     def base_at(self, position: int) -> str | None:
         """The transcript base at a genomic position, on the transcript's own strand."""
 

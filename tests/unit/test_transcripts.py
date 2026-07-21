@@ -105,3 +105,30 @@ def test_a_transcript_on_an_alternate_contig_is_left_out(models):
 
 def test_each_transcript_names_the_protein_it_encodes(plus, minus):
     assert (plus.protein_id, minus.protein_id) == ("NP_000001.1", "NP_000002.1")
+
+
+def test_exon_lengths_follow_transcript_order_not_genomic_order(plus, minus):
+    assert plus.exon_lengths == (10, 10)
+    assert minus.exon_lengths == (10, 10)
+
+
+def test_a_junction_sits_where_one_exon_ends_and_the_next_begins(plus, minus):
+    assert plus.junction_offsets == (10,)
+    assert minus.junction_offsets == (10,)
+
+
+def test_a_single_exon_transcript_has_no_junctions():
+    from riborescue.transcripts import TranscriptModel
+
+    single = TranscriptModel(
+        transcript_id="NM_single.1",
+        gene_id=1,
+        chrom="chr1",
+        strand="+",
+        exons=((100, 199),),
+        cds_start=100,
+        cds_end=199,
+        sequence="A" * 100,
+        protein_id="NP_single.1",
+    )
+    assert single.junction_offsets == ()

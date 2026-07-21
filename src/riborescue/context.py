@@ -76,6 +76,9 @@ class PtcContext:
     down_123nt: str
     upstream: str
     downstream: str
+    exon_count: int
+    in_last_exon: bool
+    nt_to_last_junction: int | None
 
 
 def _transcribe(sequence: str) -> str:
@@ -119,6 +122,8 @@ def context_for(
 
     coding = model.coding_offset
     assert coding is not None
+    junctions = model.junction_offsets
+    last_junction = junctions[-1] if junctions else None
     return PtcContext(
         transcript_id=model.transcript_id,
         protein_position=(codon_start - coding) // 3 + 1,
@@ -129,6 +134,9 @@ def context_for(
         down_123nt=_transcribe(downstream[:3]),
         upstream=_transcribe(upstream),
         downstream=_transcribe(downstream),
+        exon_count=len(model.exons),
+        in_last_exon=last_junction is None or codon_start >= last_junction,
+        nt_to_last_junction=None if last_junction is None else last_junction - codon_start,
     )
 
 
@@ -165,6 +173,9 @@ def contexts_for(variants: pd.DataFrame, models: dict[int, TranscriptModel]) -> 
                 "down_123nt": found.down_123nt,
                 "upstream": found.upstream,
                 "downstream": found.downstream,
+                "exon_count": found.exon_count,
+                "in_last_exon": found.in_last_exon,
+                "nt_to_last_junction": found.nt_to_last_junction,
             }
         )
     return pd.DataFrame(rows)

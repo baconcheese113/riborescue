@@ -72,3 +72,20 @@ def test_a_stop_without_the_full_window_either_side_is_refused(plus):
     """The synthetic transcript is twenty bases, far short of the reporter context."""
 
     assert context_for(plus, 108, "A", "T") is ContextFailure.truncated_context
+
+
+def test_a_stop_before_the_last_junction_is_measured_against_it(plus, wide_window):
+    """The fixture's junction sits at offset 10 and the stop codon starts at 7."""
+
+    context = context_for(plus, 108, "A", "T")
+    assert not isinstance(context, ContextFailure)
+    assert context.exon_count == 2
+    assert context.in_last_exon is False
+    assert context.nt_to_last_junction == 3
+
+
+def test_a_stop_in_the_last_exon_is_marked_as_such(plus, wide_window):
+    """Genomic 203 is offset 10, the first base after the junction."""
+
+    context = context_for(plus, 203, "G", "T")
+    assert isinstance(context, ContextFailure) or context.in_last_exon is True
