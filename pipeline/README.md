@@ -35,6 +35,21 @@ reliable, and `riborescue trim-summary` refuses a footprint library whose declar
 in under half its reads. A transcriptome library is not held to that floor: most of its fragments
 are longer than the read, so the adapter is never reached.
 
+Naming a reference adds alignment; leaving it out stops after trimming, which keeps the quick path
+quick:
+
+```bash
+nextflow run pipeline --step reads -profile local \
+    --samplesheet results/staged_runs.tsv \
+    --genome data/gencode/GRCh38.primary_assembly.genome.fa.gz \
+    --annotation data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
+    --outdir results/reads
+```
+
+The index samples every second suffix array entry, because a dense human index needs more memory
+than a 30 GB machine has. It is kept in `data/star` rather than the work directory, so the hours it
+takes are paid once however often the pipeline reruns.
+
 ## Upstream
 
 Ribo-seq processing is `nf-core/riboseq`, run separately at a pinned revision and never vendored:
@@ -65,6 +80,7 @@ environment inside the container is the one the tests ran against; `-profile loc
 |---|---|
 | `--step` | `amenability`, `reads`, `train` or `score` |
 | `--samplesheet` | The staged runs to take through quality control and trimming (`reads`) |
+| `--genome`, `--annotation` | GENCODE primary assembly and GTF; naming both adds alignment (`reads`) |
 | `--clinvar` | The ClinVar VCF to draw the variant population from |
 | `--mane_annotation`, `--mane_transcripts`, `--mane_proteins` | MANE Select annotation, sequences and reference proteins |
 | `--training`, `--held_out` | The oracle's per-therapy feature tables and held-out rounds |
