@@ -167,7 +167,8 @@ def evaluate_features(
     """
 
     rounds = []
-    for path in features:
+    # Sorted so the output does not depend on the order the caller's shell or workflow globbed them.
+    for path in sorted(features):
         table = read_table(path).set_index("row")
         dataset = path.name.split(".")[0].removeprefix("features_")
         for name in configs:
@@ -262,7 +263,8 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
     scoreable = variants[variants["scoreable"]].set_index("variant_id")
     scored = []
 
-    for path in training:
+    # Sorted so the output does not depend on the order the caller's shell or workflow globbed them.
+    for path in sorted(training):
         therapy = path.name.split(".")[0].removeprefix("features_")
         model = fit(read_table(path))
         known = model.known_levels(scoreable)

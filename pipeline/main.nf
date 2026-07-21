@@ -1,17 +1,25 @@
 #!/usr/bin/env nextflow
 
 /*
- * RiboRescue — two workflows over one validated upstream handoff.
+ * RiboRescue — three workflows, selected with --step.
  *
- *   --step train   fits the readthrough model from measured labels
- *   --step score   applies it to submitted variants
+ *   --step amenability   ClinVar's pathogenic nonsense variants, placed on their MANE Select
+ *                        transcripts, scored under each therapy, and ranked by suppressor design
+ *   --step train         fits the readthrough model from measured labels
+ *   --step score         triages submitted variants against the upstream handoff
  *
- * Every step calls the installed riborescue command; no analysis logic lives in Groovy.
+ * Only the workflows consuming Ribo-seq output require the upstream handoff; the amenability path
+ * runs from public annotation alone. Every step calls the installed riborescue command; no analysis
+ * logic lives in Groovy.
  */
 
+include { CLINVAR_VARIANTS } from './modules/local/clinvar_variants.nf'
+include { SCORE_VARIANTS   } from './modules/local/score_variants.nf'
+include { TRIAGE_VARIANTS  } from './modules/local/triage_variants.nf'
+include { TRNA_COVERAGE    } from './modules/local/trna_coverage.nf'
 include { VALIDATE_HANDOFF } from './modules/local/validate_handoff.nf'
 include { VALIDATE_LABELS  } from './modules/local/validate_labels.nf'
-include { TRIAGE_VARIANTS  } from './modules/local/triage_variants.nf'
+include { VARIANT_CONTEXTS } from './modules/local/variant_contexts.nf'
 
 workflow HANDOFF {
     main:
@@ -23,6 +31,35 @@ workflow HANDOFF {
         channel.fromPath(params.handoff, checkIfExists: true),
         file(params.results_root, checkIfExists: true)
     )
+}
+
+workflow AMENABILITY {
+    main:
+    def required = [
+        clinvar: params.clinvar,
+        mane_annotation: params.mane_annotation,
+        mane_transcripts: params.mane_transcripts,
+        mane_proteins: params.mane_proteins,
+        training: params.training,
+        held_out: params.held_out,
+    ]
+    def missing = required.findAll { name, value -> !value }.keySet()
+    if( missing )
+        error "missing required inputs: ${missing.join(', ')} — fetch them with `riborescue fetch`"
+
+    CLINVAR_VARIANTS(channel.fromPath(params.clinvar, checkIfExists: true))
+    VARIANT_CONTEXTS(
+        CLINVAR_VARIANTS.out.variants,
+        file(params.mane_annotation, checkIfExists: true),
+        file(params.mane_transcripts, checkIfExists: true),
+        file(params.mane_proteins, checkIfExists: true)
+    )
+    SCORE_VARIANTS(
+        VARIANT_CONTEXTS.out.contexts,
+        channel.fromPath(params.training, checkIfExists: true).collect(),
+        channel.fromPath(params.held_out, checkIfExists: true).collect()
+    )
+    TRNA_COVERAGE(VARIANT_CONTEXTS.out.contexts)
 }
 
 workflow TRAIN {
@@ -45,10 +82,12 @@ workflow SCORE {
 
 workflow {
     main:
-    if( params.step == 'train' )
+    if( params.step == 'amenability' )
+        AMENABILITY()
+    else if( params.step == 'train' )
         TRAIN()
     else if( params.step == 'score' )
         SCORE()
     else
-        error "--step must be 'train' or 'score', not '${params.step}'"
+        error "--step must be 'amenability', 'train' or 'score', not '${params.step}'"
 }

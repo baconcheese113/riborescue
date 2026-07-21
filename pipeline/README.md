@@ -1,8 +1,24 @@
 # The RiboRescue pipeline
 
-Two workflows over one validated upstream handoff. `--step train` fits the readthrough model from
-measured labels; `--step score` applies it to submitted variants. Every process calls the installed
-`riborescue` command, so all scientific logic lives in Python and is tested there.
+Three workflows, selected with `--step`. `amenability` places ClinVar's pathogenic nonsense variants
+on their MANE Select transcripts, scores them under each therapy and ranks suppressor designs;
+`train` fits the readthrough model from measured labels; `score` triages submitted variants. Every
+process calls the installed `riborescue` command, so all scientific logic lives in Python and is
+tested there.
+
+Only the workflows consuming Ribo-seq output need the upstream handoff. The amenability path runs
+from public annotation alone:
+
+```bash
+nextflow run pipeline --step amenability -profile local \
+    --clinvar data/clinvar/clinvar_20260715.vcf.gz \
+    --mane_annotation data/mane/MANE.GRCh38.v1.5.refseq_genomic.gff.gz \
+    --mane_transcripts data/mane/MANE.GRCh38.v1.5.refseq_rna.fna.gz \
+    --mane_proteins data/mane/MANE.GRCh38.v1.5.refseq_protein.faa.gz \
+    --training 'tests/fixtures/oracle/features_*.tsv.gz' \
+    --held_out 'tests/fixtures/oracle/predictions_*.tsv.gz' \
+    --outdir results/pipeline
+```
 
 ## Upstream
 
@@ -31,7 +47,10 @@ nextflow run pipeline --step score -profile docker \
 
 | Parameter | What it names |
 |---|---|
-| `--step` | `train` or `score` |
+| `--step` | `amenability`, `train` or `score` |
+| `--clinvar` | The ClinVar VCF to draw the variant population from |
+| `--mane_annotation`, `--mane_transcripts`, `--mane_proteins` | MANE Select annotation, sequences and reference proteins |
+| `--training`, `--held_out` | The oracle's per-therapy feature tables and held-out rounds |
 | `--handoff` | The upstream handoff manifest |
 | `--results_root` | The `nf-core/riboseq` results tree the manifest describes |
 | `--labels` | Measured readthrough efficiency per variant × therapy (`train`) |

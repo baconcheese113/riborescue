@@ -34,6 +34,21 @@ nextflow_pipeline {
         }
     }
 
+    test("the amenability workflow names every input it is missing") {
+        when {
+            params {
+                step = "amenability"
+                outdir = "$outputDir"
+            }
+        }
+        then {
+            // The inputs are checked before any work starts, so nothing should have run at all.
+            assert workflow.failed
+            assert workflow.trace.succeeded().isEmpty()
+            assert workflow.trace.failed().isEmpty()
+        }
+    }
+
     test("a handoff naming an absent upstream output fails the run") {
         when {
             params {
