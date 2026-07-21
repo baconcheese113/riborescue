@@ -1,19 +1,11 @@
-"""The amenability landscape: which pathogenic nonsense variants are plausibly addressable, and how.
+"""Which pathogenic nonsense variants are plausibly addressable, and on which conditions.
 
-Three factors are brought together here and none is multiplied by another. Rescue requires surviving
-transcript, readthrough of the stop, and a tolerated inserted residue, but the relationship between
-them is not a calibrated equation, and presenting it as one would invent a precision nobody has
-measured. Each condition keeps its own value, its own evidence and its own reason for failing,
-and a variant meets a threshold or it does not.
+Surviving transcript, readthrough of the stop and a tolerated insertion are reported as separate
+conditions and never multiplied: how they combine is not a calibrated equation. Counts are counts of
+variants, never of people — ClinVar carries no allele frequencies.
 
-Every count here is a count of *variants*. ClinVar carries no allele frequencies, so nothing in this
-module says how many people a therapy or design would reach.
-
-The transcript-survival condition is the canonical positional rule and is the weakest of the three.
-At least thirty percent of the stops it expects to be degraded escape decay in practice, readthrough
-itself antagonises decay, and the rule rests on positional assumptions the three published
-predictors share. It is a screen, not a verdict, which is why it stays its own column rather than
-folding into a score.
+The transcript-survival rule is a screen rather than a verdict. At least thirty percent of the stops
+it expects to be degraded escape decay, and readthrough itself antagonises decay.
 """
 
 from dataclasses import dataclass
@@ -35,8 +27,8 @@ TOLERABLE_SHARE = 0.5
 class Thresholds:
     """The readthrough levels a landscape is reported under.
 
-    The coverage question inherits the uncertainty of every layer beneath it, so the answer is given
-    at several thresholds and the ranking carries the meaning, not the counts at any one of them.
+    The question inherits the uncertainty of every layer beneath it, so the ranking across
+    thresholds carries the meaning rather than the count at any one.
     """
 
     readthrough: tuple[float, ...] = (0.005, 0.01, 0.02)
@@ -54,14 +46,8 @@ def _near_cognates(stop_type: object) -> tuple[str, ...]:
 def _tolerable_share(contexts: pd.DataFrame) -> pd.Series:
     """The share of the insertions available here that evolution accepts for the residue lost.
 
-    Asking whether *any* insertion is tolerable answers nothing. A nonsense variant is one base from
-    the stop it creates, so reverting that base restores the original residue and the original is
-    always among the stop's near-cognates — the answer is trivially yes for every variant.
-
-    What varies, and therefore what discriminates, is how much of the available insertion space is
-    tolerable. Which residue a compound actually inserts is a property of the compound that nobody
-    has measured across this population, so a variant where most of the possibilities are acceptable
-    is a safer bet than one where only the exact original will do.
+    A share rather than a yes: the original residue is always among the stop's near-cognates, since
+    the stop came from it by one base, so *whether* a tolerable insertion exists is always yes.
     """
 
     shares = {
@@ -109,9 +95,7 @@ def landscape(contexts: pd.DataFrame, scores: pd.DataFrame) -> pd.DataFrame:
 def summarise(landscape_table: pd.DataFrame, thresholds: Thresholds) -> pd.DataFrame:
     """Count variants meeting each condition, and all of them together, at each threshold.
 
-    `all_conditions` is a conjunction, not a combined score: the transcript is expected to survive,
-    the best therapy's predicted readthrough clears the threshold, and at least one residue the
-    compound could insert there, most are conservative substitutions for the one that was lost.
+    `all_conditions` is a conjunction, not a combined score.
     """
 
     escapes = landscape_table["escapes_decay_by_rule"]

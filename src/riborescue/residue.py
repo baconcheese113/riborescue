@@ -1,15 +1,10 @@
 """Which amino acid a readthrough event inserts, and how far it is from the one it replaces.
 
-The two modalities differ in what they can insert, and the difference is not a detail. A small
-molecule promotes an endogenous near-cognate tRNA, so the amino acid is whatever those tRNAs carry —
-a distribution fixed by the genetic code and the compound, not chosen. An engineered suppressor tRNA
-carries whichever amino acid its designer charged it with, so its insertion is defined and any of
-the twenty is available.
+A small molecule promotes an endogenous near-cognate tRNA, so the genetic code fixes which residues
+are available; an engineered suppressor carries whichever of the twenty it was charged with.
 
-Compatibility here is sequence-level only: how readily one residue substitutes for another across
-evolution, read from BLOSUM62. That is a hypothesis about tolerance, not a measurement of it, and it
-knows nothing about the position's structural or catalytic role. It ranks candidates; it does not
-establish that any of them restores function.
+Compatibility is BLOSUM62, a hypothesis about tolerance that knows nothing of a position's
+structural or catalytic role. It ranks candidates; it does not establish that any restores function.
 """
 
 from dataclasses import dataclass
@@ -38,11 +33,7 @@ AMINO_ACIDS = tuple(sorted(set(standard_dna_table.forward_table.values())))
 
 
 def near_cognate_residues(stop_codon: str) -> tuple[str, ...]:
-    """Amino acids encoded by codons one base from the stop codon.
-
-    A near-cognate tRNA mispairs at a single position, so the residues a small molecule can insert
-    are fixed by the genetic code rather than chosen. Written in DNA to match the codon tables.
-    """
+    """Amino acids encoded by codons one base from the stop, in DNA to match the codon table."""
 
     codon = stop_codon.upper().replace("U", "T")
     found = set()
@@ -91,13 +82,9 @@ class SuppressorDesign:
 def coverage_by_design(contexts: pd.DataFrame) -> pd.DataFrame:
     """How many variants each suppressor design reaches, one row per stop and inserted residue.
 
-    Two counts, because they answer different questions. `restores_exactly` counts variants whose
-    original residue the design puts back. `conservative` counts those where the inserted residue is
-    one evolution substitutes for the original more often than chance — a wider net, weaker claim.
-
-    This is variant coverage. ClinVar records variants, not people, so nothing here says how many
-    patients a design would reach, and a design that reads a stop codon also reads the native stops
-    of every other gene, which is the safety layer's question rather than this one's.
+    `restores_exactly` counts variants whose original residue the design puts back; `conservative`
+    counts those where the insertion is one evolution accepts more often than chance. Variants, not
+    patients. Says nothing about the native stops the design would also read through.
     """
 
     rows = []

@@ -1,13 +1,9 @@
 """MANE Select transcripts: their exon structure, their sequence, and the map between the two.
 
-One transcript per gene, chosen once and applied everywhere, so that every layer scoring a variant
-is scoring it on the same molecule. Genomic and transcript coordinates are the classic silent killer
-in this kind of code — an off-by-one or an unreversed strand still produces a plausible sequence —
-so the mapping is checked against the transcript's own bases rather than trusted: a variant whose
-reference base does not match the transcript at its mapped position is refused, not scored.
+One transcript per gene, so every layer scores a variant on the same molecule.
 
-Coordinates follow their sources. Genomic positions are 1-based inclusive, as GFF and VCF give them;
-transcript offsets are 0-based, as Python indexes a string.
+Coordinates follow their sources: genomic positions are 1-based inclusive, as GFF and VCF give them,
+and transcript offsets are 0-based, as Python indexes a string.
 """
 
 import gzip

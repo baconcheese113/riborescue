@@ -1,12 +1,8 @@
-"""The published drug-specific readthrough model, refit in Python.
+"""The published drug-specific readthrough model: a binomial GLM over stop type and the triplets
+either side of the stop.
 
-Toledano's model is a binomial GLM with a logit link over four terms, where the nucleotides on
-either side of the premature stop enter as triplets rather than as separate positional terms. It is
-reproduced here on the oracle's own round assignments, so the Python fit is judged by whether it
-returns the authors' predictions rather than by whether it lands near their published r².
-
-Performance is squared Pearson correlation on held-out data, matching the authors' definition; it is
-not the deviance-based pseudo-r² a binomial GLM would otherwise report.
+Performance is squared Pearson correlation on held-out data, the authors' definition, not the
+deviance-based pseudo-r².
 """
 
 from dataclasses import dataclass
@@ -30,10 +26,8 @@ __all__ = [
 
 FORMULA = "RT_binomial ~ 0 + stop_type + down_123nt + up_123nt + stop_type:down_123nt"
 
-# A triplet-by-stop-codon cell missing from a training round leaves its column linearly dependent on
-# the others. R's pivoted QR keeps the earlier column and aliases the later one to NA, which
-# `predict` then treats as zero; least squares by pseudo-inverse would instead spread the fit across
-# both. Reproducing the authors' predictions means reproducing their choice.
+# An empty triplet-by-stop cell leaves a dependent column. R aliases the later one to NA and
+# predicts as if it were zero; matching its predictions means matching that choice.
 _RANK_TOLERANCE = 1e-7
 
 
@@ -54,14 +48,9 @@ class RoundPrediction:
 def relative_error_quantile(held_out: pd.DataFrame, quantile: float = 0.95) -> float:
     """The relative error within which the given share of held-out predictions fall.
 
-    The model's own standard errors are not usable here: it is fitted on proportions carrying unit
-    weight, so its assumed binomial variance describes a single Bernoulli trial rather than the
-    assay's measurement error, and the intervals it reports span most of the unit interval. The
-    honest measure is how far its held-out predictions actually landed from the observations, which
-    the cross-validation rounds already record.
-
-    Error grows with the prediction, so it is expressed as a fraction of the predicted value rather
-    than as a fixed band.
+    The model's own standard errors describe a single Bernoulli trial rather than the assay's
+    measurement error, so the interval comes from what its held-out predictions actually did. Error
+    grows with the prediction, so it is a fraction of the value rather than a fixed band.
     """
 
     error = (held_out["predicted"] - held_out["observed"]).abs() / held_out["predicted"]
@@ -75,12 +64,10 @@ def r_squared(predicted: pd.Series, observed: pd.Series) -> float:
 
 
 def identifiable_columns(design: pd.DataFrame) -> list[str]:
-    """Return the design columns that are not linear combinations of the ones before them.
+    """The design columns that are not linear combinations of the ones before them.
 
-    The R factor of an unpivoted QR carries, on its diagonal, the norm of each column once the
-    columns before it have been projected out. A negligible diagonal entry therefore marks a column
-    that adds nothing the earlier ones do not already span, so the first of an aliased pair wins —
-    the rule R applies when it reports a coefficient as NA.
+    An unpivoted QR puts each column's norm, once the earlier ones are projected out, on the R
+    diagonal, so the first of an aliased pair wins — the rule R applies.
     """
 
     matrix = design.to_numpy(dtype=float)
@@ -92,11 +79,9 @@ def identifiable_columns(design: pd.DataFrame) -> list[str]:
 
 @dataclass(frozen=True)
 class FittedModel:
-    """A model fitted on every measured variant, ready to score variants it has never seen.
+    """A model fitted on every measured variant, and the feature levels it was fitted over.
 
-    The encoding is the one the fit was built with, so a context carrying a triplet absent from the
-    training library has no coefficient and cannot be scored. Those rows are reported rather than
-    given a number, because a level the assay never measured is missing evidence, not zero effect.
+    A context carrying a level the library never held has no coefficient and cannot be scored.
     """
 
     identifiable: tuple[str, ...]
@@ -145,16 +130,12 @@ def fit(features: pd.DataFrame) -> FittedModel:
 
 
 def fit_round(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> RoundPrediction:
-    """Fit one round on the given training rows and predict the rows left out of them.
-
-    `features` is indexed by the oracle's `row` numbering, so a round is named by the rows it
-    trains on and the complement is the held-out set.
-    """
+    """Fit on the given training rows and predict the rows left out of them."""
 
     held_in = features.index.isin(train_rows)
     train, test = features[held_in], features[~held_in]
 
-    # patsy ships no type information, so the design it hands back is cast at this boundary.
+    # patsy ships no type information.
     response, built = dmatrices(FORMULA, train, return_type="dataframe")
     design = cast(pd.DataFrame, built)
     identifiable = identifiable_columns(design)

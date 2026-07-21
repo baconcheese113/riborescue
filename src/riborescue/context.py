@@ -1,14 +1,11 @@
 """The sequence context around a premature stop, in the form the readthrough model expects.
 
-Placing a genomic variant on a transcript is where a pipeline goes quietly wrong, so every context
-is earned rather than assumed. Three facts must hold before a variant is scored: its position falls
-in an exon of its gene's MANE Select transcript, the reference base ClinVar reports matches the
-transcript's own base there, and substituting the alternate base turns that codon into a stop. A
-variant failing any of them carries a reason and no context, never a context computed anyway.
+Three facts must hold before a variant is scored: the position falls in an exon of its gene's MANE
+Select transcript, the reference base matches the transcript's own base there, and substituting the
+alternate turns that codon into a stop. Failing any of them yields a reason and no context.
 
-Features are written as the readthrough assay wrote them — RNA, lower case, the triplet before the
-stop and the triplet after it — so a ClinVar variant and a measured library variant are described
-identically and the model cannot tell them apart by formatting.
+Features are written as the assay wrote them — RNA, lower case, the triplet either side — so a
+ClinVar variant and a measured one are described identically.
 """
 
 from dataclasses import dataclass
