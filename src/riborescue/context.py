@@ -71,6 +71,7 @@ class PtcContext:
     protein_position: int
     stop_type: str
     reference_codon: str
+    original_aa: str
     up_123nt: str
     down_123nt: str
     upstream: str
@@ -123,6 +124,7 @@ def context_for(
         protein_position=(codon_start - coding) // 3 + 1,
         stop_type=_transcribe(mutated),
         reference_codon=codon,
+        original_aa=str(Seq(codon).translate()),
         up_123nt=_transcribe(upstream[-3:]),
         down_123nt=_transcribe(downstream[:3]),
         upstream=_transcribe(upstream),
@@ -158,6 +160,7 @@ def contexts_for(variants: pd.DataFrame, models: dict[int, TranscriptModel]) -> 
                 "transcript_id": found.transcript_id,
                 "protein_position": found.protein_position,
                 "stop_type": found.stop_type,
+                "original_aa": found.original_aa,
                 "up_123nt": found.up_123nt,
                 "down_123nt": found.down_123nt,
                 "upstream": found.upstream,

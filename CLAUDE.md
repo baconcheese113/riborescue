@@ -14,7 +14,19 @@ commit-adjacent text are minimal, present-tense, and timeless.
 - A comment explains *what the code does or why it must be this way* — never its history.
 - Prefer no comment to an obvious one. Delete a comment before letting it drift stale.
 - Decision history has exactly one home: `docs/decisions/` (ADRs). Keep it out of code entirely.
+- What broke and how it resolved has exactly one home: `docs/notebook.md`. Keep it out of code too.
 - Don't leave stub files for deferred work. A directory or module appears when it holds real code.
+
+## Notebook
+
+`docs/notebook.md` is the running record of problems. Append an entry under **Challenges and
+resolutions** whenever one resolves — a wrong result traced to its cause, a check that fired, a
+benchmark that misled, an approach abandoned, an external claim that failed verification. Each
+entry states the challenge, what went wrong, the resolution, what it cost, and the lesson.
+
+Write it while the problem is fresh; a resolved problem nobody wrote down is gone. It is
+chronological and informal by design — the single exception to the writing style above — and it is
+gitignored, because it is working material rather than part of the repo.
 
 ## Layout
 
@@ -28,6 +40,7 @@ frontend/                Next.js static export, served from Cloudflare Pages
 scripts/                 R oracle and data-fetch scripts
 data/                    gitignored; inputs are fetched, never committed
 docs/decisions/          ADRs — the only place decision history lives
+docs/notebook.md         gitignored; problems, resolutions, and report material
 ```
 
 ## Development

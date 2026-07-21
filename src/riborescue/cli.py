@@ -21,6 +21,7 @@ from riborescue.evaluation import (
 )
 from riborescue.handoff import UpstreamHandoff
 from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
+from riborescue.residue import coverage_by_design
 from riborescue.tables import (
     PathogenicNonsense,
     ReadthroughLabels,
@@ -312,6 +313,26 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
         out,
     )
     click.echo(f"wrote {len(table)} variant by therapy rows to {out}")
+
+
+@main.command("trna-coverage")
+@click.argument("contexts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@_OUT
+def trna_coverage(contexts: Path, out: Path) -> None:
+    """Rank suppressor tRNA designs by the pathogenic variants each would reach."""
+
+    table = read_table(contexts)
+    scoreable = table[table["scoreable"]]
+    coverage = coverage_by_design(scoreable)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(coverage, out)
+
+    click.echo(f"{len(coverage)} designs over {len(scoreable)} variants")
+    for row in coverage.head(5).itertuples():
+        click.echo(
+            f"  {row.design_id:<7} {row.conservative:>6} conservative, "
+            f"{row.restores_exactly:>6} restored exactly"
+        )
 
 
 def _validated(
