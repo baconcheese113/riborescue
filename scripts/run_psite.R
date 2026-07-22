@@ -29,6 +29,9 @@ options <- parse_args(OptionParser(option_list = list(
   make_option("--lengths", default = "26:34", help = "Footprint length range [default %default]"),
   make_option("--combine", action = "store_true", default = FALSE,
               help = "Merge the per-sample tables already in --outdir"),
+  make_option("--annotation-only", action = "store_true", default = FALSE,
+              dest = "annotation_only",
+              help = "Build the reference annotation and stop, before the extension windows exist"),
   make_option("--evidence", default = "docs/figures",
               help = "Where the tracked periodicity evidence lands [default %default]")
 )))
@@ -91,11 +94,12 @@ if (options$combine) {
   quit(save = "no")
 }
 
-stopifnot(!is.null(options$bam), !is.null(options$sample), !is.null(options$gtf))
-length_range <- eval(parse(text = options$lengths))
+stopifnot(!is.null(options$gtf))
 
-
-# Building the annotation walks the whole GTF, so it is built once and reused by later samples.
+# Building the annotation walks the whole GTF, so it is built once and reused by every sample that
+# shares the reference. It is also written as a table, because the extension windows are computed
+# from it in Python before any library runs — the ordering is annotation, then windows, then
+# libraries, and each step needs the one before it.
 cache_dir <- if (is.null(options$cache)) options$outdir else options$cache
 dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
 cache <- file.path(cache_dir, "annotation.rds")
@@ -104,8 +108,16 @@ annotation <- if (file.exists(cache)) {
 } else {
   built <- create_annotation(gtfpath = options$gtf)
   saveRDS(built, cache)
+  fwrite(built, file.path(cache_dir, "annotation.tsv"), sep = "\t")
   built
 }
+if (options$annotation_only) {
+  cat(sprintf("%d transcripts annotated in %s\n", nrow(annotation), cache_dir))
+  quit(save = "no")
+}
+
+stopifnot(!is.null(options$bam), !is.null(options$sample))
+length_range <- eval(parse(text = options$lengths))
 
 # The extension window each transcript allows a readthrough ribosome, built beforehand by
 # `riborescue extensions` and simply read here.

@@ -46,6 +46,11 @@ samples=$(awk -F'\t' -v want="$cell_line" '
     { print $h["sample"] }' "$samplesheet")
 [ -n "$samples" ] || { echo "$samplesheet names no footprint libraries" >&2; exit 1; }
 
+# A previous run of this dataset against a wider samplesheet leaves its per-library tables behind,
+# and the combiner would gather those too — the same mixing the per-dataset directory prevents, one
+# level further down.
+rm -f "$outdir"/*.offsets.tsv "$outdir"/*.frame.tsv "$outdir"/*.region.tsv \
+      "$outdir"/*.shift.tsv "$outdir"/*.metaprofile.tsv "$outdir"/*.readthrough.tsv
 : >"$outdir/resources.tsv"
 
 # Every library runs the same bytes. Each library is a fresh R process that re-reads the script, so

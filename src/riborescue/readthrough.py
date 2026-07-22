@@ -106,9 +106,13 @@ def next_in_frame_stop(sequence: str, stop_start: int) -> int | None:
 
     `stop_start` indexes the first base of the native stop codon. The answer is a multiple of three
     and is the width of the window a readthrough ribosome can occupy. None where the frame runs off
-    the end of the transcript without meeting another stop.
+    the end of the transcript without meeting another stop, and none where the annotated coding
+    sequence does not in fact end in a stop codon: an incomplete annotation gives a length that is
+    not a multiple of three, and every frame measured from it would be off by one or two bases.
     """
 
+    if sequence[stop_start : stop_start + 3].upper() not in STOP_CODONS:
+        return None
     offset = 3
     position = stop_start + 3
     while position + 3 <= len(sequence):
@@ -228,7 +232,7 @@ def qualifying(
     # One universe for every library. Coverage is a property of the library, so a threshold applied
     # library by library would let the treated and untreated medians be taken over different
     # transcripts, and the comparison would be partly about which transcripts cleared the bar.
-    libraries = counts["sample"].nunique()
+    libraries = len(set(samples)) if samples is not None else counts["sample"].nunique()
     everywhere = passing.groupby("transcript")["sample"].nunique() == libraries
     shared = everywhere.index[everywhere]
     return passing.loc[passing["transcript"].isin(shared)].copy()
@@ -259,6 +263,9 @@ def library_ratios(counts: pd.DataFrame) -> pd.DataFrame:
         {
             "transcripts": grouped.size(),
             "with_downstream": grouped["_any"].mean(),
+            "cds_frame0_total": pooled["cds_frame0"],
+            "downstream_total": downstream_total,
+            "termination_total": pooled["termination"],
             "downstream_occupancy": pooled["extension_frame0"] / pooled["cds_frame0"],
             "termination_occupancy": pooled["termination"] / pooled["cds_frame0"],
             "downstream_share0": downstream_share0,
@@ -359,13 +366,11 @@ def signature(effects: Mapping[str, Effect]) -> dict[str, bool]:
     downstream = effects["downstream_occupancy"]
     termination = effects["termination_occupancy"]
     gap = effects["frame_gap"]
-    low, high = gap.interval
+    low, _ = gap.interval
     return {
-        "downstream_rose": downstream.mean_difference > 0 and downstream.consistent,
-        "termination_fell": termination.mean_difference < 0 and termination.consistent,
-        "frame_moved_to_coding": (
-            gap.mean_difference > 0 and gap.consistent and low > 0 and high > 0
-        ),
+        "downstream_rose": bool(downstream.mean_difference > 0 and downstream.consistent),
+        "termination_fell": bool(termination.mean_difference < 0 and termination.consistent),
+        "frame_moved_to_coding": bool(gap.mean_difference > 0 and gap.consistent and low > 0),
     }
 
 
@@ -379,7 +384,7 @@ def stalling(effects: Mapping[str, Effect]) -> bool:
 
     termination = effects["termination_occupancy"]
     downstream = effects["downstream_occupancy"]
-    return (
+    return bool(
         termination.mean_difference >= 0
         and downstream.mean_difference <= 0
         and termination.consistent

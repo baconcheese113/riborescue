@@ -338,18 +338,30 @@ def test_the_signature_needs_all_three_conditions():
     }
 
 
-def test_a_frame_gap_interval_touching_zero_does_not_pass():
-    """The frame condition is the claim the control makes, so it carries the interval."""
+def test_a_frame_gap_interval_spanning_zero_does_not_pass():
+    """The frame condition is the claim the control makes, so it alone carries the interval.
+
+    The groups here separate completely and the mean moves the right way, so direction and
+    consistency both hold. Only the width of the interval refuses it — remove that clause from
+    `signature` and this test fails.
+    """
 
     ratios = _ratios(
         downstream_occupancy={"dmso": [0.01] * 3, "g418": [0.03] * 3, "sri": [0.01] * 3},
         termination_occupancy={"dmso": [0.50] * 3, "g418": [0.30] * 3, "sri": [0.70] * 3},
-        frame_gap={"dmso": [-0.10, -0.30, -0.02], "g418": [-0.01, -0.25, 0.10], "sri": [-0.1] * 3},
+        # every treated value exceeds every control value, but both groups are so scattered that
+        # the difference is not resolved
+        frame_gap={"dmso": [-0.50, -0.30, -0.02], "g418": [0.30, 0.02, 0.60], "sri": [-0.1] * 3},
     )
     effects = {
         q: unpaired_effect(ratios, q, CONFIRM, "g418", "dmso")
         for q in ("downstream_occupancy", "termination_occupancy", "frame_gap")
     }
+    gap = effects["frame_gap"]
+    assert gap.mean_difference > 0
+    assert gap.consistent is True
+    low, high = gap.interval
+    assert low < 0 < high
     assert signature(effects)["frame_moved_to_coding"] is False
 
 
@@ -397,3 +409,37 @@ def test_the_welch_interval_rounds_degrees_of_freedom_down():
         (pd.Series([0.10, 0.12, 0.20]).var(ddof=1) / 3
          + pd.Series([0.30, 0.31, 0.32]).var(ddof=1) / 3) ** 0.5
     )
+
+
+def test_an_incomplete_coding_sequence_yields_no_window():
+    """A CDS whose length is not a multiple of three ends on an arbitrary triplet, so every frame
+    measured from it would be off-register."""
+
+    # position 6 holds GGG, not a stop, so the annotation does not end where it claims
+    assert next_in_frame_stop("AAACCC" "GGG" "TAA" "AAA", 6) is None
+
+
+def test_the_universe_is_counted_over_the_libraries_asked_for():
+    """A library named for the contrast but missing from the counts must not relax the bar."""
+
+    present = pd.concat(
+        [counts(transcript="t", sample="a"), counts(transcript="t", sample="b")]
+    )
+    assert len(qualifying(present, samples=["a", "b"])) == 2
+    # 'c' was asked for and is not there, so 't' no longer qualifies everywhere
+    assert qualifying(present, samples=["a", "b", "c"]).empty
+
+
+def test_pooled_counts_are_reported_beside_the_proportions():
+    """A share resting on a dozen reads must be distinguishable from one resting on thousands."""
+
+    frame = counts(extension_frame0=4, extension_frame1=3, extension_frame2=5, cds_frame0=1000)
+    row = library_ratios(frame)
+    assert row.loc[0, "downstream_total"] == 12
+    assert row.loc[0, "cds_frame0_total"] == 1000
+    assert row.loc[0, "termination_total"] == 50
+
+
+def test_the_termination_ratio_divides_by_in_frame_coding_occupancy():
+    frame = counts(termination=90, cds_frame0=900, cds_frame1=100, cds_frame2=100)
+    assert library_ratios(frame).loc[0, "termination_occupancy"] == pytest.approx(0.1)
