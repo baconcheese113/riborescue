@@ -152,15 +152,22 @@ if (!is.null(extensions)) {
 # The coding sequence ends at psite_from_stop 0, so the native stop occupies -2 to 0 and the next
 # in-frame stop begins `extension` bases later. The window is what lies strictly between them: a
 # ribosome sitting on either stop is terminating, not reading through.
+# Each reading frame is counted on its own, in the coding sequence and in the extension window
+# alike. Pooling the two off-frames would compare one phase against two, which is not a question
+# about frame at all.
 downstream <- quote(psite_from_stop >= 1L & psite_from_stop <= extension - 3L)
+in_cds <- quote(psite_region == "cds")
 readthrough <- sample_reads[, .(
-  cds_inframe = sum(psite_region == "cds" & psite_from_start %% 3 == 0),
-  cds_total = sum(psite_region == "cds"),
+  cds_frame0 = sum(eval(in_cds) & psite_from_start %% 3 == 0),
+  cds_frame1 = sum(eval(in_cds) & psite_from_start %% 3 == 1),
+  cds_frame2 = sum(eval(in_cds) & psite_from_start %% 3 == 2),
   termination = sum(psite_from_stop >= -15 & psite_from_stop <= 0),
   extension = extension[1],
-  extension_inframe = sum(eval(downstream) & psite_from_start %% 3 == 0, na.rm = TRUE),
-  extension_outframe = sum(eval(downstream) & psite_from_start %% 3 != 0, na.rm = TRUE)
+  extension_frame0 = sum(eval(downstream) & psite_from_start %% 3 == 0, na.rm = TRUE),
+  extension_frame1 = sum(eval(downstream) & psite_from_start %% 3 == 1, na.rm = TRUE),
+  extension_frame2 = sum(eval(downstream) & psite_from_start %% 3 == 2, na.rm = TRUE)
 ), by = transcript]
+readthrough[, cds_total := cds_frame0 + cds_frame1 + cds_frame2]
 readthrough <- merge(readthrough, annotation[, .(transcript, l_cds, l_utr3)], by = "transcript")
 readthrough <- readthrough[cds_total > 0]
 readthrough[, sample := options$sample]

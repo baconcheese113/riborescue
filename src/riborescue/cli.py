@@ -36,7 +36,9 @@ from riborescue.readthrough import (
     paired_effect,
     qualifying,
     signature,
+    stalling,
     transcript_genes,
+    unpaired_effect,
 )
 from riborescue.residue import coverage_by_design
 from riborescue.sequencing import FASTQ_SUBDIR, stage
@@ -475,61 +477,83 @@ def extensions(transcripts: Path, annotation: Path, out: Path) -> None:
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help="The staged runs, naming each library's treatment and replicate.",
 )
+@click.option("--treated", required=True, help="The treatment arm being tested.")
+@click.option("--control", required=True, help="The arm it is tested against.")
 @click.option("--cell-line", default="HEK293T", show_default=True)
+@click.option(
+    "--paired",
+    is_flag=True,
+    help="Compare within replicate. Only where the metadata documents which libraries were "
+    "prepared together; matching replicate numbers across arms do not.",
+)
 @_OUT
 def readthrough_assay(
-    counts: Path, gtf: Path, samplesheet: Path, cell_line: str, out: Path
+    counts: Path,
+    gtf: Path,
+    samplesheet: Path,
+    treated: str,
+    control: str,
+    cell_line: str,
+    paired: bool,
+    out: Path,
 ) -> None:
-    """Test COUNTS for the readthrough signature."""
+    """Test COUNTS for the readthrough signature, one contrast at a time."""
 
     runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
-    replicates = runs.loc[
-        (runs["assay"] == "riboseq") & (runs["cell_line"] == cell_line),
+    arms = runs.loc[
+        (runs["assay"] == "riboseq")
+        & (runs["cell_line"] == cell_line)
+        & (runs["treatment"].isin([treated, control])),
         ["sample", "treatment", "replicate"],
     ]
-    if replicates.empty:
-        raise click.ClickException(f"{samplesheet} names no {cell_line} footprint libraries")
+    if arms.empty:
+        raise click.ClickException(
+            f"{samplesheet} names no {cell_line} libraries for that contrast"
+        )
 
     measured = read_table(counts)
     kept = qualifying(
         measured,
         transcript_genes(gtf),
         overlapping_downstream_cds(gtf),
-        samples=set(replicates["sample"]),
+        samples=set(arms["sample"]),
     )
-    click.echo(f"{len(measured):,} transcript rows, {len(kept):,} qualifying")
+    click.echo(f"{len(measured):,} rows, {kept['transcript'].nunique():,} transcripts qualifying")
 
     ratios = library_ratios(kept)
+    compare = paired_effect if paired else unpaired_effect
     try:
-        effects = [
-            paired_effect(ratios, quantity, replicates)
-            for quantity in ("readthrough", "termination", "out_of_frame")
-        ]
+        effects = {
+            quantity: compare(ratios, quantity, arms, treated, control)
+            for quantity in ("downstream_occupancy", "termination_occupancy", "frame_gap")
+        }
     except ValueError as error:
         raise click.ClickException(str(error)) from error
 
+    met = signature(effects)
     summary = pd.DataFrame(
         {
-            "quantity": [e.quantity for e in effects],
-            "mean_difference": [e.mean_difference for e in effects],
-            "ci_low": [e.interval[0] for e in effects],
-            "ci_high": [e.interval[1] for e in effects],
-            "consistent": [e.consistent for e in effects],
-            "per_replicate": [", ".join(f"{d:+.4g}" for d in e.differences) for e in effects],
+            "quantity": list(effects),
+            "mean_difference": [e.mean_difference for e in effects.values()],
+            "ci_low": [e.interval[0] for e in effects.values()],
+            "ci_high": [e.interval[1] for e in effects.values()],
+            "consistent": [e.consistent for e in effects.values()],
         }
     )
     write_table(summary, out)
 
+    click.echo(f"{treated} against {control}, {'paired' if paired else 'unpaired'}")
     for row in summary.itertuples():
         click.echo(
-            f"{row.quantity:>13}: {row.mean_difference:+.4g} "
+            f"  {row.quantity:>22}: {row.mean_difference:+.4g} "
             f"[{row.ci_low:+.4g}, {row.ci_high:+.4g}] "
-            f"{'consistent' if row.consistent else 'inconsistent'} ({row.per_replicate})"
+            f"{'consistent' if row.consistent else 'inconsistent'}"
         )
-
-    # All three are required together; any one alone describes something that is not readthrough.
-    for condition, met in signature({e.quantity: e for e in effects}).items():
-        click.echo(f"  {condition}: {'yes' if met else 'no'}")
+    for condition, held in met.items():
+        click.echo(f"  {condition:>22}: {'yes' if held else 'no'}")
+    click.echo(f"  {'signature':>22}: {'complete' if all(met.values()) else 'incomplete'}")
+    if stalling(effects):
+        click.echo(f"  {'stalling':>22}: yes — raised at the stop, not beyond it")
 
 
 @main.command("landscape")

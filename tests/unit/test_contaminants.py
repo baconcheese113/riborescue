@@ -34,9 +34,7 @@ def test_only_structural_rna_is_selected(transcripts: Path, tmp_path: Path):
     assert "ACTB" not in written
 
 
-def test_long_non_coding_rna_is_kept_out_of_the_contaminant_set(
-    transcripts: Path, tmp_path: Path
-):
+def test_long_non_coding_rna_is_kept_out_of_the_contaminant_set(transcripts: Path, tmp_path: Path):
     """It is translated often enough that depleting it would remove signal."""
 
     assert "lncRNA" not in CONTAMINANT_BIOTYPES

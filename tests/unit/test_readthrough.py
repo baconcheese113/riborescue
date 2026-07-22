@@ -9,14 +9,15 @@ from riborescue.readthrough import (
     MINIMUM_UTR3_LENGTH,
     PROGRAMMED_READTHROUGH,
     extension_windows,
-    frame_specific,
     library_ratios,
     next_in_frame_stop,
     overlapping_downstream_cds,
     paired_effect,
     qualifying,
     signature,
+    stalling,
     transcript_genes,
+    unpaired_effect,
 )
 
 REPLICATES = pd.DataFrame(
@@ -39,12 +40,14 @@ def counts(**overrides) -> pd.DataFrame:
     base = {
         "transcript": "ENST1",
         "sample": "s1",
-        "cds_inframe": 1000,
-        "cds_total": 1500,
+        "cds_frame0": 1000,
+        "cds_frame1": 250,
+        "cds_frame2": 250,
         "termination": 50,
         "extension": 300,
-        "extension_inframe": 10,
-        "extension_outframe": 5,
+        "extension_frame0": 10,
+        "extension_frame1": 3,
+        "extension_frame2": 2,
         "l_cds": 900,
         "l_utr3": 500,
     }
@@ -59,8 +62,8 @@ def test_a_short_untranslated_region_is_excluded():
 
 
 def test_a_transcript_without_enough_coding_coverage_is_excluded():
-    assert qualifying(counts(cds_inframe=MINIMUM_CDS_PSITES - 1)).empty
-    assert len(qualifying(counts(cds_inframe=MINIMUM_CDS_PSITES))) == 1
+    assert qualifying(counts(cds_frame0=MINIMUM_CDS_PSITES - 1)).empty
+    assert len(qualifying(counts(cds_frame0=MINIMUM_CDS_PSITES))) == 1
 
 
 def test_a_programmed_readthrough_gene_is_excluded():
@@ -79,24 +82,56 @@ def test_a_transcript_running_into_another_gene_is_excluded():
 def test_exclusions_do_not_depend_on_treatment():
     """The same transcripts must drop from both conditions, or the comparison is not paired."""
 
-    both = pd.concat([counts(sample="untreated"), counts(sample="g418", extension_inframe=99)])
+    both = pd.concat([counts(sample="untreated"), counts(sample="g418", extension_frame0=99)])
     kept = qualifying(both)
     assert set(kept["sample"]) == {"untreated", "g418"}
 
 
-def test_library_ratios_take_the_median_transcript():
-    """One enormous transcript must not decide the library."""
+def test_pooled_quantities_sum_counts_before_dividing():
+    """A frame composition is a proportion, so it pools; the median is reported beside it."""
 
     frame = pd.concat(
         [
-            counts(transcript="a", extension_inframe=10, cds_inframe=1000),
-            counts(transcript="b", extension_inframe=10, cds_inframe=1000),
-            counts(transcript="c", extension_inframe=9000, cds_inframe=1000),
+            counts(transcript="a", extension_frame0=10, cds_frame0=1000),
+            counts(transcript="b", extension_frame0=10, cds_frame0=1000),
+            counts(transcript="c", extension_frame0=9000, cds_frame0=1000),
         ]
     )
     ratios = library_ratios(frame)
-    assert ratios.loc[0, "readthrough"] == pytest.approx(0.01)
+    # pooled: (10+10+9000) / (1000+1000+1000)
+    assert ratios.loc[0, "downstream_occupancy"] == pytest.approx(9020 / 3000)
+    # the median transcript is untouched by the outlier
+    assert ratios.loc[0, "median_readthrough"] == pytest.approx(0.01)
     assert ratios.loc[0, "transcripts"] == 3
+
+
+def test_the_frame_gap_is_measured_against_the_library_own_coding_frame():
+    """A fixed third would be the wrong null: coding-frame occupancy varies library to library."""
+
+    frame = counts(
+        extension_frame0=50,
+        extension_frame1=25,
+        extension_frame2=25,
+        cds_frame0=600,
+        cds_frame1=200,
+        cds_frame2=200,
+    )
+    ratios = library_ratios(frame)
+    assert ratios.loc[0, "downstream_share0"] == pytest.approx(0.5)
+    assert ratios.loc[0, "cds_share0"] == pytest.approx(0.6)
+    assert ratios.loc[0, "frame_gap"] == pytest.approx(-0.1)
+
+
+def test_the_share_with_any_downstream_signal_is_reported():
+    """A pooled proportion resting on a few transcripts must not look like a broad one."""
+
+    frame = pd.concat(
+        [
+            counts(transcript="a", extension_frame0=10, extension_frame1=0, extension_frame2=0),
+            counts(transcript="b", extension_frame0=0, extension_frame1=0, extension_frame2=0),
+        ]
+    )
+    assert library_ratios(frame).loc[0, "with_downstream"] == pytest.approx(0.5)
 
 
 def test_paired_effect_compares_within_replicate():
@@ -106,7 +141,7 @@ def test_paired_effect_compares_within_replicate():
             "readthrough": [0.010, 0.020, 0.030, 0.015, 0.026, 0.037],
         }
     )
-    effect = paired_effect(ratios, "readthrough", REPLICATES)
+    effect = paired_effect(ratios, "readthrough", REPLICATES, "g418", "untreated")
     assert effect.differences == pytest.approx((0.005, 0.006, 0.007))
     assert effect.consistent is True
     assert effect.mean_difference == pytest.approx(0.006)
@@ -115,14 +150,14 @@ def test_paired_effect_compares_within_replicate():
 def test_a_replicate_missing_a_condition_is_refused():
     ratios = pd.DataFrame({"sample": REPLICATES["sample"][:5], "readthrough": [0.1] * 5})
     with pytest.raises(ValueError, match="without both conditions"):
-        paired_effect(ratios, "readthrough", REPLICATES.iloc[:5])
+        paired_effect(ratios, "readthrough", REPLICATES.iloc[:5], "g418", "untreated")
 
 
 def test_an_inconsistent_effect_is_reported_as_such():
     ratios = pd.DataFrame(
         {"sample": REPLICATES["sample"], "readthrough": [0.01, 0.02, 0.03, 0.02, 0.01, 0.04]}
     )
-    effect = paired_effect(ratios, "readthrough", REPLICATES)
+    effect = paired_effect(ratios, "readthrough", REPLICATES, "g418", "untreated")
     assert effect.consistent is False
 
 
@@ -133,8 +168,8 @@ def test_the_interval_widens_with_disagreement():
     loose = pd.DataFrame(
         {"sample": REPLICATES["sample"], "readthrough": [0.01, 0.01, 0.01, 0.05, 0.02, 0.001]}
     )
-    narrow = paired_effect(tight, "readthrough", REPLICATES).interval
-    wide = paired_effect(loose, "readthrough", REPLICATES).interval
+    narrow = paired_effect(tight, "readthrough", REPLICATES, "g418", "untreated").interval
+    wide = paired_effect(loose, "readthrough", REPLICATES, "g418", "untreated").interval
     assert (wide[1] - wide[0]) > (narrow[1] - narrow[0])
 
 
@@ -186,7 +221,7 @@ def test_a_transcript_qualifying_in_only_one_condition_is_dropped_from_both():
         [
             counts(transcript="shared", sample="untreated"),
             counts(transcript="shared", sample="g418"),
-            counts(transcript="thin", sample="untreated", cds_inframe=MINIMUM_CDS_PSITES - 1),
+            counts(transcript="thin", sample="untreated", cds_frame0=MINIMUM_CDS_PSITES - 1),
             counts(transcript="thin", sample="g418"),
         ]
     )
@@ -200,42 +235,6 @@ def test_a_transcript_without_a_usable_extension_window_is_excluded():
     assert qualifying(counts(extension=float("nan"))).empty
 
 
-def test_frame_specificity_requires_in_frame_to_outpace_out_of_frame():
-    ratios = pd.DataFrame(
-        {
-            "sample": REPLICATES["sample"],
-            "in_frame": [0.01, 0.01, 0.01, 0.03, 0.03, 0.03],
-            "flat": [0.01, 0.01, 0.01, 0.011, 0.011, 0.011],
-            "equal": [0.01, 0.01, 0.01, 0.03, 0.03, 0.03],
-        }
-    )
-    rise = paired_effect(ratios, "in_frame", REPLICATES)
-    assert frame_specific(rise, paired_effect(ratios, "flat", REPLICATES)) is True
-    # Both frames lifted by the same amount is not decoding, it is something else.
-    assert frame_specific(rise, paired_effect(ratios, "equal", REPLICATES)) is False
-
-
-def test_the_signature_requires_all_three_conditions():
-    ratios = pd.DataFrame(
-        {
-            "sample": REPLICATES["sample"],
-            "readthrough": [0.01, 0.01, 0.01, 0.03, 0.03, 0.03],
-            "termination": [0.50, 0.50, 0.50, 0.30, 0.30, 0.30],
-            "out_of_frame": [0.01, 0.01, 0.01, 0.011, 0.011, 0.011],
-        }
-    )
-    effects = {q: paired_effect(ratios, q, REPLICATES) for q in ratios.columns[1:]}
-    assert signature(effects) == {
-        "downstream_rose": True,
-        "termination_fell": True,
-        "frame_specific": True,
-    }
-    # Termination rising instead of falling is stalling, not readthrough.
-    stalling = ratios.assign(termination=[0.30, 0.30, 0.30, 0.50, 0.50, 0.50])
-    effects = {q: paired_effect(stalling, q, REPLICATES) for q in stalling.columns[1:]}
-    assert signature(effects)["termination_fell"] is False
-
-
 def test_a_library_outside_the_comparison_cannot_narrow_the_universe():
     """Calu-6 sits in the same counts table but takes no part in the HEK293T comparison, so its
     coverage must not decide which transcripts HEK293T is allowed to keep."""
@@ -243,7 +242,7 @@ def test_a_library_outside_the_comparison_cannot_narrow_the_universe():
     hek = ["hek293t_untreated_rep1_riboseq", "hek293t_g418_rep1_riboseq"]
     table = pd.concat(
         [counts(transcript="t", sample=name) for name in hek]
-        + [counts(transcript="t", sample="calu6_untreated_rep1_riboseq", cds_inframe=1)]
+        + [counts(transcript="t", sample="calu6_untreated_rep1_riboseq", cds_frame0=1)]
     )
     assert qualifying(table).empty
     assert set(qualifying(table, samples=hek)["sample"]) == set(hek)
@@ -251,38 +250,119 @@ def test_a_library_outside_the_comparison_cannot_narrow_the_universe():
 
 # The stop codon starts at index 6 in each of these; what follows differs.
 def test_the_next_stop_immediately_after_is_three_bases_on():
-    assert next_in_frame_stop("AAACCC" "TAA" "TGA" "AAA", 6) == 3
+    assert next_in_frame_stop("AAACCCTAATGAAAA", 6) == 3
 
 
 def test_one_sense_codon_before_the_next_stop_is_six():
-    assert next_in_frame_stop("AAACCC" "TAA" "GGG" "TAG" "AAA", 6) == 6
+    assert next_in_frame_stop("AAACCCTAAGGGTAGAAA", 6) == 6
 
 
 def test_a_stop_out_of_frame_does_not_count():
     """TGA sits one base off the frame, so the in-frame TAA two codons on is the answer."""
 
-    assert next_in_frame_stop("AAACCC" "TAA" "GTG" "AGG" "TAA", 6) == 9
+    assert next_in_frame_stop("AAACCCTAAGTGAGGTAA", 6) == 9
 
 
 def test_no_further_stop_in_frame_gives_nothing():
-    assert next_in_frame_stop("AAACCC" "TAA" "GGGCCCAAA", 6) is None
+    assert next_in_frame_stop("AAACCCTAAGGGCCCAAA", 6) is None
 
 
 def test_a_transcript_ending_at_its_stop_gives_nothing():
-    assert next_in_frame_stop("AAACCC" "TAA", 6) is None
+    assert next_in_frame_stop("AAACCCTAA", 6) is None
 
 
 def test_a_trailing_partial_codon_is_not_read():
-    assert next_in_frame_stop("AAACCC" "TAA" "GGG" "TA", 6) is None
+    assert next_in_frame_stop("AAACCCTAAGGGTA", 6) is None
 
 
 def test_extension_windows_skips_transcripts_without_a_sequence(tmp_path: Path):
     fasta = tmp_path / "t.fa.gz"
     with gzip.open(fasta, "wt") as handle:
         handle.write(">T1|ENSG1|x|x|N|N|21|protein_coding|\nAAACCCTAAGGGTAGAAA\n")
-    annotation = pd.DataFrame(
-        {"transcript": ["T1", "MISSING"], "l_utr5": [3, 3], "l_cds": [6, 6]}
-    )
+    annotation = pd.DataFrame({"transcript": ["T1", "MISSING"], "l_utr5": [3, 3], "l_cds": [6, 6]})
     windows = extension_windows(fasta, annotation)
     assert list(windows["transcript"]) == ["T1"]
     assert windows.loc[0, "extension"] == 6
+
+
+CONFIRM = pd.DataFrame(
+    {
+        "sample": [f"{arm}_{r}" for arm in ("dmso", "g418", "sri") for r in "ABC"],
+        "replicate": list("ABC") * 3,
+        "treatment": ["dmso"] * 3 + ["g418"] * 3 + ["sri"] * 3,
+    }
+)
+
+
+def _ratios(**arms) -> pd.DataFrame:
+    frame = pd.DataFrame({"sample": CONFIRM["sample"]})
+    for quantity, values in arms.items():
+        frame[quantity] = [v for arm in ("dmso", "g418", "sri") for v in values[arm]]
+    return frame
+
+
+def test_unpaired_effect_separates_groups_without_pairing_them():
+    ratios = _ratios(q={"dmso": [0.10, 0.11, 0.12], "g418": [0.20, 0.21, 0.22], "sri": [0.1] * 3})
+    effect = unpaired_effect(ratios, "q", CONFIRM, "g418", "dmso")
+    assert effect.mean_difference == pytest.approx(0.10)
+    assert effect.consistent is True
+
+
+def test_overlapping_groups_are_not_consistent():
+    """Consistency means complete separation, not merely a difference in means."""
+
+    ratios = _ratios(q={"dmso": [0.10, 0.30, 0.12], "g418": [0.20, 0.21, 0.22], "sri": [0.1] * 3})
+    assert unpaired_effect(ratios, "q", CONFIRM, "g418", "dmso").consistent is False
+
+
+def test_an_arm_that_does_not_exist_is_refused():
+    ratios = _ratios(q={"dmso": [0.1] * 3, "g418": [0.2] * 3, "sri": [0.1] * 3})
+    with pytest.raises(ValueError, match="no libraries for"):
+        unpaired_effect(ratios, "q", CONFIRM, "missing", "dmso")
+
+
+def test_the_signature_needs_all_three_conditions():
+    ratios = _ratios(
+        downstream_occupancy={"dmso": [0.01] * 3, "g418": [0.03] * 3, "sri": [0.01] * 3},
+        termination_occupancy={"dmso": [0.50] * 3, "g418": [0.30] * 3, "sri": [0.70] * 3},
+        frame_gap={"dmso": [-0.10, -0.11, -0.12], "g418": [-0.01, -0.02, -0.03], "sri": [-0.1] * 3},
+    )
+    effects = {
+        q: unpaired_effect(ratios, q, CONFIRM, "g418", "dmso")
+        for q in ("downstream_occupancy", "termination_occupancy", "frame_gap")
+    }
+    assert signature(effects) == {
+        "downstream_rose": True,
+        "termination_fell": True,
+        "frame_moved_to_coding": True,
+    }
+
+
+def test_a_frame_gap_interval_touching_zero_does_not_pass():
+    """The frame condition is the claim the control makes, so it carries the interval."""
+
+    ratios = _ratios(
+        downstream_occupancy={"dmso": [0.01] * 3, "g418": [0.03] * 3, "sri": [0.01] * 3},
+        termination_occupancy={"dmso": [0.50] * 3, "g418": [0.30] * 3, "sri": [0.70] * 3},
+        frame_gap={"dmso": [-0.10, -0.30, -0.02], "g418": [-0.01, -0.25, 0.10], "sri": [-0.1] * 3},
+    )
+    effects = {
+        q: unpaired_effect(ratios, q, CONFIRM, "g418", "dmso")
+        for q in ("downstream_occupancy", "termination_occupancy", "frame_gap")
+    }
+    assert signature(effects)["frame_moved_to_coding"] is False
+
+
+def test_a_stalling_compound_is_recognised_by_its_own_direction():
+    """Raised occupancy at the stop with none beyond it is stalling, not readthrough."""
+
+    ratios = _ratios(
+        downstream_occupancy={"dmso": [0.01] * 3, "g418": [0.03] * 3, "sri": [0.005] * 3},
+        termination_occupancy={"dmso": [0.50] * 3, "g418": [0.30] * 3, "sri": [0.70] * 3},
+        frame_gap={"dmso": [-0.1] * 3, "g418": [-0.01] * 3, "sri": [-0.1] * 3},
+    )
+    quantities = ("downstream_occupancy", "termination_occupancy", "frame_gap")
+    sri = {q: unpaired_effect(ratios, q, CONFIRM, "sri", "dmso") for q in quantities}
+    g418 = {q: unpaired_effect(ratios, q, CONFIRM, "g418", "dmso") for q in quantities}
+    assert stalling(sri) is True
+    assert stalling(g418) is False

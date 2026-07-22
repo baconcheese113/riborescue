@@ -13,7 +13,7 @@ have no matched RNA-seq and abundance is therefore unknown.
 import gzip
 import re
 from collections import defaultdict
-from collections.abc import Collection
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -24,20 +24,29 @@ __all__ = [
     "MINIMUM_CDS_PSITES",
     "MINIMUM_UTR3_LENGTH",
     "PROGRAMMED_READTHROUGH",
+    "Effect",
     "PairedEffect",
-    "frame_specific",
+    "UnpairedEffect",
     "library_ratios",
     "overlapping_downstream_cds",
     "paired_effect",
     "qualifying",
     "signature",
+    "stalling",
     "transcript_genes",
+    "unpaired_effect",
 ]
 
 _GENE_NAME = re.compile(r'gene_name "([^"]+)"')
 _GENE_ID = re.compile(r'gene_id "([^"]+)"')
 _TRANSCRIPT_ID = re.compile(r'transcript_id "([^"]+)"')
 _BIN = 100_000
+
+# 95% two-sided t, by degrees of freedom, rather than pulling in scipy for a handful of points.
+_T_CRITICAL = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306}
+
+CDS_FRAMES = ["cds_frame0", "cds_frame1", "cds_frame2"]
+EXTENSION_FRAMES = ["extension_frame0", "extension_frame1", "extension_frame2"]
 
 MINIMUM_UTR3_LENGTH = 50
 """Shorter than this, the termination peak spills into the window being measured."""
@@ -177,9 +186,7 @@ def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
             continue
         start, end = int(field[3]), int(field[4])
         for window in range(start // _BIN, end // _BIN + 1):
-            for other_start, other_end, other_gene in coding.get(
-                (field[0], field[6], window), ()
-            ):
+            for other_start, other_end, other_gene in coding.get((field[0], field[6], window), ()):
                 if other_gene != gene.group(1) and other_start <= end and start <= other_end:
                     contaminated.add(transcript.group(1))
                     break
@@ -204,7 +211,7 @@ def qualifying(
         counts = counts.loc[counts["sample"].isin(samples)]
     keep = (
         (counts["l_utr3"] >= MINIMUM_UTR3_LENGTH)
-        & (counts["cds_inframe"] >= MINIMUM_CDS_PSITES)
+        & (counts["cds_frame0"] >= MINIMUM_CDS_PSITES)
         & counts["extension"].notna()
     )
     if genes is not None:
@@ -224,24 +231,36 @@ def qualifying(
 
 
 def library_ratios(counts: pd.DataFrame) -> pd.DataFrame:
-    """Per library, the median transcript's readthrough, termination and out-of-frame ratios.
+    """Per library, the quantities the control is judged on.
 
-    A median over transcripts rather than a pooled sum, so that a handful of highly expressed genes
-    do not decide the answer for the library.
+    Counts are summed over the library's qualifying transcripts before any ratio is taken. A frame
+    composition is a proportion, and the per-transcript median of one sits at zero whenever most
+    transcripts carry no downstream signal, which is the usual case. The median and the share of
+    transcripts carrying anything are reported beside the pooled figures so that a proportion
+    resting on few transcripts stays visible.
     """
 
     per_transcript = counts.assign(
-        readthrough=counts["extension_inframe"] / counts["cds_inframe"],
-        out_of_frame=counts["extension_outframe"] / counts["cds_inframe"],
-        termination=counts["termination"] / counts["cds_inframe"],
+        _rt=counts["extension_frame0"] / counts["cds_frame0"],
+        _any=(counts[EXTENSION_FRAMES].sum(axis=1) > 0),
     )
+    pooled = counts.groupby("sample")[CDS_FRAMES + EXTENSION_FRAMES + ["termination"]].sum()
     grouped = per_transcript.groupby("sample")
+
+    downstream_total = pooled[EXTENSION_FRAMES].sum(axis=1)
+    cds_total = pooled[CDS_FRAMES].sum(axis=1)
+    downstream_share0 = pooled["extension_frame0"] / downstream_total
+    cds_share0 = pooled["cds_frame0"] / cds_total
     return pd.DataFrame(
         {
             "transcripts": grouped.size(),
-            "readthrough": grouped["readthrough"].median(),
-            "out_of_frame": grouped["out_of_frame"].median(),
-            "termination": grouped["termination"].median(),
+            "with_downstream": grouped["_any"].mean(),
+            "downstream_occupancy": pooled["extension_frame0"] / pooled["cds_frame0"],
+            "termination_occupancy": pooled["termination"] / pooled["cds_frame0"],
+            "downstream_share0": downstream_share0,
+            "cds_share0": cds_share0,
+            "frame_gap": downstream_share0 - cds_share0,
+            "median_readthrough": grouped["_rt"].median(),
         }
     ).reset_index()
 
@@ -268,7 +287,7 @@ class PairedEffect:
             return (float("nan"), float("nan"))
         # 95% two-sided for n-1 degrees of freedom, read from the t table rather than pulled in
         # from scipy for three points.
-        critical = {2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571}.get(n - 1, 1.96)
+        critical = _T_CRITICAL.get(n - 1, 1.96)
         half = critical * values.std(ddof=1) / np.sqrt(n)
         return (float(values.mean() - half), float(values.mean() + half))
 
@@ -276,47 +295,132 @@ class PairedEffect:
     def consistent(self) -> bool:
         """Whether every replicate moved the same way."""
 
-        return bool(np.all(np.asarray(self.differences) > 0) or
-                    np.all(np.asarray(self.differences) < 0))
+        return bool(
+            np.all(np.asarray(self.differences) > 0) or np.all(np.asarray(self.differences) < 0)
+        )
 
 
-def frame_specific(in_frame: PairedEffect, out_of_frame: PairedEffect) -> bool:
-    """Whether the rise is specific to the reading frame, replicate by replicate.
+@dataclass(frozen=True)
+class UnpairedEffect:
+    """One quantity compared between two groups of libraries that are not matched.
 
-    Readthrough continues the frame, so it must raise in-frame occupancy by more than out-of-frame
-    occupancy in every replicate. A treatment that lifts both equally has changed something that is
-    not decoding — degradation, contamination or mapping — and the signature is not readthrough.
+    The primary shape for a dataset whose arms are separate libraries, where a treated library has
+    no partner it was prepared beside.
     """
 
-    gains = np.asarray(in_frame.differences) - np.asarray(out_of_frame.differences)
-    return bool(np.all(gains > 0))
+    quantity: str
+    treated: tuple[float, ...]
+    control: tuple[float, ...]
+
+    @property
+    def mean_difference(self) -> float:
+        return float(np.mean(self.treated) - np.mean(self.control))
+
+    @property
+    def interval(self) -> tuple[float, float]:
+        """A Welch interval, which does not assume the two groups vary alike."""
+
+        a, b = np.asarray(self.treated, dtype=float), np.asarray(self.control, dtype=float)
+        if len(a) < 2 or len(b) < 2:
+            return (float("nan"), float("nan"))
+        va, vb = a.var(ddof=1) / len(a), b.var(ddof=1) / len(b)
+        error = np.sqrt(va + vb)
+        if error == 0:
+            return (self.mean_difference, self.mean_difference)
+        df = (va + vb) ** 2 / (va**2 / (len(a) - 1) + vb**2 / (len(b) - 1))
+        critical = _T_CRITICAL.get(round(df), 1.96)
+        half = critical * error
+        return (self.mean_difference - half, self.mean_difference + half)
+
+    @property
+    def consistent(self) -> bool:
+        """Whether the groups separate completely, every treated library past every control one."""
+
+        a, b = np.asarray(self.treated), np.asarray(self.control)
+        return bool(a.min() > b.max() or a.max() < b.min())
 
 
-def signature(effects: dict[str, PairedEffect]) -> dict[str, bool]:
-    """The three conditions required together, each reported separately."""
+Effect = PairedEffect | UnpairedEffect
 
-    downstream = effects["readthrough"]
-    termination = effects["termination"]
+
+def signature(effects: Mapping[str, Effect]) -> dict[str, bool]:
+    """The three conditions required together, each reported separately.
+
+    The frame condition alone must clear an interval that excludes zero: it is the claim the control
+    exists to make. The other two are directional, where agreement across replicates is the evidence
+    and an interval from three points is too wide to ask more of.
+    """
+
+    downstream = effects["downstream_occupancy"]
+    termination = effects["termination_occupancy"]
+    gap = effects["frame_gap"]
+    low, high = gap.interval
     return {
         "downstream_rose": downstream.mean_difference > 0 and downstream.consistent,
         "termination_fell": termination.mean_difference < 0 and termination.consistent,
-        "frame_specific": frame_specific(downstream, effects["out_of_frame"]),
+        "frame_moved_to_coding": (
+            gap.mean_difference > 0 and gap.consistent and low > 0 and high > 0
+        ),
     }
 
 
-def paired_effect(ratios: pd.DataFrame, quantity: str, replicates: pd.DataFrame) -> PairedEffect:
-    """Compare treated against untreated within each replicate, for one quantity.
+def stalling(effects: Mapping[str, Effect]) -> bool:
+    """Whether a compound behaves as a stalling agent rather than a readthrough one.
 
-    The replicate is the unit of inference. The three experiments were prepared differently and
-    preparation moves these ratios more than treatment plausibly does, so a treated library is only
-    ever compared with the untreated library prepared beside it.
+    The negative control has to fail the signature in the direction its mechanism predicts —
+    occupancy at the stop does not fall, and occupancy beyond it does not rise — rather than fail
+    the frame condition, which is unstable when there is little downstream signal to compose.
+    """
+
+    return (
+        effects["termination_occupancy"].mean_difference >= 0
+        and effects["downstream_occupancy"].mean_difference <= 0
+    )
+
+
+def paired_effect(
+    ratios: pd.DataFrame,
+    quantity: str,
+    replicates: pd.DataFrame,
+    treated: str,
+    control: str,
+) -> PairedEffect:
+    """Compare treated against control within each replicate, for one quantity.
+
+    Only for a design that documents which libraries were prepared beside each other. Where the
+    metadata does not say, matching replicate numbers across arms mean nothing and the unpaired
+    comparison is the honest one.
     """
 
     merged = ratios.merge(replicates, on="sample", validate="one_to_one")
     wide = merged.pivot(index="replicate", columns="treatment", values=quantity)
-    missing = wide.isna().any(axis=1)
+    for arm in (treated, control):
+        if arm not in wide.columns:
+            raise ValueError(f"no libraries for {arm!r}")
+    missing = wide[[treated, control]].isna().any(axis=1)
     if missing.any():
         raise ValueError(f"replicates without both conditions: {list(wide.index[missing])}")
-    differences = (wide["g418"] - wide["untreated"]).to_numpy(dtype=float)
-    ratios_ = (wide["g418"] / wide["untreated"]).to_numpy(dtype=float)
+    differences = (wide[treated] - wide[control]).to_numpy(dtype=float)
+    ratios_ = (wide[treated] / wide[control]).to_numpy(dtype=float)
     return PairedEffect(quantity=quantity, differences=tuple(differences), ratios=tuple(ratios_))
+
+
+def unpaired_effect(
+    ratios: pd.DataFrame,
+    quantity: str,
+    replicates: pd.DataFrame,
+    treated: str,
+    control: str,
+) -> UnpairedEffect:
+    """Compare two groups of libraries that were not prepared as matched pairs."""
+
+    merged = ratios.merge(replicates, on="sample", validate="one_to_one")
+    groups = {arm: merged.loc[merged["treatment"] == arm, quantity] for arm in (treated, control)}
+    for arm, values in groups.items():
+        if values.empty:
+            raise ValueError(f"no libraries for {arm!r}")
+    return UnpairedEffect(
+        quantity=quantity,
+        treated=tuple(groups[treated].astype(float)),
+        control=tuple(groups[control].astype(float)),
+    )
