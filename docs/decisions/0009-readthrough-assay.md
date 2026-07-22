@@ -39,14 +39,29 @@ be. Comparing treated against untreated across the pooled set would confound pre
 treatment. Each replicate is compared against its own partner, and the three differences are what
 carry the claim.
 
-**The quantity, per transcript per library.** In-frame P-sites in the 3' untranslated region,
-divided by in-frame P-sites in the coding sequence of the same transcript. Normalising within a
-transcript removes library depth and transcript abundance, neither of which is measured here.
+**The quantity, per transcript per library.** In-frame P-sites in the **extension** — the stretch
+running from the native stop to the next stop in the same frame — divided by in-frame P-sites in the
+coding sequence of the same transcript. Normalising within a transcript removes library depth and
+transcript abundance, neither of which is measured here.
 
-**Out-of-frame downstream occupancy is the negative control.** Readthrough continues the reading
-frame, so it must raise the in-frame fraction specifically. A treatment that raises in-frame and
-out-of-frame occupancy equally has changed something else — degradation, contamination, mapping —
-and the claim fails.
+The extension rather than the whole 3' untranslated region, because a ribosome that reads through
+the native stop travels only as far as the next in-frame stop. Measuring beyond it dilutes the
+signal with sequence no readthrough ribosome reaches and admits downstream open reading frames that
+have nothing to do with the native stop. The window is what lies strictly between the two stops: a
+ribosome sitting on either one is terminating. A transcript with no next in-frame stop has no
+window and is excluded rather than counted.
+
+**Out-of-frame downstream occupancy is the negative control, and the rule is arithmetic.**
+Readthrough continues the reading frame, so the in-frame ratio must rise by more than the
+out-of-frame ratio **in every replicate**. A treatment that lifts both together has changed
+something that is not decoding — degradation, contamination, mapping — and the claim fails. "Stays
+flat" is not a judgement made by eye.
+
+**One transcript universe, shared by every library in the comparison.** Coverage is a property of a
+library, so a threshold applied library by library would let the treated and untreated medians be
+taken over different transcripts and the comparison would be partly about which transcripts cleared
+the bar. A transcript must qualify in all six HEK293T libraries or it is used in none of them.
+Libraries outside the comparison — the Calu-6 pair — take no part in deciding that universe.
 
 **Transcripts are excluded before the comparison, for reasons that do not involve treatment:**
 

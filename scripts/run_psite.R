@@ -23,6 +23,8 @@ options <- parse_args(OptionParser(option_list = list(
   make_option("--bam", help = "One *.toTranscriptome.out.bam footprint alignment"),
   make_option("--sample", help = "Name to record this library under"),
   make_option("--gtf", help = "The GENCODE annotation the alignments were made against"),
+  make_option("--transcripts", default = NULL,
+              help = "GENCODE transcript sequences, for the readthrough extension window"),
   make_option("--outdir", default = "results/reads/qc/psite", help = "[default %default]"),
   make_option("--lengths", default = "26:34", help = "Footprint length range [default %default]"),
   make_option("--combine", action = "store_true", default = FALSE,
@@ -47,6 +49,7 @@ if (options$combine) {
   fwrite(gather("region"), file.path(options$outdir, "region_distribution.tsv"), sep = "\t")
   fwrite(gather("shift"), file.path(options$outdir, "offset_shift_check.tsv"), sep = "\t")
   fwrite(gather("metaprofile"), file.path(options$outdir, "metaprofile.tsv"), sep = "\t")
+  fwrite(gather("readthrough"), file.path(options$outdir, "readthrough_counts.tsv"), sep = "\t")
 
   frame_cds <- frames[, .(n = sum(n)), by = .(sample, frame)]
   frame_cds[, fraction := n / sum(n), by = sample]
@@ -90,6 +93,7 @@ if (options$combine) {
 stopifnot(!is.null(options$bam), !is.null(options$sample), !is.null(options$gtf))
 length_range <- eval(parse(text = options$lengths))
 
+
 # Building the annotation walks the whole GTF, so it is built once and reused by later samples.
 cache <- file.path(options$outdir, "annotation.rds")
 annotation <- if (file.exists(cache)) {
@@ -99,6 +103,33 @@ annotation <- if (file.exists(cache)) {
   saveRDS(built, cache)
   built
 }
+
+# The extension: how far a ribosome that reads through the native stop travels before the next stop
+# in the same frame. Measuring the whole 3' untranslated region instead would dilute the signal with
+# sequence no readthrough ribosome reaches, and would count downstream open reading frames that have
+# nothing to do with the native stop. Built once from the transcript sequences and cached.
+extension_cache <- file.path(options$outdir, "extensions.tsv")
+if (!file.exists(extension_cache) && !is.null(options$transcripts)) {
+  sequences <- Biostrings::readDNAStringSet(options$transcripts)
+  names(sequences) <- sub("\\|.*$", "", names(sequences))
+  coding <- annotation[l_cds > 0 & transcript %in% names(sequences)]
+  extension <- vapply(seq_len(nrow(coding)), function(i) {
+    stop_start <- coding$l_utr5[i] + coding$l_cds[i] - 2L
+    full <- sequences[[coding$transcript[i]]]
+    # Nothing downstream to read: no window, and the transcript is excluded rather than counted.
+    if (stop_start < 1L || length(full) < stop_start + 5L) {
+      return(NA_integer_)
+    }
+    tail_seq <- as.character(Biostrings::subseq(full, start = stop_start))
+    n <- nchar(tail_seq)
+    codons <- substring(tail_seq, seq(4L, n - 2L, by = 3L), seq(6L, n, by = 3L))
+    hit <- which(codons %in% c("TAA", "TAG", "TGA"))
+    if (length(hit) == 0) NA_integer_ else as.integer(hit[1] * 3L)
+  }, integer(1))
+  fwrite(data.table(transcript = coding$transcript, extension = extension), extension_cache,
+         sep = "\t")
+}
+extensions <- if (file.exists(extension_cache)) fread(extension_cache) else NULL
 
 # One alignment per read, so a footprint is counted once rather than once per isoform it happens to
 # fit. STAR's primary placement is a pragmatic assignment for calibration, not a claim about which
@@ -131,6 +162,32 @@ fwrite(frame_len, part("frame", options$sample), sep = "\t")
 region <- sample_reads[, .(sample = options$sample, n = .N), by = .(region = psite_region)]
 region[, fraction := n / sum(n)]
 fwrite(region, part("region", options$sample), sep = "\t")
+
+# The counts the readthrough assay is built from, one row per transcript. Frame is the
+# coding frame carried past the stop, so in-frame downstream occupancy is the continuation of the
+# same reading frame rather than a separate definition. Out-of-frame downstream occupancy is kept
+# beside it as the control: readthrough must raise the in-frame share specifically.
+if (!is.null(extensions)) {
+  sample_reads <- merge(sample_reads, extensions, by = "transcript", all.x = TRUE)
+} else {
+  sample_reads[, extension := NA_integer_]
+}
+# The coding sequence ends at psite_from_stop 0, so the native stop occupies -2 to 0 and the next
+# in-frame stop begins `extension` bases later. The window is what lies strictly between them: a
+# ribosome sitting on either stop is terminating, not reading through.
+downstream <- quote(psite_from_stop >= 1L & psite_from_stop <= extension - 3L)
+readthrough <- sample_reads[, .(
+  cds_inframe = sum(psite_region == "cds" & psite_from_start %% 3 == 0),
+  cds_total = sum(psite_region == "cds"),
+  termination = sum(psite_from_stop >= -15 & psite_from_stop <= 0),
+  extension = extension[1],
+  extension_inframe = sum(eval(downstream) & psite_from_start %% 3 == 0, na.rm = TRUE),
+  extension_outframe = sum(eval(downstream) & psite_from_start %% 3 != 0, na.rm = TRUE)
+), by = transcript]
+readthrough <- merge(readthrough, annotation[, .(transcript, l_cds, l_utr3)], by = "transcript")
+readthrough <- readthrough[cds_total > 0]
+readthrough[, sample := options$sample]
+fwrite(readthrough, part("readthrough", options$sample), sep = "\t")
 
 # An internal consistency check, not held-out validation: it re-scores the same reads the offset was
 # inferred from. A resolved offset should still beat its immediate neighbours on coding-frame

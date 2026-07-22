@@ -9,14 +9,16 @@
 set -euo pipefail
 
 gtf=${1:-data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz}
-outdir=${2:-results/reads/qc/psite}
+transcripts=${2:-data/gencode/gencode.v50.transcripts.fa.gz}
+outdir=${3:-results/reads/qc/psite}
 mkdir -p "$outdir"
 : >"$outdir/resources.tsv"
 
 for bam in results/reads/alignments/*.toTranscriptome.out.bam; do
     sample=$(basename "$bam" .Aligned.toTranscriptome.out.bam)
     /usr/bin/time -f "${sample}\t%M\t%e" -a -o "$outdir/resources.tsv" \
-        Rscript scripts/run_psite.R --bam "$bam" --sample "$sample" --gtf "$gtf" --outdir "$outdir"
+        Rscript scripts/run_psite.R --bam "$bam" --sample "$sample" --gtf "$gtf" \
+            --transcripts "$transcripts" --outdir "$outdir"
 done
 
 Rscript scripts/run_psite.R --combine --outdir "$outdir"

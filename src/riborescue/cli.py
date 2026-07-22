@@ -29,6 +29,14 @@ from riborescue.reads import (
     summarise_alignment,
     summarise_trimming,
 )
+from riborescue.readthrough import (
+    library_ratios,
+    overlapping_downstream_cds,
+    paired_effect,
+    qualifying,
+    signature,
+    transcript_genes,
+)
 from riborescue.residue import coverage_by_design
 from riborescue.sequencing import FASTQ_SUBDIR, stage
 from riborescue.tables import (
@@ -434,6 +442,72 @@ def trna_coverage(contexts: Path, out: Path) -> None:
             f"  {row.design_id:<7} {row.conservative:>6} conservative, "
             f"{row.restores_exactly:>6} restored exactly"
         )
+
+
+@main.command("readthrough")
+@click.argument("counts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--gtf", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--samplesheet",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The staged runs, naming each library's treatment and replicate.",
+)
+@click.option("--cell-line", default="HEK293T", show_default=True)
+@_OUT
+def readthrough_assay(
+    counts: Path, gtf: Path, samplesheet: Path, cell_line: str, out: Path
+) -> None:
+    """Test COUNTS for the readthrough signature."""
+
+    runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
+    replicates = runs.loc[
+        (runs["assay"] == "riboseq") & (runs["cell_line"] == cell_line),
+        ["sample", "treatment", "replicate"],
+    ]
+    if replicates.empty:
+        raise click.ClickException(f"{samplesheet} names no {cell_line} footprint libraries")
+
+    measured = read_table(counts)
+    kept = qualifying(
+        measured,
+        transcript_genes(gtf),
+        overlapping_downstream_cds(gtf),
+        samples=set(replicates["sample"]),
+    )
+    click.echo(f"{len(measured):,} transcript rows, {len(kept):,} qualifying")
+
+    ratios = library_ratios(kept)
+    try:
+        effects = [
+            paired_effect(ratios, quantity, replicates)
+            for quantity in ("readthrough", "termination", "out_of_frame")
+        ]
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
+
+    summary = pd.DataFrame(
+        {
+            "quantity": [e.quantity for e in effects],
+            "mean_difference": [e.mean_difference for e in effects],
+            "ci_low": [e.interval[0] for e in effects],
+            "ci_high": [e.interval[1] for e in effects],
+            "consistent": [e.consistent for e in effects],
+            "per_replicate": [", ".join(f"{d:+.4g}" for d in e.differences) for e in effects],
+        }
+    )
+    write_table(summary, out)
+
+    for row in summary.itertuples():
+        click.echo(
+            f"{row.quantity:>13}: {row.mean_difference:+.4g} "
+            f"[{row.ci_low:+.4g}, {row.ci_high:+.4g}] "
+            f"{'consistent' if row.consistent else 'inconsistent'} ({row.per_replicate})"
+        )
+
+    # All three are required together; any one alone describes something that is not readthrough.
+    for condition, met in signature({e.quantity: e for e in effects}).items():
+        click.echo(f"  {condition}: {'yes' if met else 'no'}")
 
 
 @main.command("landscape")
