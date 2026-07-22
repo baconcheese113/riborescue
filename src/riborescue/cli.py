@@ -512,6 +512,10 @@ def readthrough_assay(
         )
 
     measured = read_table(counts)
+    # A library named for the contrast but absent from the counts would quietly shrink the
+    # comparison — three against three becoming two against three without a word.
+    if absent := sorted(set(arms["sample"]) - set(measured["sample"])):
+        raise click.ClickException(f"{counts} has no rows for: {', '.join(absent)}")
     kept = qualifying(
         measured,
         transcript_genes(gtf),
@@ -541,6 +545,10 @@ def readthrough_assay(
         }
     )
     write_table(summary, out)
+    # The per-library figures the effects were built from, so a pooled proportion resting on a
+    # handful of transcripts is visible rather than buried under three summary rows.
+    diagnostics = out.with_name(f"{out.stem}_by_library{out.suffix}")
+    write_table(ratios.merge(arms, on="sample"), diagnostics)
 
     click.echo(f"{treated} against {control}, {'paired' if paired else 'unpaired'}")
     for row in summary.itertuples():

@@ -5,12 +5,16 @@ falls while in-frame occupancy downstream of it rises. Out-of-frame downstream o
 alongside as the control, because readthrough continues the reading frame and must raise the
 in-frame share specifically.
 
-Ratios are formed within a transcript, against that transcript's own coding sequence, so neither
-library depth nor transcript abundance enters, which matters here, because the footprint libraries
-have no matched RNA-seq and abundance is therefore unknown.
+Every quantity is a ratio taken within one library against that library's own coding sequence, so
+library depth cancels. Transcript abundance does not: counts are pooled before dividing, so a highly
+expressed transcript carries more weight than a lightly expressed one. That is deliberate for a
+proportion, and it is why the per-transcript median and the share of transcripts contributing
+anything are reported beside every pooled figure. These libraries have no matched RNA-seq, so
+abundance is unknown and cannot be adjusted for.
 """
 
 import gzip
+import math
 import re
 from collections import defaultdict
 from collections.abc import Collection, Mapping
@@ -328,7 +332,8 @@ class UnpairedEffect:
         if error == 0:
             return (self.mean_difference, self.mean_difference)
         df = (va + vb) ** 2 / (va**2 / (len(a) - 1) + vb**2 / (len(b) - 1))
-        critical = _T_CRITICAL.get(round(df), 1.96)
+        # Rounding down is the conservative direction: fewer degrees of freedom, wider interval.
+        critical = _T_CRITICAL.get(max(1, math.floor(df)), 1.96)
         half = critical * error
         return (self.mean_difference - half, self.mean_difference + half)
 
@@ -372,9 +377,12 @@ def stalling(effects: Mapping[str, Effect]) -> bool:
     the frame condition, which is unstable when there is little downstream signal to compose.
     """
 
+    termination = effects["termination_occupancy"]
+    downstream = effects["downstream_occupancy"]
     return (
-        effects["termination_occupancy"].mean_difference >= 0
-        and effects["downstream_occupancy"].mean_difference <= 0
+        termination.mean_difference >= 0
+        and downstream.mean_difference <= 0
+        and termination.consistent
     )
 
 

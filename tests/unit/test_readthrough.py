@@ -366,3 +366,34 @@ def test_a_stalling_compound_is_recognised_by_its_own_direction():
     g418 = {q: unpaired_effect(ratios, q, CONFIRM, "g418", "dmso") for q in quantities}
     assert stalling(sri) is True
     assert stalling(g418) is False
+
+
+def test_a_stalling_verdict_needs_consistent_movement_not_just_a_mean():
+    """One noisy library must not carry the negative control on its group mean alone."""
+
+    ratios = _ratios(
+        downstream_occupancy={"dmso": [0.01] * 3, "g418": [0.03] * 3, "sri": [0.005] * 3},
+        # termination rises on average but the groups overlap, so nothing is established
+        termination_occupancy={"dmso": [0.50, 0.90, 0.50], "g418": [0.30] * 3, "sri": [0.70] * 3},
+        frame_gap={"dmso": [-0.1] * 3, "g418": [-0.01] * 3, "sri": [-0.1] * 3},
+    )
+    quantities = ("downstream_occupancy", "termination_occupancy", "frame_gap")
+    sri = {q: unpaired_effect(ratios, q, CONFIRM, "sri", "dmso") for q in quantities}
+    assert sri["termination_occupancy"].mean_difference > 0
+    assert sri["termination_occupancy"].consistent is False
+    assert stalling(sri) is False
+
+
+def test_the_welch_interval_rounds_degrees_of_freedom_down():
+    """Rounding up would narrow the interval; the conservative direction is fewer degrees."""
+
+    ratios = _ratios(
+        q={"dmso": [0.10, 0.12, 0.20], "g418": [0.30, 0.31, 0.32], "sri": [0.1] * 3}
+    )
+    low, high = unpaired_effect(ratios, "q", CONFIRM, "g418", "dmso").interval
+    # a Welch interval on these groups has df near 2.3; flooring to 2 gives t = 4.303
+    assert low < high
+    assert (high - low) / 2 > 4.0 * float(
+        (pd.Series([0.10, 0.12, 0.20]).var(ddof=1) / 3
+         + pd.Series([0.30, 0.31, 0.32]).var(ddof=1) / 3) ** 0.5
+    )
