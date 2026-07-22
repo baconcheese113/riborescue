@@ -77,7 +77,7 @@ gives no replication, and its Mycoplasma burden tracks treatment, so it can show
 computation runs and produces sane numbers on a second cell line. It cannot establish biological
 specificity and is not counted toward the rule.
 
-**The confirming contrasts are named here, and all of them are reported.** GSE179274 holds patient
+**The supporting contrasts are named here, and all of them are reported.** GSE179274 holds patient
 fibroblasts as five separate libraries of two replicates each — untreated, G418 at 0.1 mg/mL, G418
 at 0.5 mg/mL, an EGFP control construct, and a tyrosine suppressor tRNA — and a mouse liver arm of
 three treated against three control. The contrasts are fixed as:
@@ -96,6 +96,50 @@ replicates sitting inside it, so treatment and library preparation are confounde
 with two replicates per arm — weak, and able to corroborate a direction rather than carry the claim.
 That the statistic is normalised inside each library against its own coding sequence is what makes
 an unpaired comparison tolerable at all.
+
+**The quantities, exactly.** Within one library, over the qualifying transcripts of the contrast's
+shared universe, counts are summed before any ratio is taken:
+
+```
+downstream_occupancy = Σ extension_frame0 / Σ cds_frame0
+termination_occupancy = Σ termination      / Σ cds_frame0
+downstream_share0     = Σ extension_frame0 / Σ (extension_frame0 + extension_frame1 + extension_frame2)
+cds_share0            = Σ cds_frame0       / Σ (cds_frame0 + cds_frame1 + cds_frame2)
+frame_gap             = downstream_share0 - cds_share0
+```
+
+Paired difference for a replicate is the treated library's value minus its partner's. Unpaired
+difference is the mean over treated libraries minus the mean over untreated ones.
+
+**What can confirm, and what can only support.** The rule is defined for a paired design with three
+replicates, so only a dataset with that structure can confirm it. That is **GSE144140**: HEK293T,
+DMSO against G418 500 µg/mL against SRI-37240 10 µM, three replicates of each, and no part in
+shaping this rule. It carries its own negative control — SRI-37240 raises occupancy at stop codons
+without raising occupancy beyond them, which is stalling rather than readthrough — so the contrast
+discriminates instead of merely responding. The control is confirmed when G418 against DMSO meets
+all three conditions **and** SRI-37240 against DMSO fails the frame condition. A rule that fires on
+both has not demonstrated specificity.
+
+Its replicate letters run across the treatments (`1_dmso_A`, `4_g418_A`, `7_sri37240_A`), which is
+consistent with matched batches but is not stated as such in the series metadata. Pairing is
+therefore an assumption of the primary analysis, recorded as one, and the unpaired result is
+reported beside it. If the two disagree in direction, the pairing assumption is withdrawn and the
+unpaired result stands.
+
+GSE179274 supports and cannot confirm. Its arms are separate libraries of two replicates each, so
+its contrasts are unpaired at n = 2, where an interval is too wide to decide anything. They are
+reported for direction and for the suppressor tRNA, which is the modality this project ultimately
+cares about and which no other public dataset profiles.
+
+**The unpaired rule, for the supporting contrasts.** The estimator is the difference in means, the
+interval is a Welch t interval on the two groups, and consistency means every treated library
+exceeds every untreated one for that quantity. A supporting contrast is described as agreeing with
+the control, disagreeing with it, or indeterminate. It never converts into a pass.
+
+**Results are kept apart by dataset.** Each dataset writes to its own directory and its own
+combined tables, and the combiner reads only the directory it was given. Files from HEK293T,
+Calu-6, the fibroblast arm and the mouse arm are never merged by a wildcard, which is how stale
+per-library tables from an earlier run reached a combined table once already.
 
 ## Consequences
 
