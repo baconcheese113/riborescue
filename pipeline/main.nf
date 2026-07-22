@@ -112,22 +112,28 @@ workflow READS {
     def aligned = params.genome && params.annotation
     if( aligned ) {
         // Structural RNA is most of a footprint library and aligns to many loci rather than none,
-        // so it is removed before the genome sees the reads.
-        def depleted = CUTADAPT.out.reads
+        // so it is removed before the genome sees the reads. A transcriptome library is a few
+        // percent structural RNA and pays the whole depletion cost to remove almost nothing, so
+        // only footprints are depleted.
+        def to_align = CUTADAPT.out.reads
         if( params.contaminants && params.rdna ) {
             CONTAMINANT_INDEX(
                 file(params.contaminants, checkIfExists: true),
                 file(params.rdna, checkIfExists: true)
             )
-            DEPLETE_CONTAMINANTS(CUTADAPT.out.reads, CONTAMINANT_INDEX.out.index)
-            depleted = DEPLETE_CONTAMINANTS.out.reads
+            def by_assay = CUTADAPT.out.reads.branch { meta, _reads ->
+                deplete: meta.assay == 'riboseq'
+                keep: true
+            }
+            DEPLETE_CONTAMINANTS(by_assay.deplete, CONTAMINANT_INDEX.out.index)
+            to_align = DEPLETE_CONTAMINANTS.out.reads.mix(by_assay.keep)
         }
 
         STAR_INDEX(
             file(params.genome, checkIfExists: true),
             file(params.annotation, checkIfExists: true)
         )
-        STAR_ALIGN(depleted, STAR_INDEX.out.index)
+        STAR_ALIGN(to_align, STAR_INDEX.out.index)
         ALIGNMENT_SUMMARY(STAR_ALIGN.out.log.collect())
     }
 

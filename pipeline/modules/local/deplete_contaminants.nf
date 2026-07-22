@@ -28,6 +28,6 @@ process DEPLETE_CONTAMINANTS {
         --outSAMtype None \\
         --outReadsUnmapped Fastx
     ${rename}
-    gzip ${meta.sample}.depleted_*.fastq
+    pigz -p ${task.cpus} ${meta.sample}.depleted_*.fastq
     """
 }

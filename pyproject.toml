@@ -75,6 +75,7 @@ cutadapt = ">=4.9"
 star = ">=2.7"
 samtools = ">=1.21"
 subread = ">=2.0.6"
+pigz = ">=2.8"
 
 [tool.pixi.feature.oracle.dependencies]
 r-base = ">=4.5.3,<4.6"
