@@ -114,17 +114,28 @@ difference is the mean over treated libraries minus the mean over untreated ones
 **What can confirm, and what can only support.** The rule is defined for a paired design with three
 replicates, so only a dataset with that structure can confirm it. That is **GSE144140**: HEK293T,
 DMSO against G418 500 µg/mL against SRI-37240 10 µM, three replicates of each, and no part in
-shaping this rule. It carries its own negative control — SRI-37240 raises occupancy at stop codons
-without raising occupancy beyond them, which is stalling rather than readthrough — so the contrast
-discriminates instead of merely responding. The control is confirmed when G418 against DMSO meets
-all three conditions **and** SRI-37240 against DMSO fails the frame condition. A rule that fires on
-both has not demonstrated specificity.
+shaping this rule, and none of its runs appears in the series that did. It carries its own negative
+control — SRI-37240 raises occupancy at stop codons without raising occupancy beyond them, which is
+stalling rather than readthrough — so the contrast discriminates instead of merely responding.
 
-Its replicate letters run across the treatments (`1_dmso_A`, `4_g418_A`, `7_sri37240_A`), which is
-consistent with matched batches but is not stated as such in the series metadata. Pairing is
-therefore an assumption of the primary analysis, recorded as one, and the unpaired result is
-reported beside it. If the two disagree in direction, the pairing assumption is withdrawn and the
-unpaired result stands.
+The control is confirmed when G418 against DMSO meets all three conditions **and** SRI-37240 against
+DMSO fails the signature in the direction its mechanism predicts: termination occupancy does not
+fall, and downstream occupancy does not rise. Failure is required of the signature as a whole rather
+than of the frame condition specifically, because a frame composition built from sparse downstream
+counts is unstable, and a compound that produces almost no downstream signal would fail that
+condition for arithmetic reasons that say nothing about stalling. A rule that fires on both
+compounds has not demonstrated specificity.
+
+**The comparison there is unpaired.** Its replicate letters run across the treatments (`1_dmso_A`,
+`4_g418_A`, `7_sri37240_A`), which is consistent with matched batches, but the series metadata does
+not say so. Absent an explicit statement of blocking, the primary analysis is the unpaired
+three-against-three rule below. The paired analysis is reported as a pre-specified sensitivity
+check, and it is reported whatever it shows: which of the two is primary is fixed here and is not
+chosen later according to whether they agree.
+
+For an unpaired contrast, conditions 1 and 2 require the difference in means to have the stated sign
+with every treated library on the correct side of every untreated one, and condition 3 requires in
+addition that the Welch interval on `frame_gap` excludes zero.
 
 GSE179274 supports and cannot confirm. Its arms are separate libraries of two replicates each, so
 its contrasts are unpaired at n = 2, where an interval is too wide to decide anything. They are
