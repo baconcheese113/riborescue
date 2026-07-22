@@ -26,7 +26,9 @@ options <- parse_args(OptionParser(option_list = list(
   make_option("--outdir", default = "results/reads/qc/psite", help = "[default %default]"),
   make_option("--lengths", default = "26:34", help = "Footprint length range [default %default]"),
   make_option("--combine", action = "store_true", default = FALSE,
-              help = "Merge the per-sample tables already in --outdir")
+              help = "Merge the per-sample tables already in --outdir"),
+  make_option("--evidence", default = "docs/figures",
+              help = "Where the tracked Gate 3 evidence lands [default %default]")
 )))
 
 dir.create(options$outdir, recursive = TRUE, showWarnings = FALSE)
@@ -61,6 +63,26 @@ if (options$combine) {
     by = "sample"
   )
   fwrite(summary, file.path(options$outdir, "psite_summary.tsv"), sep = "\t")
+
+  # Gate 3 is a judgement a person makes, so the evidence behind it is tracked rather than left in
+  # the regenerable results tree: the table that was read, and the periodicity that was looked at.
+  dir.create(options$evidence, recursive = TRUE, showWarnings = FALSE)
+  fwrite(summary, file.path(options$evidence, "gate3_psite_summary.tsv"), sep = "\t")
+
+  profile <- gather("metaprofile")
+  profile[, region := factor(region,
+                             levels = c("Distance from start (nt)", "Distance from stop (nt)"),
+                             labels = c("start codon", "stop codon"))]
+  figure <- ggplot2::ggplot(profile[!is.na(region)],
+                            ggplot2::aes(x = distance, y = scaled_count)) +
+    ggplot2::geom_line(linewidth = 0.3, colour = "#c0392b") +
+    ggplot2::facet_grid(sample ~ region, scales = "free", switch = "y") +
+    ggplot2::labs(x = "distance from codon (nt)", y = "P-site frequency") +
+    ggplot2::theme_bw(base_size = 7) +
+    ggplot2::theme(strip.text.y.left = ggplot2::element_text(angle = 0, hjust = 1))
+  ggplot2::ggsave(file.path(options$evidence, "gate3_periodicity.png"),
+                  figure, width = 9, height = 10, dpi = 150)
+
   print(summary)
   quit(save = "no")
 }

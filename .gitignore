@@ -33,9 +33,13 @@ results/
 # pipeline/tests/data stay in git
 /data/
 
-# Docs — the decision records are the tracked ones; design documents and course material stay local
+# Docs — the decision records and the evidence behind a human gate are tracked; design documents
+# and course material stay local
 /docs/*
 !/docs/decisions/
+!/docs/figures/
+/docs/figures/*
+!/docs/figures/gate*
 
 # OS / editor — settings hold machine-local paths; only the extension list is shared
 .DS_Store
