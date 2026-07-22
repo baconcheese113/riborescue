@@ -20,43 +20,65 @@ with uncertainty shown by default.
 |---|---|
 | `src/riborescue/` | The Python package: data contracts, variant triage, the evaluation harness, and the CLI |
 | `tests/` | `pytest` suites — unit, property-based (`hypothesis`), and protected negative controls |
-| `pipeline/` | The Nextflow pipeline that consumes `nf-core/riboseq` output and produces the scored table |
-| `frontend/` | The static web app (Next.js) that presents the table |
-| `scripts/` | The R reproduction oracle and data-fetch scripts |
-| `data/` | Working inputs and intermediates — fetched from public sources, never committed |
+| `pipeline/` | The hand-authored Nextflow pipeline: Ribo-seq read processing and the scored variant × therapy table |
+| `scripts/` | R analysis (reproduction oracle, P-site calibration) and data-fetch scripts |
+| `frontend/` | The static web app (Next.js) that presents the table — *planned* |
+| `data/` | Fetched inputs — from public sources, verified by checksum, never committed |
+| `results/` | Pipeline and analysis outputs — regenerated from inputs, never committed |
 | `docs/decisions/` | Architecture decision records — the reasoning behind each major technical choice |
 | `Dockerfile` | The runtime image Nextflow processes use, carrying the `riborescue` command |
 | `.github/workflows/` | The gate that runs on every push: lint, types, tests, reproduction parity, pipeline, image |
 
 ## Getting started
 
-The toolchain lives in a single Pixi environment on `linux-64` (WSL2 or the dev container), so the
-host machine stays clean.
+The toolchain lives in Pixi on `linux-64` (WSL2 or the dev container), so the host machine stays
+clean. One lockfile pins Python, Nextflow, R and every tool; `pixi install` resolves it. It holds
+three environments: `default` to develop in, `runtime` for what the container ships, and `psite`
+for riboWaltz, which pins an older R than the reproduction oracle.
 
 ```bash
 pixi install        # resolve the pinned toolchain
 pixi run check      # lint, type-check, and run the full test suite
-pixi run oracle     # fetch the published data and regenerate the reproduction fixtures
-pixi run test-slow  # refit the published model on every committed round and check parity
-pixi run triage --help
+pixi run fetch      # fetch the public inputs (ClinVar, MANE, GENCODE), verified by checksum
 ```
 
-The Java toolchain the Nextflow editor tooling needs lives in the Pixi environment, so launch the
-editor from an activated shell to inherit `JAVA_HOME`:
+**Reproduce the published model** — refit it and check parity to the R oracle:
 
 ```bash
-pixi shell
-code .
+pixi run oracle
+pixi run test-slow
 ```
+
+**Score the variants** — ClinVar's nonsense variants placed on transcripts and scored per therapy:
+
+```bash
+cd pipeline && nextflow run . --step amenability -profile local \
+    --clinvar ../data/clinvar/*.vcf.gz \
+    --mane_annotation ../data/mane/*.gff.gz \
+    --mane_transcripts ../data/mane/*.rna.fna.gz \
+    --mane_proteins ../data/mane/*.protein.faa.gz \
+    --training '../tests/fixtures/oracle/features_*.tsv.gz' \
+    --held_out '../tests/fixtures/oracle/predictions_*.tsv.gz'
+```
+
+**Process the Ribo-seq data** — QC, trimming, rRNA depletion, alignment, then P-site calibration:
+
+```bash
+pixi run stage-runs         # fetch the FASTQ named in pipeline/assets/, verified
+pixi run reads              # FastQC → cutadapt → deplete → STAR → metrics
+pixi run -e psite psite     # riboWaltz P-site offsets and periodicity
+```
+
+A single `riborescue` command backs every pipeline step; `pixi run triage --help` lists them.
 
 ## How it fits together
 
-- **Development** happens through Pixi — one lockfile pins Python, Nextflow, R, Node, and every
-  dependency identically across machines.
+- **Development** happens through Pixi — one lockfile pins Python, Nextflow and R identically across
+  machines.
 - **The pipeline** runs offline on a workstation. It is not hosted; anyone with Docker and Nextflow
   reproduces its outputs from pinned inputs.
-- **Results** are published to Zenodo with a DOI. The static app reads them and deploys to the edge
-  with no backend.
+- **Results** publish to Zenodo with a DOI; a static app (planned) will read them and deploy to the
+  edge with no backend.
 
 The reasoning behind each major technical choice is recorded in
 [`docs/decisions/`](docs/decisions/).

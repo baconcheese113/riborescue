@@ -85,11 +85,31 @@ r-dplyr = ">=1.2.1,<2"
 r-jsonlite = ">=2.0.0,<3"
 r-optparse = ">=1.8.2,<2"
 
+# riboWaltz calibrates P-site offsets and periodicity, the published tool the PRD names. Its build
+# pins R 4.4, one minor version behind the caret oracle, so it resolves in its own environment.
+[tool.pixi.feature.psite.dependencies]
+ribowaltz = "2.0.*"
+# riboWaltz builds its annotation through GenomicFeatures. txdbmaker its recipe genuinely omits;
+# genomeinfodbdata already arrives transitively but is a data package whose payload installs in a
+# post-link script, so it is promoted here to name what the committed pixi config must run.
+bioconductor-txdbmaker = "*"
+bioconductor-genomeinfodbdata = "*"
+"r-data.table" = "*"
+r-optparse = "*"
+r-jsonlite = "*"
+
+# The calibration runs in this environment because riboWaltz pins an R the caret oracle does not.
+# One process per library, sequentially: a transcriptome alignment does not fit in memory alongside
+# its neighbours, and an exited process is the only reliable way to give the memory back.
+[tool.pixi.feature.psite.tasks]
+psite = { cmd = "bash scripts/run_psite_all.sh", env = { OPENBLAS_NUM_THREADS = "1" } }
+
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
 [tool.pixi.environments]
 default = { features = ["dev", "pipeline", "oracle", "riboseq"], solve-group = "riborescue" }
 runtime = { features = [], solve-group = "riborescue" }
+psite = { features = ["psite"], no-default-feature = true }
 
 [tool.pixi.tasks]
 lint = "ruff check ."
@@ -113,7 +133,12 @@ score = { cmd = "riborescue score results/clinvar_contexts.tsv tests/fixtures/or
 landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenability.tsv --out results/landscape.tsv --summary results/landscape_summary.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
 stage-runs = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv"
-reads = { cmd = "nextflow run . --step reads --samplesheet ../results/staged_runs.tsv -profile local", cwd = "pipeline", depends-on = ["stage-runs"] }
+reads = { cmd = """nextflow run . --step reads -profile local \
+  --samplesheet ../results/staged_runs.tsv \
+  --genome ../data/gencode/GRCh38.primary_assembly.genome.fa.gz \
+  --annotation ../data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
+  --contaminants ../data/gencode/gencode.v50.transcripts.fa.gz \
+  --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 

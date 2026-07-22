@@ -1,5 +1,7 @@
-# Pixi — project-local environments, never committed
-.pixi/
+# Pixi — project-local environments, never committed; the config travels with the repo so the
+# post-link scripts Bioconductor data packages need run on a clean install
+.pixi/*
+!.pixi/config.toml
 
 # Python
 __pycache__/

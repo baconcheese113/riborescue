@@ -56,6 +56,13 @@ pixi run types           pyright
 pixi run app-dev         Next.js dev server
 ```
 
+Pixi runs tasks through a portable shell, not bash: loops and other reserved words are rejected. A
+task that needs them calls a script in `scripts/` instead of inlining the shell.
+
+Environments are `default` to develop in, `runtime` for what the container ships, and `psite` for
+riboWaltz, which pins an older R than the reproduction oracle. Run a task elsewhere with
+`pixi run -e <env> <task>`.
+
 ## Code conventions
 
 - Python ≥ 3.12, native `X | Y` unions, type hints on every signature, checked with **pyright**.
