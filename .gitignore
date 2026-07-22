@@ -39,8 +39,9 @@ results/
 !/docs/decisions/
 !/docs/figures/
 /docs/figures/*
-!/docs/figures/periodicity.png
-!/docs/figures/psite_summary.tsv
+!/docs/figures/*/
+!/docs/figures/*/periodicity.png
+!/docs/figures/*/psite_summary.tsv
 
 # OS / editor — settings hold machine-local paths; only the extension list is shared
 .DS_Store

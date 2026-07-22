@@ -102,7 +102,7 @@ r-jsonlite = "*"
 # One process per library, sequentially: a transcriptome alignment does not fit in memory alongside
 # its neighbours, and an exited process is the only reliable way to give the memory back.
 [tool.pixi.feature.psite.tasks]
-psite = { cmd = "bash scripts/run_psite_all.sh", env = { OPENBLAS_NUM_THREADS = "1" } }
+psite = { cmd = "bash scripts/run_psite_all.sh hek293t results/staged_runs.tsv HEK293T", env = { OPENBLAS_NUM_THREADS = "1" } }
 
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
@@ -131,7 +131,7 @@ contexts = """riborescue contexts results/clinvar_nonsense.tsv \
   --out results/clinvar_contexts.tsv"""
 score = { cmd = "riborescue score results/clinvar_contexts.tsv tests/fixtures/oracle/features_*.tsv.gz --out results/amenability.tsv", env = { OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1" } }
 landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenability.tsv --out results/landscape.tsv --summary results/landscape_summary.tsv"
-extensions = "riborescue extensions data/gencode/gencode.v50.transcripts.fa.gz --annotation results/reads/qc/psite/annotation.tsv --out results/reads/qc/psite/extensions.tsv"
+extensions = "riborescue extensions data/gencode/gencode.v50.transcripts.fa.gz --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv --out results/psite/_reference/gencode.v50.primary_assembly.annotation/extensions.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
 stage-runs = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv"
 reads = { cmd = """nextflow run . --step reads -profile local \

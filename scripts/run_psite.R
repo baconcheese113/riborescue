@@ -23,7 +23,9 @@ options <- parse_args(OptionParser(option_list = list(
   make_option("--bam", help = "One *.toTranscriptome.out.bam footprint alignment"),
   make_option("--sample", help = "Name to record this library under"),
   make_option("--gtf", help = "The GENCODE annotation the alignments were made against"),
-  make_option("--outdir", default = "results/reads/qc/psite", help = "[default %default]"),
+  make_option("--outdir", default = "results/psite/hek293t", help = "[default %default]"),
+  make_option("--cache", default = NULL,
+              help = "Where the reference-derived annotation and extension windows live"),
   make_option("--lengths", default = "26:34", help = "Footprint length range [default %default]"),
   make_option("--combine", action = "store_true", default = FALSE,
               help = "Merge the per-sample tables already in --outdir"),
@@ -94,7 +96,9 @@ length_range <- eval(parse(text = options$lengths))
 
 
 # Building the annotation walks the whole GTF, so it is built once and reused by later samples.
-cache <- file.path(options$outdir, "annotation.rds")
+cache_dir <- if (is.null(options$cache)) options$outdir else options$cache
+dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+cache <- file.path(cache_dir, "annotation.rds")
 annotation <- if (file.exists(cache)) {
   readRDS(cache)
 } else {
@@ -105,7 +109,7 @@ annotation <- if (file.exists(cache)) {
 
 # The extension window each transcript allows a readthrough ribosome, built beforehand by
 # `riborescue extensions` and simply read here.
-extension_cache <- file.path(options$outdir, "extensions.tsv")
+extension_cache <- file.path(cache_dir, "extensions.tsv")
 extensions <- if (file.exists(extension_cache)) fread(extension_cache) else NULL
 
 # One alignment per read, so a footprint is counted once rather than once per isoform it happens to
