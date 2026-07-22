@@ -45,10 +45,57 @@ difference was a treated value minus a floor. The respecified assay reports the 
 with any downstream signal, states the pooled counts beside the per-transcript medians, and does not
 present a median at the floor as though it were a measurement.
 
+**The statistic is pooled within a library, not a median across transcripts.** A frame composition is
+a proportion, and the frozen run showed the per-transcript median sitting at exactly zero in all
+three untreated libraries. Pooling the qualifying transcripts of a library gives a share that is
+defined even where most transcripts carry nothing. The per-transcript median and the share of
+transcripts with any downstream signal are both reported beside it, so a pooled figure resting on
+few transcripts is visible rather than hidden. This choice was made after seeing the frozen run,
+which is one more reason the rule is confirmed elsewhere before it is believed.
+
+**The pass rule, in full.** Writing `frame gap` for a library's downstream frame-0 share minus its
+own coding frame-0 share, the control passes only when all three hold:
+
+1. **Downstream occupancy rises.** The paired difference in downstream in-frame occupancy is
+   positive in every replicate and positive on average.
+2. **Termination occupancy falls.** The paired difference in termination occupancy is negative in
+   every replicate and negative on average.
+3. **Frame composition moves toward the coding frame.** The paired difference in `frame gap` is
+   positive in every replicate, positive on average, **and its 95% interval excludes zero.**
+
+The interval is required to exclude zero for the third condition only. It is the claim the control
+exists to make, so it carries the stricter bar. The first two are directional requirements, where
+agreement across three replicates is the evidence and a three-point interval is too wide to add
+much. A result meeting one or two conditions is reported as what it is and does not pass.
+
 **This respecification is not tested on the libraries that motivated it.** Everything above was
 chosen while looking at those six libraries, so their reanalysis is exploratory and stays labelled
-that way. The rule is confirmed on data that took no part in shaping it — the Calu-6 pair, and the
-suppressor-tRNA libraries of GSE179274 — before the control is called passed.
+that way.
+
+**Calu-6 is a mechanical check, not a confirmation.** One treated library against one untreated one
+gives no replication, and its Mycoplasma burden tracks treatment, so it can show that the
+computation runs and produces sane numbers on a second cell line. It cannot establish biological
+specificity and is not counted toward the rule.
+
+**The confirming contrasts are named here, and all of them are reported.** GSE179274 holds patient
+fibroblasts as five separate libraries of two replicates each — untreated, G418 at 0.1 mg/mL, G418
+at 0.5 mg/mL, an EGFP control construct, and a tyrosine suppressor tRNA — and a mouse liver arm of
+three treated against three control. The contrasts are fixed as:
+
+- untreated against G418 0.1 mg/mL;
+- untreated against G418 0.5 mg/mL;
+- EGFP construct against tyrosine suppressor tRNA;
+- mouse liver control against treated.
+
+Each is analysed and reported separately. Whichever looks best is not selected afterwards, and the
+mouse arm needs its own annotation and extension windows before it can be run at all.
+
+**No pairing is invented there.** Each treatment in GSE179274 is its own library, with the two
+replicates sitting inside it, so treatment and library preparation are confounded by the design and
+`rep1` of one arm has no relationship to `rep1` of another. Those contrasts are therefore unpaired
+with two replicates per arm — weak, and able to corroborate a direction rather than carry the claim.
+That the statistic is normalised inside each library against its own coding sequence is what makes
+an unpaired comparison tolerable at all.
 
 ## Consequences
 

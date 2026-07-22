@@ -19,14 +19,24 @@ if [ ! -f "$outdir/extensions.tsv" ]; then
 fi
 : >"$outdir/resources.tsv"
 
+# Every library runs the same bytes. Each library is a fresh R process that re-reads the script, so
+# an edit part-way through a run is read half-written by whichever process opens it at that moment —
+# which happened, and surfaced as a parse error in the middle of a healthy run. The snapshot is
+# read-only and removed on exit, and its checksum is recorded beside the results.
+snapshot=$(mktemp -d)
+trap 'chmod -R u+w "$snapshot"; rm -rf "$snapshot"' EXIT
+cp scripts/run_psite.R "$snapshot/run_psite.R"
+chmod a-w "$snapshot/run_psite.R"
+md5sum "$snapshot/run_psite.R" | awk '{print $1}' >"$outdir/script.md5"
+
 for bam in results/reads/alignments/*.toTranscriptome.out.bam; do
     sample=$(basename "$bam" .Aligned.toTranscriptome.out.bam)
     /usr/bin/time -f "${sample}\t%M\t%e" -a -o "$outdir/resources.tsv" \
-        Rscript scripts/run_psite.R --bam "$bam" --sample "$sample" --gtf "$gtf" \
+        Rscript "$snapshot/run_psite.R" --bam "$bam" --sample "$sample" --gtf "$gtf" \
             --outdir "$outdir"
 done
 
-Rscript scripts/run_psite.R --combine --outdir "$outdir"
+Rscript "$snapshot/run_psite.R" --combine --outdir "$outdir"
 
 printf 'sample\tpeak_rss_kb\tseconds\n' | cat - "$outdir/resources.tsv" >"$outdir/resources.tmp"
 mv "$outdir/resources.tmp" "$outdir/resources.tsv"
