@@ -45,7 +45,7 @@ such a cell is unmeasured.
 
 **Selection is nested and never touches the evaluation folds.** Outer folds are the authors' own
 round assignments from the oracle fixtures. Regularisation strength and interaction rank are chosen
-by validation *inside* each training fold. Model 1 is refit unchanged so that Gate 1 parity holds
+by validation *inside* each training fold. Model 1 is refit unchanged so that Toledano parity holds
 throughout.
 
 **The evaluation grid is fixed in advance**, and every model reports every row:

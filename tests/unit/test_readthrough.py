@@ -8,8 +8,10 @@ from riborescue.readthrough import (
     MINIMUM_CDS_PSITES,
     MINIMUM_UTR3_LENGTH,
     PROGRAMMED_READTHROUGH,
+    extension_windows,
     frame_specific,
     library_ratios,
+    next_in_frame_stop,
     overlapping_downstream_cds,
     paired_effect,
     qualifying,
@@ -245,3 +247,42 @@ def test_a_library_outside_the_comparison_cannot_narrow_the_universe():
     )
     assert qualifying(table).empty
     assert set(qualifying(table, samples=hek)["sample"]) == set(hek)
+
+
+# The stop codon starts at index 6 in each of these; what follows differs.
+def test_the_next_stop_immediately_after_is_three_bases_on():
+    assert next_in_frame_stop("AAACCC" "TAA" "TGA" "AAA", 6) == 3
+
+
+def test_one_sense_codon_before_the_next_stop_is_six():
+    assert next_in_frame_stop("AAACCC" "TAA" "GGG" "TAG" "AAA", 6) == 6
+
+
+def test_a_stop_out_of_frame_does_not_count():
+    """TGA sits one base off the frame, so the in-frame TAA two codons on is the answer."""
+
+    assert next_in_frame_stop("AAACCC" "TAA" "GTG" "AGG" "TAA", 6) == 9
+
+
+def test_no_further_stop_in_frame_gives_nothing():
+    assert next_in_frame_stop("AAACCC" "TAA" "GGGCCCAAA", 6) is None
+
+
+def test_a_transcript_ending_at_its_stop_gives_nothing():
+    assert next_in_frame_stop("AAACCC" "TAA", 6) is None
+
+
+def test_a_trailing_partial_codon_is_not_read():
+    assert next_in_frame_stop("AAACCC" "TAA" "GGG" "TA", 6) is None
+
+
+def test_extension_windows_skips_transcripts_without_a_sequence(tmp_path: Path):
+    fasta = tmp_path / "t.fa.gz"
+    with gzip.open(fasta, "wt") as handle:
+        handle.write(">T1|ENSG1|x|x|N|N|21|protein_coding|\nAAACCCTAAGGGTAGAAA\n")
+    annotation = pd.DataFrame(
+        {"transcript": ["T1", "MISSING"], "l_utr5": [3, 3], "l_cds": [6, 6]}
+    )
+    windows = extension_windows(fasta, annotation)
+    assert list(windows["transcript"]) == ["T1"]
+    assert windows.loc[0, "extension"] == 6

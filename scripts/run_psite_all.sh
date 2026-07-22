@@ -9,16 +9,21 @@
 set -euo pipefail
 
 gtf=${1:-data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz}
-transcripts=${2:-data/gencode/gencode.v50.transcripts.fa.gz}
-outdir=${3:-results/reads/qc/psite}
+outdir=${2:-results/reads/qc/psite}
 mkdir -p "$outdir"
+
+# The extension windows come from `riborescue extensions`, which runs in the default environment.
+if [ ! -f "$outdir/extensions.tsv" ]; then
+    echo "missing $outdir/extensions.tsv — run 'pixi run extensions' first" >&2
+    exit 1
+fi
 : >"$outdir/resources.tsv"
 
 for bam in results/reads/alignments/*.toTranscriptome.out.bam; do
     sample=$(basename "$bam" .Aligned.toTranscriptome.out.bam)
     /usr/bin/time -f "${sample}\t%M\t%e" -a -o "$outdir/resources.tsv" \
         Rscript scripts/run_psite.R --bam "$bam" --sample "$sample" --gtf "$gtf" \
-            --transcripts "$transcripts" --outdir "$outdir"
+            --outdir "$outdir"
 done
 
 Rscript scripts/run_psite.R --combine --outdir "$outdir"

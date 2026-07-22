@@ -67,6 +67,66 @@ PROGRAMMED_READTHROUGH = frozenset(
 """Genes reported to read through their stop codon natively, which do so with or without a drug."""
 
 
+STOP_CODONS = frozenset({"TAA", "TAG", "TGA"})
+
+
+def _sequences(transcripts: Path) -> dict[str, str]:
+    """Transcript sequences keyed by accession, from a GENCODE FASTA."""
+
+    found: dict[str, str] = {}
+    name, parts = None, []
+    with gzip.open(transcripts, "rt") as handle:
+        for line in handle:
+            if line.startswith(">"):
+                if name is not None:
+                    found[name] = "".join(parts)
+                name, parts = line[1:].split("|", 1)[0], []
+            else:
+                parts.append(line.strip())
+    if name is not None:
+        found[name] = "".join(parts)
+    return found
+
+
+def next_in_frame_stop(sequence: str, stop_start: int) -> int | None:
+    """How far past the native stop the next stop in the same frame begins.
+
+    `stop_start` indexes the first base of the native stop codon. The answer is a multiple of three
+    and is the width of the window a readthrough ribosome can occupy. None where the frame runs off
+    the end of the transcript without meeting another stop.
+    """
+
+    offset = 3
+    position = stop_start + 3
+    while position + 3 <= len(sequence):
+        if sequence[position : position + 3].upper() in STOP_CODONS:
+            return offset
+        position += 3
+        offset += 3
+    return None
+
+
+def extension_windows(transcripts: Path, annotation: pd.DataFrame) -> pd.DataFrame:
+    """The extension window of every coding transcript, one row each.
+
+    Looked up by dictionary rather than by scanning the sequence names once per transcript, which
+    turns the whole build from quadratic into a single pass.
+    """
+
+    sequences = _sequences(transcripts)
+    coding = annotation.loc[annotation["l_cds"] > 0]
+    rows: list[tuple[str, int | None]] = []
+    for transcript, utr5, cds in zip(
+        coding["transcript"], coding["l_utr5"], coding["l_cds"], strict=True
+    ):
+        sequence = sequences.get(transcript)
+        if sequence is None:
+            continue
+        # The coding sequence ends with its stop codon, so the stop begins three bases back.
+        rows.append((transcript, next_in_frame_stop(sequence, int(utr5) + int(cds) - 3)))
+    return pd.DataFrame(rows, columns=["transcript", "extension"])
+
+
 def _features(gtf: Path, wanted: frozenset[str]):
     """Yield the GTF rows of the requested feature types, already split."""
 

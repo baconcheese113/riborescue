@@ -4,7 +4,7 @@
 
 ## Context
 
-Gate 3 asks whether the footprints behave like ribosomes: read lengths near 30 nt, a stable P-site
+Footprint periodicity asks whether the footprints behave like ribosomes: read lengths near 30 nt, a stable P-site
 offset per length, three-nucleotide periodicity and frame bias across the coding sequence. The
 offset — the distance from a footprint's end to the codon in the ribosome's P-site — has to be
 inferred per read length, and the frame has to be read in transcript coordinates, where an exon
@@ -47,6 +47,6 @@ The offsets come from the start-codon region and the frame bias is measured acro
 sequence, so the signal that defines the offset is not the signal that tests it. A shift check
 confirms the inferred offset maximises frame-0 enrichment against a one- or two-nucleotide neighbour.
 
-Gate 3 is judged across all eight footprint libraries — stable offsets within a library preparation,
+Footprint periodicity is judged across all eight footprint libraries — stable offsets within a library preparation,
 frame enrichment that holds — not from a single library. Low-support read lengths are reported rather
 than forced to a verdict.

@@ -131,6 +131,7 @@ contexts = """riborescue contexts results/clinvar_nonsense.tsv \
   --out results/clinvar_contexts.tsv"""
 score = { cmd = "riborescue score results/clinvar_contexts.tsv tests/fixtures/oracle/features_*.tsv.gz --out results/amenability.tsv", env = { OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1" } }
 landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenability.tsv --out results/landscape.tsv --summary results/landscape_summary.tsv"
+extensions = "riborescue extensions data/gencode/gencode.v50.transcripts.fa.gz --annotation results/reads/qc/psite/annotation.tsv --out results/reads/qc/psite/extensions.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
 stage-runs = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv"
 reads = { cmd = """nextflow run . --step reads -profile local \

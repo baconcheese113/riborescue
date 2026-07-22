@@ -30,6 +30,7 @@ from riborescue.reads import (
     summarise_trimming,
 )
 from riborescue.readthrough import (
+    extension_windows,
     library_ratios,
     overlapping_downstream_cds,
     paired_effect,
@@ -442,6 +443,27 @@ def trna_coverage(contexts: Path, out: Path) -> None:
             f"  {row.design_id:<7} {row.conservative:>6} conservative, "
             f"{row.restores_exactly:>6} restored exactly"
         )
+
+
+@main.command("extensions")
+@click.argument("transcripts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--annotation",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Transcript lengths, as the calibration step writes them.",
+)
+@_OUT
+def extensions(transcripts: Path, annotation: Path, out: Path) -> None:
+    """Find how far past each native stop the next in-frame stop lies."""
+
+    windows = extension_windows(transcripts, read_table(annotation))
+    # Written aside and moved into place, so a partial file is never mistaken for a finished one.
+    staging = out.with_suffix(out.suffix + ".tmp")
+    write_table(windows, staging)
+    staging.replace(out)
+    usable = int(windows["extension"].notna().sum())
+    click.echo(f"{len(windows):,} coding transcripts, {usable:,} with a next in-frame stop")
 
 
 @main.command("readthrough")

@@ -4,7 +4,7 @@
 
 ## Context
 
-Gate 5 asks whether these libraries can detect stop-codon readthrough at all. It is a sensitivity
+The G418 positive control asks whether these libraries can detect stop-codon readthrough at all. It is a sensitivity
 check on the assay, run against a positive control, and it has to pass before any null result for a
 suppressor tRNA means anything: an assay that cannot see G418 working cannot be trusted to report
 that something else is not.
@@ -83,6 +83,6 @@ treatment, so it cannot repair this.
 
 Three replicates support a direction and a rough interval, not a precise effect size.
 
-Passing Gate 5 establishes that the assay can see readthrough when it is present. It does not
+Passing the G418 positive control establishes that the assay can see readthrough when it is present. It does not
 establish the safety burden of any therapy, which needs the native-stop atlas across many
 transcripts and is a later piece of work.

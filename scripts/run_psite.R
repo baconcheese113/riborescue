@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
-# P-site calibration and periodicity, the Gate 3 check, computed with riboWaltz — the published tool
-# the PRD names. riboWaltz infers a coherent offset for every footprint length from the pile-up of
+# P-site calibration and periodicity, computed with riboWaltz — the published tool the PRD names.
+# This is the evidence the footprint periodicity gate is judged on. riboWaltz infers a coherent offset for every footprint length from the pile-up of
 # read ends at annotated start codons, so nothing is hardcoded. Its input is a transcriptome-
 # coordinate alignment, which places the P-site in transcript space and never has to reason about
 # exon junctions.
@@ -23,14 +23,12 @@ options <- parse_args(OptionParser(option_list = list(
   make_option("--bam", help = "One *.toTranscriptome.out.bam footprint alignment"),
   make_option("--sample", help = "Name to record this library under"),
   make_option("--gtf", help = "The GENCODE annotation the alignments were made against"),
-  make_option("--transcripts", default = NULL,
-              help = "GENCODE transcript sequences, for the readthrough extension window"),
   make_option("--outdir", default = "results/reads/qc/psite", help = "[default %default]"),
   make_option("--lengths", default = "26:34", help = "Footprint length range [default %default]"),
   make_option("--combine", action = "store_true", default = FALSE,
               help = "Merge the per-sample tables already in --outdir"),
   make_option("--evidence", default = "docs/figures",
-              help = "Where the tracked Gate 3 evidence lands [default %default]")
+              help = "Where the tracked periodicity evidence lands [default %default]")
 )))
 
 dir.create(options$outdir, recursive = TRUE, showWarnings = FALSE)
@@ -67,10 +65,11 @@ if (options$combine) {
   )
   fwrite(summary, file.path(options$outdir, "psite_summary.tsv"), sep = "\t")
 
-  # Gate 3 is a judgement a person makes, so the evidence behind it is tracked rather than left in
-  # the regenerable results tree: the table that was read, and the periodicity that was looked at.
+  # Footprint periodicity is a judgement a person makes, so the evidence behind it is tracked rather
+  # than left in the regenerable results tree: the table that was read, and the periodicity that was
+  # looked at.
   dir.create(options$evidence, recursive = TRUE, showWarnings = FALSE)
-  fwrite(summary, file.path(options$evidence, "gate3_psite_summary.tsv"), sep = "\t")
+  fwrite(summary, file.path(options$evidence, "psite_summary.tsv"), sep = "\t")
 
   profile <- gather("metaprofile")
   profile[, region := factor(region,
@@ -83,7 +82,7 @@ if (options$combine) {
     ggplot2::labs(x = "distance from codon (nt)", y = "P-site frequency") +
     ggplot2::theme_bw(base_size = 7) +
     ggplot2::theme(strip.text.y.left = ggplot2::element_text(angle = 0, hjust = 1))
-  ggplot2::ggsave(file.path(options$evidence, "gate3_periodicity.png"),
+  ggplot2::ggsave(file.path(options$evidence, "periodicity.png"),
                   figure, width = 9, height = 10, dpi = 150)
 
   print(summary)
@@ -104,31 +103,9 @@ annotation <- if (file.exists(cache)) {
   built
 }
 
-# The extension: how far a ribosome that reads through the native stop travels before the next stop
-# in the same frame. Measuring the whole 3' untranslated region instead would dilute the signal with
-# sequence no readthrough ribosome reaches, and would count downstream open reading frames that have
-# nothing to do with the native stop. Built once from the transcript sequences and cached.
+# The extension window each transcript allows a readthrough ribosome, built beforehand by
+# `riborescue extensions` and simply read here.
 extension_cache <- file.path(options$outdir, "extensions.tsv")
-if (!file.exists(extension_cache) && !is.null(options$transcripts)) {
-  sequences <- Biostrings::readDNAStringSet(options$transcripts)
-  names(sequences) <- sub("\\|.*$", "", names(sequences))
-  coding <- annotation[l_cds > 0 & transcript %in% names(sequences)]
-  extension <- vapply(seq_len(nrow(coding)), function(i) {
-    stop_start <- coding$l_utr5[i] + coding$l_cds[i] - 2L
-    full <- sequences[[coding$transcript[i]]]
-    # Nothing downstream to read: no window, and the transcript is excluded rather than counted.
-    if (stop_start < 1L || length(full) < stop_start + 5L) {
-      return(NA_integer_)
-    }
-    tail_seq <- as.character(Biostrings::subseq(full, start = stop_start))
-    n <- nchar(tail_seq)
-    codons <- substring(tail_seq, seq(4L, n - 2L, by = 3L), seq(6L, n, by = 3L))
-    hit <- which(codons %in% c("TAA", "TAG", "TGA"))
-    if (length(hit) == 0) NA_integer_ else as.integer(hit[1] * 3L)
-  }, integer(1))
-  fwrite(data.table(transcript = coding$transcript, extension = extension), extension_cache,
-         sep = "\t")
-}
 extensions <- if (file.exists(extension_cache)) fread(extension_cache) else NULL
 
 # One alignment per read, so a footprint is counted once rather than once per isoform it happens to
