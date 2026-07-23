@@ -1,3 +1,4 @@
+import gzip
 import json
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from riborescue.reads import (
     AdapterNotFoundError,
     summarise_alignment,
     summarise_trimming,
+    survey_adapter,
+    survey_adapters,
 )
 from riborescue.sequencing import fastq_inputs
 from riborescue.tables import SequencingRuns, read_table
@@ -155,3 +158,74 @@ def test_the_declared_read_counts_match_the_archive():
     runs = read_table(SAMPLESHEET)
     assert runs["read_count"].min() > 10_000_000
     assert pd.api.types.is_integer_dtype(runs["read_count"])
+
+
+TRUSEQ = "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+LINKER = "CTGTAGGCACCATCAAT"
+
+
+def _library(path: Path, inserts: list[str], trailing: str = LINKER + TRUSEQ) -> Path:
+    """A footprint library as it arrives: insert, linker, sequencing adapter, padded to length."""
+
+    with gzip.open(path, "wt") as handle:
+        for index, insert in enumerate(inserts):
+            read = (insert + trailing)[:80].ljust(80, "A")
+            handle.write(f"@r{index}\n{read}\n+\n{'I' * 80}\n")
+    return path
+
+
+def test_the_survey_finds_the_declared_linker_and_measures_what_precedes_it(tmp_path: Path):
+    inserts = ["A" * length for length in (26, 28, 30, 32)] * 25
+    survey = survey_adapter("a", _library(tmp_path / "a.fastq.gz", inserts), LINKER)
+    assert survey.adapter_rate == 1.0
+    assert survey.insert_median == 29
+    assert (survey.insert_p10, survey.insert_p90) == (26, 32)
+
+
+def test_a_degenerate_prefix_is_not_searched_for(tmp_path: Path):
+    """Its bases are random by construction, so only the fixed part of the linker identifies it."""
+
+    declared = "NNNNNNCACTCGGGCACCAAGGAC"
+    inserts = ["C" * 30] * 100
+    library = _library(tmp_path / "a.fastq.gz", inserts, trailing="TTAGCA" + declared.lstrip("N"))
+    assert survey_adapter("a", library, declared).adapter_rate == 1.0
+
+
+def test_a_linker_the_series_does_not_name_is_caught_before_alignment(tmp_path: Path):
+    """GSE179274 records only that Trimmomatic ran, and its reads carry a linker behind that."""
+
+    runs = pd.DataFrame(
+        {
+            "sample": ["a"],
+            "assay": ["riboseq"],
+            "adapter_3p": [TRUSEQ],
+            "fastq_1": [str(_library(tmp_path / "a.fastq.gz", ["G" * 30] * 100))],
+        }
+    )
+    with pytest.raises(AdapterNotFoundError, match="under 50%"):
+        survey_adapters(runs)
+
+
+def test_a_transcriptome_library_is_not_surveyed(tmp_path: Path):
+    """Most of its fragments are longer than the read, so it never reaches the adapter."""
+
+    runs = pd.DataFrame(
+        {
+            "sample": ["a"],
+            "assay": ["rnaseq"],
+            "adapter_3p": [TRUSEQ],
+            "fastq_1": ["absent.fastq.gz"],
+        }
+    )
+    assert survey_adapters(runs).empty
+
+
+def test_no_two_declared_runs_are_the_same_bytes():
+    """A dataset that confirms another must not be partly the same libraries under new names."""
+
+    runs = read_table(SAMPLESHEET)
+    assert runs["fastq_1_md5"].is_unique
+    assert runs["run_accession"].is_unique
+    second = runs["fastq_2_md5"].dropna()
+    assert second.is_unique
+    assert not set(second) & set(runs["fastq_1_md5"])

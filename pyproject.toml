@@ -139,14 +139,16 @@ readthrough = "bash scripts/run_readthrough.sh hek293t untreated both"
 readthrough-gse144140 = "bash scripts/run_readthrough.sh gse144140 dmso both"
 readthrough-fibroblast = { cmd = "bash scripts/run_readthrough.sh gse179274_fibroblast untreated unpaired g418_0.1 g418_0.5", depends-on = ["readthrough-suptrna"] }
 readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp unpaired suptrna_tyr"
-prefetch = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv"
+disk = "bash scripts/require_disk.sh 200"
+prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv", depends-on = ["disk"] }
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }
+adapter-survey = { cmd = "riborescue adapter-survey results/staged_runs.tsv --out docs/figures/adapter_survey.tsv" }
 reads = { cmd = """nextflow run . --step reads -profile local -resume \
   --samplesheet ../results/staged_runs.tsv \
   --genome ../data/gencode/GRCh38.primary_assembly.genome.fa.gz \
   --annotation ../data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
   --contaminants ../data/gencode/gencode.v50.transcripts.fa.gz \
-  --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs"] }
+  --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs", "adapter-survey"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 

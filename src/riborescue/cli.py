@@ -28,6 +28,7 @@ from riborescue.reads import (
     AdapterNotFoundError,
     summarise_alignment,
     summarise_trimming,
+    survey_adapters,
 )
 from riborescue.readthrough import (
     extension_windows,
@@ -184,6 +185,30 @@ def stage_runs(samplesheet: Path, out: Path, data_root_: Path | None, force: boo
         raise click.ClickException(str(error)) from error
     write_table(_validated(StagedRuns, staged, out), out)
     click.echo(f"{len(staged)} runs staged under {root / FASTQ_SUBDIR}")
+
+
+@main.command("adapter-survey")
+@click.argument("samplesheet", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@_OUT
+def adapter_survey(samplesheet: Path, out: Path) -> None:
+    """Check every footprint library in SAMPLESHEET against the adapter it declares.
+
+    Run on the staged reads, before trimming. What a series says about its adapter has been wrong
+    or absent three times out of four, and trimming the wrong sequence is silent: the reads align,
+    softly clipped, carrying linker into every P-site.
+    """
+
+    runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
+    try:
+        survey = survey_adapters(runs)
+    except (AdapterNotFoundError, OSError, ValueError) as error:
+        raise click.ClickException(str(error)) from error
+    write_table(survey, out)
+    for row in survey.itertuples():
+        click.echo(
+            f"{row.sample}: adapter in {row.adapter_rate:.1%} of reads, "
+            f"insert {row.insert_p10}-{row.insert_p90} nt (median {row.insert_median})"
+        )
 
 
 @main.command("trim-summary")

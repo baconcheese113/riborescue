@@ -7,8 +7,10 @@ carries linker sequence into alignment. That failure is silent — the reads sti
 clipped — so the rate at which the adapter was found is asserted rather than reported.
 """
 
+import gzip
 import json
-from collections.abc import Collection
+import statistics
+from collections.abc import Collection, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,10 +19,14 @@ import pandas as pd
 __all__ = [
     "ADAPTER_REACHED_BY",
     "MINIMUM_ADAPTER_RATE",
+    "SURVEY_READS",
     "AdapterNotFoundError",
+    "AdapterSurvey",
     "TrimSummary",
     "summarise_alignment",
     "summarise_trimming",
+    "survey_adapter",
+    "survey_adapters",
 ]
 
 ADAPTER_REACHED_BY = frozenset({"riboseq"})
@@ -102,6 +108,103 @@ def summarise_trimming(
             "adapter_rate": [round(s.adapter_rate, 5) for s in summaries],
             "basepairs_raw": [s.basepairs_raw for s in summaries],
             "basepairs_cleaned": [s.basepairs_cleaned for s in summaries],
+        }
+    )
+
+
+SURVEY_READS = 200_000
+"""Reads drawn from the head of a library to survey it.
+
+The head of a FASTQ is not a random sample of the flow cell, but an adapter is either in the library
+chemistry or it is not, and a fifth of a million reads settles that to well under a percent.
+"""
+
+
+@dataclass(frozen=True)
+class AdapterSurvey:
+    """What a library's own reads say about the adapter it was declared with."""
+
+    sample: str
+    adapter: str
+    reads: int
+    reads_with_adapter: int
+    insert_median: int | None
+    insert_p10: int | None
+    insert_p90: int | None
+
+    @property
+    def adapter_rate(self) -> float:
+        return self.reads_with_adapter / self.reads
+
+
+def _sequences(fastq: Path, limit: int) -> Iterator[str]:
+    with gzip.open(fastq, "rt") as handle:
+        for index, line in enumerate(handle):
+            if index >= limit * 4:
+                return
+            if index % 4 == 1:
+                yield line.rstrip("\n")
+
+
+def survey_adapter(
+    sample: str, fastq: Path, adapter: str, limit: int = SURVEY_READS
+) -> AdapterSurvey:
+    """Look for the declared adapter in a library's reads, and measure what sits in front of it.
+
+    A degenerate prefix is not searched for — it is random by construction, so only the fixed part
+    of the linker identifies it, and the insert length is measured to where that fixed part begins.
+    """
+
+    fixed = adapter.lstrip("N")
+    reads = inserts = 0
+    lengths: list[int] = []
+    for sequence in _sequences(fastq, limit):
+        reads += 1
+        found = sequence.find(fixed)
+        if found >= 0:
+            inserts += 1
+            lengths.append(found)
+    if reads == 0:
+        raise ValueError(f"{fastq} holds no reads")
+    quantiles = statistics.quantiles(lengths, n=10) if len(lengths) > 10 else None
+    return AdapterSurvey(
+        sample=sample,
+        adapter=adapter,
+        reads=reads,
+        reads_with_adapter=inserts,
+        insert_median=round(statistics.median(lengths)) if lengths else None,
+        insert_p10=round(quantiles[0]) if quantiles else None,
+        insert_p90=round(quantiles[-1]) if quantiles else None,
+    )
+
+
+def survey_adapters(runs: pd.DataFrame, minimum_rate: float = MINIMUM_ADAPTER_RATE) -> pd.DataFrame:
+    """Survey every library whose insert is short enough to reach its adapter.
+
+    This runs on the staged reads, before trimming and hours of alignment. Three of the four series
+    this project uses describe their adapter wrongly or not at all, and a wrong adapter is silent
+    downstream: the reads still align, softly clipped, carrying linker into every P-site.
+    """
+
+    footprints = runs.loc[runs["assay"].isin(ADAPTER_REACHED_BY)]
+    surveys = [
+        survey_adapter(str(row["sample"]), Path(str(row["fastq_1"])), str(row["adapter_3p"]))
+        for _, row in footprints.iterrows()
+    ]
+    if failed := [s for s in surveys if s.adapter_rate < minimum_rate]:
+        detail = ", ".join(f"{s.sample} {s.adapter_rate:.1%}" for s in failed)
+        raise AdapterNotFoundError(
+            f"the declared adapter is in under {minimum_rate:.0%} of the reads: {detail}"
+        )
+    return pd.DataFrame(
+        {
+            "sample": [s.sample for s in surveys],
+            "adapter_3p": [s.adapter for s in surveys],
+            "reads_surveyed": [s.reads for s in surveys],
+            "adapter_rate": [round(s.adapter_rate, 5) for s in surveys],
+            "insert_p10": [s.insert_p10 for s in surveys],
+            "insert_median": [s.insert_median for s in surveys],
+            "insert_p90": [s.insert_p90 for s in surveys],
         }
     )
 

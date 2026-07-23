@@ -118,7 +118,14 @@ frame_gap             = downstream_share0 - cds_share0
 Paired difference for a replicate is the treated library's value minus its partner's. Unpaired
 difference is the mean over treated libraries minus the mean over untreated ones.
 
-**What can confirm, and what can only support.** The rule is defined for a paired design with three
+**What can confirm, and what can only support.** Three labels are used and not interchanged.
+*Exploratory* is a result on libraries that shaped the rule. *Confirmatory within the same
+laboratory and protocol family* is the strongest thing available here, and is what GSE144140 can
+give. *Independent supporting evidence* is a separate laboratory and chemistry that can agree with a
+direction but cannot complete the rule, which is what GSE179274 gives. Nothing in this project is
+confirmed independently, and no result is described as though it were.
+
+The rule is defined for a paired design with three
 replicates, so only a dataset with that structure can confirm it. That is **GSE144140**: HEK293T,
 DMSO against G418 500 µg/mL against SRI-37240 10 µM, three replicates of each, and no part in
 shaping this rule, and none of its runs appears in the series that did. It comes from the same
@@ -148,7 +155,10 @@ For an unpaired contrast, conditions 1 and 2 require the difference in means to 
 with every treated library on the correct side of every untreated one, and condition 3 requires in
 addition that the Welch interval on `frame_gap` excludes zero.
 
-GSE179274 supports and cannot confirm. Its arms are separate libraries of two replicates each, so
+GSE179274 is independent supporting evidence and cannot confirm — a different laboratory, a
+different chemistry and a different disease model, which is what makes it worth having and also what
+keeps it from completing a rule defined for three paired replicates. Its arms are separate libraries
+of two replicates each, so
 its contrasts are unpaired at n = 2, where an interval is too wide to decide anything. They are
 reported for direction and for the suppressor tRNA, which is the modality this project ultimately
 cares about and which no other public dataset profiles.
