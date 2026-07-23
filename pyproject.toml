@@ -145,6 +145,7 @@ prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_sample
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }
 adapter-survey = { cmd = "riborescue adapter-survey results/staged_runs.tsv --out docs/figures/adapter_survey.tsv", depends-on = ["stage-runs"] }
 reads = { cmd = """nextflow run . --step reads -profile local -resume \
+  --outdir ../results/reads \
   --samplesheet ../results/staged_runs.tsv \
   --genome ../data/gencode/GRCh38.primary_assembly.genome.fa.gz \
   --annotation ../data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
