@@ -1,0 +1,7 @@
+sample	dominant_length	offset_from_5	offset_from_3	cds_frame0
+hek293t_g418_rep1_riboseq	30	12	17	0.457
+hek293t_g418_rep2_riboseq	30	13	16	0.556
+hek293t_g418_rep3_riboseq	30	12	17	0.418
+hek293t_untreated_rep1_riboseq	31	13	17	0.453
+hek293t_untreated_rep2_riboseq	29	12	16	0.642
+hek293t_untreated_rep3_riboseq	31	13	17	0.424

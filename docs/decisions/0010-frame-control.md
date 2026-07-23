@@ -39,6 +39,13 @@ should resemble the composition upstream in the same library. The quantity is th
 share minus that library's coding frame-0 share, compared treated against untreated, paired within
 replicate as before.
 
+**What the HEK293T pairing rests on, exactly.** The series records different linker chemistry for
+`rep2` than for `rep1` and `rep3`, in the treated and untreated library alike, and coding-frame
+occupancy tracks that split rather than treatment. Pairing is supported by that preparation
+metadata; no statement that matching replicate numbers form experimental blocks is archived
+anywhere. Both analyses are therefore reported for these libraries, and neither is described as the
+one the design mandates. If a blocking statement is later archived, it is cited here.
+
 **Zero-heavy measurements are handled explicitly.** In the frozen run all three untreated medians
 were exactly zero: the median qualifying transcript had no downstream P-sites at all, so each paired
 difference was a treated value minus a floor. The respecified assay reports the share of transcripts
