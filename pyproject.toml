@@ -135,8 +135,10 @@ score = { cmd = "riborescue score results/clinvar_contexts.tsv tests/fixtures/or
 landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenability.tsv --out results/landscape.tsv --summary results/landscape_summary.tsv"
 extensions = "riborescue extensions data/gencode/gencode.v50.transcripts.fa.gz --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv --out results/psite/_reference/gencode.v50.primary_assembly.annotation/extensions.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
-readthrough = "bash scripts/run_readthrough.sh hek293t untreated"
-readthrough-gse144140 = "bash scripts/run_readthrough.sh gse144140 dmso"
+readthrough = "bash scripts/run_readthrough.sh hek293t untreated both"
+readthrough-gse144140 = "bash scripts/run_readthrough.sh gse144140 dmso both"
+readthrough-fibroblast = { cmd = "bash scripts/run_readthrough.sh gse179274_fibroblast untreated unpaired g418_0.1 g418_0.5", depends-on = ["readthrough-suptrna"] }
+readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp unpaired suptrna_tyr"
 stage-runs = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv"
 reads = { cmd = """nextflow run . --step reads -profile local \
   --samplesheet ../results/staged_runs.tsv \
