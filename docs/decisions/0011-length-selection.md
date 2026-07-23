@@ -1,6 +1,6 @@
 # ADR-0011 — Footprint length selection, and parity with the authors of GSE144140
 
-**Status:** proposed · **Date:** 2026-07-22 · **Deciders:** Joseph, Mahan
+**Status:** proposed · **Date:** 2026-07-22 · **Deciders:** Joseph
 
 ## Context
 
