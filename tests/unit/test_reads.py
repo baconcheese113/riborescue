@@ -174,12 +174,12 @@ def _library(path: Path, inserts: list[str], trailing: str = LINKER + TRUSEQ) ->
     return path
 
 
-def test_the_survey_finds_the_declared_linker_and_measures_what_precedes_it(tmp_path: Path):
+def test_the_survey_finds_the_declared_linker_and_measures_the_footprint(tmp_path: Path):
     inserts = ["A" * length for length in (26, 28, 30, 32)] * 25
     survey = survey_adapter("a", _library(tmp_path / "a.fastq.gz", inserts), LINKER)
     assert survey.adapter_rate == 1.0
-    assert survey.insert_median == 29
-    assert (survey.insert_p10, survey.insert_p90) == (26, 32)
+    assert survey.footprint_median == 29
+    assert (survey.footprint_p10, survey.footprint_p90) == (26, 32)
 
 
 def test_a_degenerate_prefix_is_not_searched_for(tmp_path: Path):
@@ -191,6 +191,20 @@ def test_a_degenerate_prefix_is_not_searched_for(tmp_path: Path):
     assert survey_adapter("a", library, declared).adapter_rate == 1.0
 
 
+def test_two_chemistries_around_the_same_footprint_measure_the_same(tmp_path: Path):
+    """One puts ten bases either side of the footprint and one puts none. That is not biology."""
+
+    degenerate = "NNNNNNCACTCGGGCACCAAGGAC"
+    bare = _library(tmp_path / "bare.fastq.gz", ["A" * 30] * 100)
+    padded = _library(
+        tmp_path / "padded.fastq.gz",
+        ["TTTT" + "A" * 30] * 100,
+        trailing="GACTGA" + degenerate.lstrip("N"),
+    )
+    assert survey_adapter("bare", bare, LINKER).footprint_median == 30
+    assert survey_adapter("padded", padded, degenerate, cut_5p=4).footprint_median == 30
+
+
 def test_a_linker_the_series_does_not_name_is_caught_before_alignment(tmp_path: Path):
     """GSE179274 records only that Trimmomatic ran, and its reads carry a linker behind that."""
 
@@ -199,6 +213,7 @@ def test_a_linker_the_series_does_not_name_is_caught_before_alignment(tmp_path: 
             "sample": ["a"],
             "assay": ["riboseq"],
             "adapter_3p": [TRUSEQ],
+            "cut_5p": [0],
             "fastq_1": [str(_library(tmp_path / "a.fastq.gz", ["G" * 30] * 100))],
         }
     )
@@ -214,6 +229,7 @@ def test_a_transcriptome_library_is_not_surveyed(tmp_path: Path):
             "sample": ["a"],
             "assay": ["rnaseq"],
             "adapter_3p": [TRUSEQ],
+            "cut_5p": [0],
             "fastq_1": ["absent.fastq.gz"],
         }
     )

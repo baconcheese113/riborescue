@@ -122,15 +122,21 @@ chemistry or it is not, and a fifth of a million reads settles that to well unde
 
 @dataclass(frozen=True)
 class AdapterSurvey:
-    """What a library's own reads say about the adapter it was declared with."""
+    """What a library's own reads say about the adapter it was declared with.
+
+    The footprint lengths are what alignment will see, not raw distances into the read: a library
+    whose chemistry puts four bases of RT primer at the 5' end and six degenerate bases before the
+    linker measures ten longer than one that puts neither there, and comparing the two raw would
+    read as a difference in ribosome footprints that is only a difference in adapters.
+    """
 
     sample: str
     adapter: str
     reads: int
     reads_with_adapter: int
-    insert_median: int | None
-    insert_p10: int | None
-    insert_p90: int | None
+    footprint_median: int | None
+    footprint_p10: int | None
+    footprint_p90: int | None
 
     @property
     def adapter_rate(self) -> float:
@@ -147,23 +153,26 @@ def _sequences(fastq: Path, limit: int) -> Iterator[str]:
 
 
 def survey_adapter(
-    sample: str, fastq: Path, adapter: str, limit: int = SURVEY_READS
+    sample: str, fastq: Path, adapter: str, cut_5p: int = 0, limit: int = SURVEY_READS
 ) -> AdapterSurvey:
-    """Look for the declared adapter in a library's reads, and measure what sits in front of it.
+    """Look for the declared adapter in a library's reads, and measure the footprint before it.
 
     A degenerate prefix is not searched for — it is random by construction, so only the fixed part
-    of the linker identifies it, and the insert length is measured to where that fixed part begins.
+    of the linker identifies it. What lies between the read's start and that fixed part is the
+    footprint plus whatever the chemistry adds either side of it: the bases trimmed off the 5' end,
+    and the degenerate bases the linker opens with. Both are subtracted.
     """
 
     fixed = adapter.lstrip("N")
-    reads = inserts = 0
+    flanking = cut_5p + (len(adapter) - len(fixed))
+    reads = found_in = 0
     lengths: list[int] = []
     for sequence in _sequences(fastq, limit):
         reads += 1
         found = sequence.find(fixed)
         if found >= 0:
-            inserts += 1
-            lengths.append(found)
+            found_in += 1
+            lengths.append(found - flanking)
     if reads == 0:
         raise ValueError(f"{fastq} holds no reads")
     quantiles = statistics.quantiles(lengths, n=10) if len(lengths) > 10 else None
@@ -171,10 +180,10 @@ def survey_adapter(
         sample=sample,
         adapter=adapter,
         reads=reads,
-        reads_with_adapter=inserts,
-        insert_median=round(statistics.median(lengths)) if lengths else None,
-        insert_p10=round(quantiles[0]) if quantiles else None,
-        insert_p90=round(quantiles[-1]) if quantiles else None,
+        reads_with_adapter=found_in,
+        footprint_median=round(statistics.median(lengths)) if lengths else None,
+        footprint_p10=round(quantiles[0]) if quantiles else None,
+        footprint_p90=round(quantiles[-1]) if quantiles else None,
     )
 
 
@@ -188,7 +197,12 @@ def survey_adapters(runs: pd.DataFrame, minimum_rate: float = MINIMUM_ADAPTER_RA
 
     footprints = runs.loc[runs["assay"].isin(ADAPTER_REACHED_BY)]
     surveys = [
-        survey_adapter(str(row["sample"]), Path(str(row["fastq_1"])), str(row["adapter_3p"]))
+        survey_adapter(
+            str(row["sample"]),
+            Path(str(row["fastq_1"])),
+            str(row["adapter_3p"]),
+            int(row["cut_5p"]),
+        )
         for _, row in footprints.iterrows()
     ]
     if failed := [s for s in surveys if s.adapter_rate < minimum_rate]:
@@ -202,9 +216,9 @@ def survey_adapters(runs: pd.DataFrame, minimum_rate: float = MINIMUM_ADAPTER_RA
             "adapter_3p": [s.adapter for s in surveys],
             "reads_surveyed": [s.reads for s in surveys],
             "adapter_rate": [round(s.adapter_rate, 5) for s in surveys],
-            "insert_p10": [s.insert_p10 for s in surveys],
-            "insert_median": [s.insert_median for s in surveys],
-            "insert_p90": [s.insert_p90 for s in surveys],
+            "footprint_p10": [s.footprint_p10 for s in surveys],
+            "footprint_median": [s.footprint_median for s in surveys],
+            "footprint_p90": [s.footprint_p90 for s in surveys],
         }
     )
 

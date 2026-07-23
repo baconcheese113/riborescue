@@ -207,7 +207,8 @@ def adapter_survey(samplesheet: Path, out: Path) -> None:
     for row in survey.itertuples():
         click.echo(
             f"{row.sample}: adapter in {row.adapter_rate:.1%} of reads, "
-            f"insert {row.insert_p10}-{row.insert_p90} nt (median {row.insert_median})"
+            f"footprint {row.footprint_p10}-{row.footprint_p90} nt "
+            f"(median {row.footprint_median})"
         )
 
 
