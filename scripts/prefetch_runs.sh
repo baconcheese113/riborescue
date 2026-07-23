@@ -17,7 +17,7 @@ dest=${RIBORESCUE_DATA:-data}/fastq
 mkdir -p "$dest"
 
 fetch() {
-    local url=$1 md5=$2 name
+    local url=$1 md5=$2 name attempt
     name=$(basename "$url")
     local target="$dest/$name" partial="$dest/.$name.partial"
 
@@ -25,15 +25,25 @@ fetch() {
         echo "have $name"
         return 0
     fi
-    # Resumed rather than restarted: a partial file from an interrupted run is most of the work.
-    curl -sSfL -C - "$url" -o "$partial"
-    if [ "$(md5sum "$partial" | cut -c1-32)" != "$md5" ]; then
-        echo "checksum mismatch for $name" >&2
-        rm -f "$partial"
-        return 1
-    fi
-    mv "$partial" "$target"
-    echo "fetched $name"
+    # Twice, then give up. The first attempt resumes, because a partial from an interrupted run is
+    # most of the work; the second starts clean, because a checksum that failed once has already
+    # ruled out the bytes on disk and resuming would build on them again. One library in thirty
+    # arrived corrupt over a long transfer, which is a bad reason to abandon the other twenty-nine.
+    for attempt in resume clean; do
+        if [ "$attempt" = clean ]; then
+            rm -f "$partial"
+            echo "retrying $name from the start" >&2
+        fi
+        curl -sSfL -C - "$url" -o "$partial" || continue
+        if [ "$(md5sum "$partial" | cut -c1-32)" = "$md5" ]; then
+            mv "$partial" "$target"
+            echo "fetched $name"
+            return 0
+        fi
+    done
+    echo "checksum mismatch for $name after a clean retry" >&2
+    rm -f "$partial"
+    return 1
 }
 export -f fetch
 export dest
