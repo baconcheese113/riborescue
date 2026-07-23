@@ -139,7 +139,8 @@ readthrough = "bash scripts/run_readthrough.sh hek293t untreated both"
 readthrough-gse144140 = "bash scripts/run_readthrough.sh gse144140 dmso both"
 readthrough-fibroblast = { cmd = "bash scripts/run_readthrough.sh gse179274_fibroblast untreated unpaired g418_0.1 g418_0.5", depends-on = ["readthrough-suptrna"] }
 readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp unpaired suptrna_tyr"
-stage-runs = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv"
+prefetch = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv"
+stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }
 reads = { cmd = """nextflow run . --step reads -profile local \
   --samplesheet ../results/staged_runs.tsv \
   --genome ../data/gencode/GRCh38.primary_assembly.genome.fa.gz \
