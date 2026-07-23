@@ -105,6 +105,7 @@ r-jsonlite = "*"
 annotation = { cmd = "Rscript scripts/run_psite.R --annotation-only --gtf data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz --cache results/psite/_reference/gencode.v50.primary_assembly.annotation" }
 psite = { cmd = "bash scripts/run_psite_all.sh hek293t results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
 psite-gse144140 = { cmd = "bash scripts/run_psite_all.sh gse144140 results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
+psite-fibroblast = { cmd = "bash scripts/run_psite_all.sh gse179274_fibroblast results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
 
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
