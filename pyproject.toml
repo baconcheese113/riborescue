@@ -142,7 +142,7 @@ readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp
 disk = "bash scripts/require_disk.sh 200"
 prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv", depends-on = ["disk"] }
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }
-adapter-survey = { cmd = "riborescue adapter-survey results/staged_runs.tsv --out docs/figures/adapter_survey.tsv" }
+adapter-survey = { cmd = "riborescue adapter-survey results/staged_runs.tsv --out docs/figures/adapter_survey.tsv", depends-on = ["stage-runs"] }
 reads = { cmd = """nextflow run . --step reads -profile local -resume \
   --samplesheet ../results/staged_runs.tsv \
   --genome ../data/gencode/GRCh38.primary_assembly.genome.fa.gz \
