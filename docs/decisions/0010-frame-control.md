@@ -121,7 +121,11 @@ difference is the mean over treated libraries minus the mean over untreated ones
 **What can confirm, and what can only support.** The rule is defined for a paired design with three
 replicates, so only a dataset with that structure can confirm it. That is **GSE144140**: HEK293T,
 DMSO against G418 500 µg/mL against SRI-37240 10 µM, three replicates of each, and no part in
-shaping this rule, and none of its runs appears in the series that did. It carries its own negative
+shaping this rule, and none of its runs appears in the series that did. It comes from the same
+laboratory and the same linker chemistry, which bounds what confirmation there would mean: the
+libraries and the sequencing are independent of the ones that shaped the rule, the protocol is not.
+A shared protocol artefact would survive this test, and no public dataset profiles a readthrough
+compound from a second laboratory at three replicates. It carries its own negative
 control — SRI-37240 raises occupancy at stop codons without raising occupancy beyond them, which is
 stalling rather than readthrough — so the contrast discriminates instead of merely responding.
 
