@@ -35,9 +35,9 @@ def _report(path: Path, *, reads: int, with_adapter: int, output: int | None = N
 
 def test_the_declared_runs_validate():
     runs = SequencingRuns.validate(read_table(SAMPLESHEET), lazy=True)
-    assert len(runs) == 12
+    assert len(runs) == 21
     assert set(runs["assay"]) == {"riboseq", "rnaseq"}
-    assert (runs.groupby(["cell_line", "treatment"]).size() > 0).all()
+    assert (runs.groupby(["dataset", "treatment"]).size() > 0).all()
 
 
 def test_every_paired_run_names_a_second_read_and_every_single_run_does_not():
@@ -101,7 +101,7 @@ def test_the_assays_whose_reads_must_reach_the_adapter_are_the_footprint_ones():
     runs = read_table(SAMPLESHEET)
     expected = set(runs.loc[runs["assay"].isin(ADAPTER_REACHED_BY), "sample"])
     assert expected == set(runs.loc[runs["assay"] == "riboseq", "sample"])
-    assert len(expected) == 8
+    assert len(expected) == 17
 
 
 def test_summaries_are_ordered_by_sample_whatever_order_the_reports_arrive_in(tmp_path: Path):

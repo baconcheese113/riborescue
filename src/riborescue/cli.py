@@ -479,7 +479,7 @@ def extensions(transcripts: Path, annotation: Path, out: Path) -> None:
 )
 @click.option("--treated", required=True, help="The treatment arm being tested.")
 @click.option("--control", required=True, help="The arm it is tested against.")
-@click.option("--cell-line", default="HEK293T", show_default=True)
+@click.option("--dataset", required=True, help="The experiment whose libraries form the contrast.")
 @click.option(
     "--paired",
     is_flag=True,
@@ -493,7 +493,7 @@ def readthrough_assay(
     samplesheet: Path,
     treated: str,
     control: str,
-    cell_line: str,
+    dataset: str,
     paired: bool,
     out: Path,
 ) -> None:
@@ -502,14 +502,12 @@ def readthrough_assay(
     runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
     arms = runs.loc[
         (runs["assay"] == "riboseq")
-        & (runs["cell_line"] == cell_line)
+        & (runs["dataset"] == dataset)
         & (runs["treatment"].isin([treated, control])),
         ["sample", "treatment", "replicate"],
     ]
     if arms.empty:
-        raise click.ClickException(
-            f"{samplesheet} names no {cell_line} libraries for that contrast"
-        )
+        raise click.ClickException(f"{samplesheet} names no {dataset} libraries for that contrast")
 
     measured = read_table(counts)
     # A library named for the contrast but absent from the counts would quietly shrink the

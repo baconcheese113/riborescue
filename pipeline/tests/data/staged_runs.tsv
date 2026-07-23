@@ -1,3 +1,3 @@
-sample	run_accession	cell_line	variant	treatment	replicate	assay	layout	read_count	adapter_3p	adapter_3p_2	adapter_overlap	cut_5p	fastq_1	fastq_2
-riboseq_test	SRRTEST01	Calu-6	TP53:p.Arg196Ter	untreated	1	riboseq	single	200	CTGTAGGCACCATCAAT		5	0	reads/riboseq_test_1.fastq.gz	
-rnaseq_test	SRRTEST02	Calu-6	TP53:p.Arg196Ter	untreated	1	rnaseq	paired	200	AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC	AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA	5	0	reads/rnaseq_test_1.fastq.gz	reads/rnaseq_test_2.fastq.gz
+dataset	sample	run_accession	cell_line	variant	treatment	replicate	assay	layout	read_count	adapter_3p	adapter_3p_2	adapter_overlap	cut_5p	fastq_1	fastq_2
+calu6	riboseq_test	SRRTEST01	Calu-6	TP53:p.Arg196Ter	untreated	1	riboseq	single	200	CTGTAGGCACCATCAAT		5	0	reads/riboseq_test_1.fastq.gz	
+calu6	rnaseq_test	SRRTEST02	Calu-6	TP53:p.Arg196Ter	untreated	1	rnaseq	paired	200	AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC	AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA	5	0	reads/rnaseq_test_1.fastq.gz	reads/rnaseq_test_2.fastq.gz

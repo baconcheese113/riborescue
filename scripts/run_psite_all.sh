@@ -13,15 +13,14 @@
 set -euo pipefail
 
 usage() {
-    echo "usage: $0 <dataset> <samplesheet> [cell-line] [alignments-dir] [gtf]" >&2
+    echo "usage: $0 <dataset> <samplesheet> [alignments-dir] [gtf]" >&2
     exit 2
 }
 
 dataset=${1:-}
 samplesheet=${2:-}
-cell_line=${3:-}
-alignments=${4:-results/reads/alignments}
-gtf=${5:-data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz}
+alignments=${3:-results/reads/alignments}
+gtf=${4:-data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz}
 [ -n "$dataset" ] && [ -n "$samplesheet" ] || usage
 [ -f "$samplesheet" ] || { echo "no samplesheet at $samplesheet" >&2; exit 1; }
 
@@ -37,12 +36,11 @@ if [ ! -f "$cache/extensions.tsv" ]; then
 fi
 
 # The libraries of this dataset, named by its samplesheet rather than by whatever the alignment
-# directory happens to hold. One samplesheet can describe more than one experiment, so the cell line
-# narrows it: a shared sheet must not let another experiment's libraries into this dataset.
-samples=$(awk -F'\t' -v want="$cell_line" '
+# directory happens to hold. The samplesheet describes every experiment, and each library declares
+# which one it belongs to — the cell line cannot narrow it, because two studies profile HEK293T.
+samples=$(awk -F'\t' -v want="$dataset" '
     NR==1 { for (i = 1; i <= NF; i++) h[$i] = i; next }
-    $h["assay"] != "riboseq" { next }
-    want != "" && $h["cell_line"] != want { next }
+    $h["assay"] != "riboseq" || $h["dataset"] != want { next }
     { print $h["sample"] }' "$samplesheet")
 [ -n "$samples" ] || { echo "$samplesheet names no footprint libraries" >&2; exit 1; }
 

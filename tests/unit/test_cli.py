@@ -92,6 +92,7 @@ def test_readthrough_refuses_a_contrast_missing_a_library(tmp_path: Path):
         for replicate in (1, 2):
             rows.append(
                 {
+                    "dataset": "hek293t",
                     "sample": f"{treatment}_rep{replicate}",
                     "run_accession": f"SRR{treatment[:2]}{replicate}",
                     "cell_line": "HEK293T",
@@ -124,7 +125,8 @@ def test_readthrough_refuses_a_contrast_missing_a_library(tmp_path: Path):
         main,
         [
             "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
-            "--treated", "g418", "--control", "untreated", "--out", str(tmp_path / "o.tsv"),
+            "--treated", "g418", "--control", "untreated", "--dataset", "hek293t",
+            "--out", str(tmp_path / "o.tsv"),
         ],
     )
     assert result.exit_code != 0

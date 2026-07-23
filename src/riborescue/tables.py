@@ -95,8 +95,13 @@ class _Runs(_Strict):
     `assay` is recorded rather than derived: SRA labels ribosome-footprint libraries RNA-Seq
     alongside the transcriptome ones, so its library strategy cannot tell them apart. `variant` is
     the disease allele the cell line carries, absent for a wild-type background.
+
+    `dataset` names the experiment a library belongs to, and it is what results are kept apart by.
+    The cell line cannot serve: two studies profile HEK293T, and a contrast drawn across both would
+    compare libraries that were never prepared, sequenced, or intended together.
     """
 
+    dataset: Series[str]
     sample: Series[str] = pa.Field(unique=True)
     run_accession: Series[str] = pa.Field(unique=True)
     cell_line: Series[str]
