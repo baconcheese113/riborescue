@@ -121,13 +121,89 @@ def test_readthrough_refuses_a_contrast_missing_a_library(tmp_path: Path):
     with gzip.open(gtf, "wt") as handle:
         handle.write('chr1\tX\ttranscript\t1\t9\t.\t+\t.\tgene_id "G"; transcript_id "T1";\n')
 
+    manifest = _passing_manifest(tmp_path, "hek293t", [r["sample"] for r in rows])
     result = CliRunner().invoke(
         main,
         [
             "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
             "--treated", "g418", "--control", "untreated", "--dataset", "hek293t",
-            "--out", str(tmp_path / "o.tsv"),
+            "--manifest", str(manifest), "--out", str(tmp_path / "o.tsv"),
         ],
     )
     assert result.exit_code != 0
     assert "g418_rep2" in result.output
+
+
+def _passing_manifest(tmp_path: Path, dataset: str, samples: list[str]) -> Path:
+    import json
+
+    path = tmp_path / f"{dataset}.calibration.json"
+    path.write_text(
+        json.dumps(
+            {
+                "dataset": dataset,
+                "lengths": [30, 31],
+                "surveyed": [18, 40],
+                "script_md5": "abc",
+                "passes": True,
+                "libraries": [
+                    {
+                        "sample": sample,
+                        "psites": 2_000_000,
+                        "frame0_share": 0.55,
+                        "dominant_length": 30,
+                        "offset_from_5": 12,
+                        "failures": [],
+                    }
+                    for sample in samples
+                ],
+            }
+        )
+    )
+    return path
+
+
+def test_the_assay_refuses_a_dataset_that_failed_its_calibration(tmp_path: Path):
+    """A dataset whose libraries did not pass has no result, and the assay must not produce one."""
+
+    import json
+
+    manifest = tmp_path / "c.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "dataset": "gse144140",
+                "lengths": [30],
+                "surveyed": [18, 40],
+                "script_md5": None,
+                "passes": False,
+                "libraries": [
+                    {
+                        "sample": "gse144140_dmso_rep1_riboseq",
+                        "psites": 9_000,
+                        "frame0_share": 0.51,
+                        "dominant_length": 30,
+                        "offset_from_5": 12,
+                        "failures": ["9,000 P-sites over the selected lengths, under 1,000,000"],
+                    }
+                ],
+            }
+        )
+    )
+    counts = tmp_path / "counts.tsv"
+    counts.write_text("sample\n")
+    gtf = tmp_path / "a.gtf.gz"
+    gtf.write_bytes(b"")
+    sheet = tmp_path / "runs.tsv"
+    sheet.write_text("dataset\n")
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
+            "--treated", "g418", "--control", "dmso", "--dataset", "gse144140",
+            "--manifest", str(manifest), "--out", str(tmp_path / "o.tsv"),
+        ],
+    )
+    assert result.exit_code != 0
+    assert "did not pass its predeclared calibration" in result.output

@@ -104,7 +104,7 @@ r-jsonlite = "*"
 [tool.pixi.feature.psite.tasks]
 annotation = { cmd = "Rscript scripts/run_psite.R --annotation-only --gtf data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz --cache results/psite/_reference/gencode.v50.primary_assembly.annotation" }
 psite = { cmd = "bash scripts/run_psite_all.sh hek293t results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
-psite-gse144140 = { cmd = "bash scripts/run_psite_all.sh gse144140 results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
+psite-gse144140-survey = { cmd = "bash scripts/run_psite_all.sh gse144140 results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1", LENGTHS = "18:40" } }
 psite-fibroblast = { cmd = "bash scripts/run_psite_all.sh gse179274_fibroblast results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
 
 # One solve group, so the runtime environment resolves to the versions the development environment
@@ -137,7 +137,8 @@ landscape = "riborescue landscape results/clinvar_contexts.tsv results/amenabili
 extensions = "riborescue extensions data/gencode/gencode.v50.transcripts.fa.gz --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv --out results/psite/_reference/gencode.v50.primary_assembly.annotation/extensions.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
 readthrough = "bash scripts/run_readthrough.sh hek293t untreated both"
-readthrough-gse144140 = "bash scripts/run_readthrough.sh gse144140 dmso both"
+select-lengths-gse144140 = "riborescue select-lengths gse144140 --frames results/psite/gse144140/frame_by_length.tsv --offsets results/psite/gse144140/psite_offsets.tsv --script-md5 results/psite/gse144140/script.md5 --out results/psite/gse144140/calibration.json"
+readthrough-gse144140 = { cmd = "bash scripts/run_readthrough.sh gse144140 dmso both", depends-on = ["select-lengths-gse144140"] }
 readthrough-fibroblast = { cmd = "bash scripts/run_readthrough.sh gse179274_fibroblast untreated unpaired g418_0.1 g418_0.5", depends-on = ["readthrough-suptrna"] }
 readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp unpaired suptrna_tyr"
 disk = "bash scripts/require_disk.sh 200"

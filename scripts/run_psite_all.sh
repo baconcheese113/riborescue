@@ -13,7 +13,7 @@
 set -euo pipefail
 
 usage() {
-    echo "usage: $0 <dataset> <samplesheet> [alignments-dir] [gtf]" >&2
+    echo "usage: [LENGTHS=a:b] $0 <dataset> <samplesheet> [alignments-dir] [gtf]" >&2
     exit 2
 }
 
@@ -21,6 +21,9 @@ dataset=${1:-}
 samplesheet=${2:-}
 alignments=${3:-results/reads/alignments}
 gtf=${4:-data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz}
+# The survey pass keeps everything ADR-0011 looks at; the second keeps what it chose. Passing the
+# set explicitly is what makes the two passes distinguishable in the resources table beside them.
+lengths=${LENGTHS:-18:40}
 [ -n "$dataset" ] && [ -n "$samplesheet" ] || usage
 [ -f "$samplesheet" ] || { echo "no samplesheet at $samplesheet" >&2; exit 1; }
 
@@ -66,7 +69,7 @@ for sample in $samples; do
     [ -f "$bam" ] || { echo "no transcriptome alignment for $sample at $bam" >&2; exit 1; }
     /usr/bin/time -f "${sample}\t%M\t%e" -a -o "$outdir/resources.tsv" \
         Rscript "$snapshot/run_psite.R" --bam "$bam" --sample "$sample" --gtf "$gtf" \
-            --outdir "$outdir" --cache "$cache"
+            --outdir "$outdir" --cache "$cache" --lengths "$lengths"
 done
 
 Rscript "$snapshot/run_psite.R" --combine --outdir "$outdir" --evidence "docs/figures/$dataset"

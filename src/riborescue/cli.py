@@ -9,6 +9,7 @@ import pandera.pandas
 
 from riborescue._version import __version__
 from riborescue.baseline import fit, relative_error_quantile
+from riborescue.calibration import read_manifest, select_lengths
 from riborescue.clinvar import pathogenic_nonsense
 from riborescue.contaminants import write_contaminants
 from riborescue.context import contexts_for, disagreements_with_protein
@@ -185,6 +186,60 @@ def stage_runs(samplesheet: Path, out: Path, data_root_: Path | None, force: boo
         raise click.ClickException(str(error)) from error
     write_table(_validated(StagedRuns, staged, out), out)
     click.echo(f"{len(staged)} runs staged under {root / FASTQ_SUBDIR}")
+
+
+@main.command("select-lengths")
+@click.argument("dataset")
+@click.option(
+    "--frames",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="frame_by_length.tsv from the survey calibration pass.",
+)
+@click.option(
+    "--offsets",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="psite_offsets.tsv from the same pass.",
+)
+@click.option(
+    "--script-md5",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The checksum file the calibration driver wrote beside its results.",
+)
+@_OUT
+def select_calibration_lengths(
+    dataset: str, frames: Path, offsets: Path, script_md5: Path | None, out: Path
+) -> None:
+    """Choose DATASET's footprint lengths and judge every library on them.
+
+    The set is one shared choice for the whole dataset, made from periodicity alone and before any
+    contrast is run. A library that fails a predeclared threshold is not dropped and the threshold
+    is not moved: the manifest records the failure and the assay refuses to run.
+    """
+
+    checksum = script_md5.read_text().strip() if script_md5 is not None else None
+    try:
+        manifest = select_lengths(dataset, read_table(frames), read_table(offsets), checksum)
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(manifest.to_json())
+
+    kept = ", ".join(str(length) for length in manifest.lengths) or "none"
+    click.echo(f"{dataset}: lengths {kept}")
+    for library in manifest.libraries:
+        state = "pass" if library.passes else "FAIL"
+        click.echo(
+            f"  {state} {library.sample}: {library.psites:,} P-sites, "
+            f"frame-0 {library.frame0_share:.1%}, {library.dominant_length} nt dominant, "
+            f"offset {library.offset_from_5} nt"
+        )
+        for failure in library.failures:
+            click.echo(f"       {failure}")
+    if not manifest.passes:
+        raise click.ClickException(f"{dataset} is inconclusive; its thresholds are not to be moved")
 
 
 @main.command("adapter-survey")
@@ -507,6 +562,12 @@ def extensions(transcripts: Path, annotation: Path, out: Path) -> None:
 @click.option("--control", required=True, help="The arm it is tested against.")
 @click.option("--dataset", required=True, help="The experiment whose libraries form the contrast.")
 @click.option(
+    "--manifest",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The calibration manifest for this dataset. Refused when it records a failure.",
+)
+@click.option(
     "--paired",
     is_flag=True,
     help="Compare within replicate. Only where the metadata documents which libraries were "
@@ -520,10 +581,23 @@ def readthrough_assay(
     treated: str,
     control: str,
     dataset: str,
+    manifest: Path,
     paired: bool,
     out: Path,
 ) -> None:
     """Test COUNTS for the readthrough signature, one contrast at a time."""
+
+    # Nothing else asks whether these libraries are ribosome profiles. A dataset that failed its
+    # predeclared calibration has no result to report, and the way that goes wrong is a contrast
+    # computed quietly on libraries nobody looked at.
+    try:
+        calibration = read_manifest(manifest)
+    except (ValueError, KeyError, OSError) as error:
+        raise click.ClickException(str(error)) from error
+    if calibration.dataset != dataset:
+        raise click.ClickException(
+            f"{manifest} calibrates {calibration.dataset}, not {dataset}"
+        )
 
     runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
     arms = runs.loc[
@@ -546,7 +620,9 @@ def readthrough_assay(
         overlapping_downstream_cds(gtf),
         samples=set(arms["sample"]),
     )
+    lengths = ", ".join(str(length) for length in calibration.lengths)
     click.echo(f"{len(measured):,} rows, {kept['transcript'].nunique():,} transcripts qualifying")
+    click.echo(f"calibrated on {lengths} nt")
 
     ratios = library_ratios(kept)
     compare = paired_effect if paired else unpaired_effect

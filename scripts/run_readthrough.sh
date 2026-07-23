@@ -25,7 +25,9 @@ shift 3
 samplesheet=${SAMPLESHEET:-results/staged_runs.tsv}
 counts=${COUNTS:-results/psite/$dataset/readthrough_counts.tsv}
 gtf=${GTF:-data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz}
+manifest=${MANIFEST:-results/psite/$dataset/calibration.json}
 [ -f "$counts" ] || { echo "no counts at $counts — calibrate $dataset first" >&2; exit 1; }
+[ -f "$manifest" ] || { echo "no calibration manifest at $manifest" >&2; exit 1; }
 
 case "$estimators" in
     unpaired|paired) run=("$estimators") ;;
@@ -53,7 +55,8 @@ for arm in "${arms[@]}"; do
         if [ "$estimator" = paired ]; then paired_flag=(--paired); else paired_flag=(); fi
         echo "=== $arm against $control, $estimator ==="
         riborescue readthrough "$counts" --gtf "$gtf" --samplesheet "$samplesheet" \
-            --dataset "$dataset" --treated "$arm" --control "$control" "${paired_flag[@]}" \
+            --dataset "$dataset" --manifest "$manifest" \
+            --treated "$arm" --control "$control" "${paired_flag[@]}" \
             --out "$outdir/${arm}_vs_${control}.${estimator}.tsv"
     done
 done

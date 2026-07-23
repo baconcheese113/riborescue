@@ -144,9 +144,16 @@ fwrite(offsets, part("offsets", options$sample), sep = "\t")
 reads <- psite_info(reads, offsets)
 sample_reads <- reads[[options$sample]]
 
-# Three-frame distribution over the coding sequence, per length. Reported in full — the fractions
-# speak for themselves, without a pass threshold imposed here.
-frame_len <- sample_reads[psite_region == "cds",
+# The coding sequence with its two peaks removed, per ADR-0011. Ribosomes pile up at the start codon
+# and again before the stop, and both would otherwise decide which read lengths look periodic and
+# inflate the denominator every ratio is built on. Sixteen nucleotides go from the 3' end rather than
+# the fifteen the GSE144140 authors remove, because the termination window below is [-15, 0]: at
+# fifteen, one position would be counted in the numerator and the denominator at once.
+internal_cds <- quote(psite_region == "cds" & psite_from_start >= 18L & psite_from_stop <= -16L)
+
+# Three-frame distribution over that, per length. Reported in full — the fractions speak for
+# themselves, and which lengths are kept is decided from this table rather than here.
+frame_len <- sample_reads[eval(internal_cds),
                           .(sample = options$sample, n = .N),
                           by = .(length, frame = psite_from_start %% 3)]
 fwrite(frame_len, part("frame", options$sample), sep = "\t")
@@ -171,13 +178,14 @@ if (!is.null(extensions)) {
 # Each reading frame is counted on its own, in the coding sequence and in the extension window
 # alike. Pooling the two off-frames would compare one phase against two, which is not a question
 # about frame at all.
+# All three windows are inclusive at both ends and disjoint by construction: the denominator stops
+# at -16, termination runs [-15, 0], the extension runs [1, extension - 3].
 downstream <- quote(psite_from_stop >= 1L & psite_from_stop <= extension - 3L)
-in_cds <- quote(psite_region == "cds")
 readthrough <- sample_reads[, .(
-  cds_frame0 = sum(eval(in_cds) & psite_from_start %% 3 == 0),
-  cds_frame1 = sum(eval(in_cds) & psite_from_start %% 3 == 1),
-  cds_frame2 = sum(eval(in_cds) & psite_from_start %% 3 == 2),
-  termination = sum(psite_from_stop >= -15 & psite_from_stop <= 0),
+  cds_frame0 = sum(eval(internal_cds) & psite_from_start %% 3 == 0),
+  cds_frame1 = sum(eval(internal_cds) & psite_from_start %% 3 == 1),
+  cds_frame2 = sum(eval(internal_cds) & psite_from_start %% 3 == 2),
+  termination = sum(psite_from_stop >= -15L & psite_from_stop <= 0L),
   extension = extension[1],
   extension_frame0 = sum(eval(downstream) & psite_from_start %% 3 == 0, na.rm = TRUE),
   extension_frame1 = sum(eval(downstream) & psite_from_start %% 3 == 1, na.rm = TRUE),
