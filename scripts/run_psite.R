@@ -39,6 +39,15 @@ options <- parse_args(OptionParser(option_list = list(
 dir.create(options$outdir, recursive = TRUE, showWarnings = FALSE)
 part <- function(kind, sample) file.path(options$outdir, sprintf("%s.%s.tsv", sample, kind))
 
+# Written aside and moved into place. A run stopped part-way leaves no half-written table that the
+# next run would mistake for a finished library and skip.
+write_part <- function(table, kind, sample) {
+  final <- part(kind, sample)
+  staging <- paste0(final, ".tmp")
+  fwrite(table, staging, sep = "\t")
+  file.rename(staging, final)
+}
+
 if (options$combine) {
   gather <- function(kind) {
     files <- list.files(options$outdir, pattern = sprintf("\\.%s\\.tsv$", kind), full.names = TRUE)
@@ -139,7 +148,7 @@ filterBam(
 reads <- bamtolist(bamfolder = staged, annotation = annotation)
 reads <- length_filter(reads, length_filter_mode = "custom", length_range = length_range)
 offsets <- psite(reads, flanking = 6, extremity = "auto")
-fwrite(offsets, part("offsets", options$sample), sep = "\t")
+write_part(offsets, "offsets", options$sample)
 
 reads <- psite_info(reads, offsets)
 sample_reads <- reads[[options$sample]]
@@ -156,12 +165,12 @@ internal_cds <- quote(psite_region == "cds" & psite_from_start >= 18L & psite_fr
 frame_len <- sample_reads[eval(internal_cds),
                           .(sample = options$sample, n = .N),
                           by = .(length, frame = psite_from_start %% 3)]
-fwrite(frame_len, part("frame", options$sample), sep = "\t")
+write_part(frame_len, "frame", options$sample)
 
 # Where the P-sites fall: 5' UTR, CDS, 3' UTR. A footprint library sits overwhelmingly in the CDS.
 region <- sample_reads[, .(sample = options$sample, n = .N), by = .(region = psite_region)]
 region[, fraction := n / sum(n)]
-fwrite(region, part("region", options$sample), sep = "\t")
+write_part(region, "region", options$sample)
 
 # The counts the readthrough assay is built from, one row per transcript. Frame is the
 # coding frame carried past the stop, so in-frame downstream occupancy is the continuation of the
@@ -180,6 +189,11 @@ if (!is.null(extensions)) {
 # about frame at all.
 # All three windows are inclusive at both ends and disjoint by construction: the denominator stops
 # at -16, termination runs [-15, 0], the extension runs [1, extension - 3].
+# Counted per footprint length as well as per transcript, so which lengths a dataset keeps is a
+# subset sum rather than another pass over the alignment. The selected set is not known when this
+# runs — it is chosen from the periodicity this same pass measures — and stratifying here is what
+# lets ADR-0011's primary analysis and the sensitivity analysis on the GSE144140 authors' 28-35 nt
+# window both come out of one read of each BAM.
 downstream <- quote(psite_from_stop >= 1L & psite_from_stop <= extension - 3L)
 readthrough <- sample_reads[, .(
   cds_frame0 = sum(eval(internal_cds) & psite_from_start %% 3 == 0),
@@ -190,12 +204,15 @@ readthrough <- sample_reads[, .(
   extension_frame0 = sum(eval(downstream) & psite_from_start %% 3 == 0, na.rm = TRUE),
   extension_frame1 = sum(eval(downstream) & psite_from_start %% 3 == 1, na.rm = TRUE),
   extension_frame2 = sum(eval(downstream) & psite_from_start %% 3 == 2, na.rm = TRUE)
-), by = transcript]
+), by = .(transcript, length)]
 readthrough[, cds_total := cds_frame0 + cds_frame1 + cds_frame2]
 readthrough <- merge(readthrough, annotation[, .(transcript, l_cds, l_utr3)], by = "transcript")
-readthrough <- readthrough[cds_total > 0]
+# A row with no counts at all carries nothing. One with downstream counts but no coding counts at
+# this length does, so the filter is on the whole row rather than on the coding sequence alone.
+readthrough <- readthrough[cds_total > 0 | termination > 0 |
+                             extension_frame0 > 0 | extension_frame1 > 0 | extension_frame2 > 0]
 readthrough[, sample := options$sample]
-fwrite(readthrough, part("readthrough", options$sample), sep = "\t")
+write_part(readthrough, "readthrough", options$sample)
 
 # An internal consistency check, not held-out validation: it re-scores the same reads the offset was
 # inferred from. A resolved offset should still beat its immediate neighbours on coding-frame
@@ -206,19 +223,27 @@ shift <- rbindlist(lapply(-2:2, function(k) {
   data.table(sample = options$sample, length = dominant$length, shift = k,
              frame0 = mean(((in_cds$psite_from_start + k) %% 3) == 0))
 }))
-fwrite(shift, part("shift", options$sample), sep = "\t")
+write_part(shift, "shift", options$sample)
 
 # Start and stop metaprofiles. Three-nucleotide periodicity has to be visible, not only implied by a
 # frame fraction, so the profile is kept as counts and drawn.
 meta <- metaprofile_psite(reads, annotation, sample = setNames(list(options$sample), options$sample),
                           utr5l = 25, cdsl = 50, utr3l = 25)
-fwrite(meta$count_dt, part("metaprofile", options$sample), sep = "\t")
+write_part(meta$count_dt, "metaprofile", options$sample)
 
 # The returned list carries both a table named plot_dt and the drawing itself, so the plot is picked
 # by class rather than by name.
 drawn <- Filter(function(x) inherits(x, "ggplot"), meta)
 ggplot2::ggsave(file.path(options$outdir, paste0(options$sample, ".metaprofile.png")),
                 drawn[[1]], width = 10, height = 4, dpi = 120)
+
+# Written last and only here. Every table this library owes is on disk by now, so a run that resumes
+# can tell a finished library from one interrupted between two of its six tables — which the combiner
+# would otherwise gather short a sample, without complaining.
+writeLines(
+  c(options$sample, options$lengths),
+  file.path(options$outdir, paste0(options$sample, ".done"))
+)
 
 cat(sprintf("%s: %d nt dominant, offset %g from 5' / %g from 3'\n", options$sample,
             dominant$length, dominant$corrected_offset_from_5, dominant$corrected_offset_from_3))

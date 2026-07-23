@@ -47,16 +47,19 @@ else
 fi
 [ "${#arms[@]}" -gt 0 ] || { echo "$dataset has no arm to contrast with $control" >&2; exit 1; }
 
-outdir="results/readthrough/$dataset"
+outdir=${READTHROUGH_OUTDIR:-results/readthrough/$dataset}
+suffix=${OUTDIR_SUFFIX:-}
 mkdir -p "$outdir"
 
 for arm in "${arms[@]}"; do
     for estimator in "${run[@]}"; do
         if [ "$estimator" = paired ]; then paired_flag=(--paired); else paired_flag=(); fi
-        echo "=== $arm against $control, $estimator ==="
+        window=()
+        if [ -n "${PUBLISHED:-}" ]; then window=(--published-lengths ${PUBLISHED}); fi
+        echo "=== $arm against $control, $estimator${suffix:+ (published window)} ==="
         riborescue readthrough "$counts" --gtf "$gtf" --samplesheet "$samplesheet" \
             --dataset "$dataset" --manifest "$manifest" \
-            --treated "$arm" --control "$control" "${paired_flag[@]}" \
-            --out "$outdir/${arm}_vs_${control}.${estimator}.tsv"
+            --treated "$arm" --control "$control" "${paired_flag[@]}" "${window[@]}" \
+            --out "$outdir/${arm}_vs_${control}.${estimator}${suffix}.tsv"
     done
 done

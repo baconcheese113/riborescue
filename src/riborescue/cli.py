@@ -32,6 +32,7 @@ from riborescue.reads import (
     survey_adapters,
 )
 from riborescue.readthrough import (
+    collapse_lengths,
     extension_windows,
     library_ratios,
     overlapping_downstream_cds,
@@ -568,6 +569,12 @@ def extensions(transcripts: Path, annotation: Path, out: Path) -> None:
     help="The calibration manifest for this dataset. Refused when it records a failure.",
 )
 @click.option(
+    "--published-lengths",
+    type=(int, int),
+    help="Run the sensitivity arm on this inclusive length range instead of the selected set. "
+    "The manifest is still required and must still pass.",
+)
+@click.option(
     "--paired",
     is_flag=True,
     help="Compare within replicate. Only where the metadata documents which libraries were "
@@ -582,6 +589,7 @@ def readthrough_assay(
     control: str,
     dataset: str,
     manifest: Path,
+    published_lengths: tuple[int, int] | None,
     paired: bool,
     out: Path,
 ) -> None:
@@ -595,9 +603,14 @@ def readthrough_assay(
     except (ValueError, KeyError, OSError) as error:
         raise click.ClickException(str(error)) from error
     if calibration.dataset != dataset:
-        raise click.ClickException(
-            f"{manifest} calibrates {calibration.dataset}, not {dataset}"
-        )
+        raise click.ClickException(f"{manifest} calibrates {calibration.dataset}, not {dataset}")
+    # The sensitivity arm still passes through the calibration gate; only which lengths it sums
+    # differs, so it can never be run on a dataset whose libraries failed.
+    lengths_used = (
+        tuple(range(published_lengths[0], published_lengths[1] + 1))
+        if published_lengths is not None
+        else calibration.lengths
+    )
 
     runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
     arms = runs.loc[
@@ -610,6 +623,11 @@ def readthrough_assay(
         raise click.ClickException(f"{samplesheet} names no {dataset} libraries for that contrast")
 
     measured = read_table(counts)
+    # Counts arrive stratified by footprint length so that one pass over the alignments serves both
+    # the selected set and the published window. Which lengths this contrast uses comes from the
+    # manifest, never from an argument, so it cannot differ from what the manifest records.
+    if "length" in measured.columns:
+        measured = collapse_lengths(measured, lengths_used)
     # A library named for the contrast but absent from the counts would quietly shrink the
     # comparison — three against three becoming two against three without a word.
     if absent := sorted(set(arms["sample"]) - set(measured["sample"])):
@@ -622,7 +640,8 @@ def readthrough_assay(
     )
     lengths = ", ".join(str(length) for length in calibration.lengths)
     click.echo(f"{len(measured):,} rows, {kept['transcript'].nunique():,} transcripts qualifying")
-    click.echo(f"calibrated on {lengths} nt")
+    arm = "published window" if published_lengths is not None else "selected set"
+    click.echo(f"{arm}: {lengths} nt")
 
     ratios = library_ratios(kept)
     compare = paired_effect if paired else unpaired_effect

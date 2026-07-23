@@ -25,12 +25,14 @@ import numpy as np
 import pandas as pd
 
 __all__ = [
+    "COUNT_COLUMNS",
     "MINIMUM_CDS_PSITES",
     "MINIMUM_UTR3_LENGTH",
     "PROGRAMMED_READTHROUGH",
     "Effect",
     "PairedEffect",
     "UnpairedEffect",
+    "collapse_lengths",
     "library_ratios",
     "overlapping_downstream_cds",
     "paired_effect",
@@ -199,6 +201,38 @@ def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
                     contaminated.add(transcript.group(1))
                     break
     return frozenset(contaminated)
+
+
+COUNT_COLUMNS = [
+    *CDS_FRAMES,
+    *EXTENSION_FRAMES,
+    "termination",
+    "cds_total",
+]
+"""What is summed when footprint lengths are collapsed. Everything else describes the transcript."""
+
+
+def collapse_lengths(counts: pd.DataFrame, lengths: Collection[int]) -> pd.DataFrame:
+    """Sum a length-stratified count table over the lengths a dataset keeps.
+
+    Calibration counts per transcript *and* per footprint length, so which lengths an analysis uses
+    is a choice made here rather than another pass over the alignments. Both the primary analysis
+    and the sensitivity analysis on the published window come out of the same table this way, and
+    neither can silently be run on a different set of reads than it declares.
+    """
+
+    if "length" not in counts.columns:
+        raise ValueError("these counts are not stratified by footprint length")
+    kept = counts.loc[counts["length"].isin(list(lengths))]
+    if kept.empty:
+        raise ValueError(f"no counts at lengths {sorted(lengths)}")
+    # The extension window and the transcript's own lengths do not vary with footprint length, so
+    # they are carried through rather than summed.
+    carried = {"extension": "first", "l_cds": "first", "l_utr3": "first"}
+    summed = kept.groupby(["transcript", "sample"], as_index=False, sort=False).agg(
+        {column: "sum" for column in COUNT_COLUMNS} | carried
+    )
+    return summed[["transcript", "sample", *carried, *COUNT_COLUMNS]]
 
 
 def qualifying(

@@ -443,3 +443,48 @@ def test_pooled_counts_are_reported_beside_the_proportions():
 def test_the_termination_ratio_divides_by_in_frame_coding_occupancy():
     frame = counts(termination=90, cds_frame0=900, cds_frame1=100, cds_frame2=100)
     assert library_ratios(frame).loc[0, "termination_occupancy"] == pytest.approx(0.1)
+
+
+def test_lengths_are_collapsed_by_summing_the_ones_a_dataset_keeps():
+    """One pass over the alignments serves the selected set and the published window alike."""
+
+    import pandas as pd
+
+    from riborescue.readthrough import collapse_lengths
+
+    counts = pd.DataFrame(
+        {
+            "transcript": ["T1", "T1", "T1"],
+            "sample": ["a", "a", "a"],
+            "length": [28, 30, 21],
+            "cds_frame0": [100, 200, 7],
+            "cds_frame1": [10, 20, 1],
+            "cds_frame2": [10, 20, 1],
+            "extension_frame0": [5, 6, 0],
+            "extension_frame1": [1, 1, 0],
+            "extension_frame2": [1, 1, 0],
+            "termination": [3, 4, 0],
+            "cds_total": [120, 240, 9],
+            "extension": [300, 300, 300],
+            "l_cds": [900, 900, 900],
+            "l_utr3": [400, 400, 400],
+        }
+    )
+    kept = collapse_lengths(counts, [28, 30])
+    assert len(kept) == 1
+    assert kept.loc[0, "cds_frame0"] == 300
+    assert kept.loc[0, "extension_frame0"] == 11
+    assert kept.loc[0, "termination"] == 7
+    # Carried, not summed: they describe the transcript rather than the reads.
+    assert kept.loc[0, "extension"] == 300
+    assert kept.loc[0, "l_cds"] == 900
+
+
+def test_collapsing_refuses_counts_that_are_not_stratified():
+    import pandas as pd
+    import pytest
+
+    from riborescue.readthrough import collapse_lengths
+
+    with pytest.raises(ValueError, match="not stratified"):
+        collapse_lengths(pd.DataFrame({"transcript": ["T1"], "sample": ["a"]}), [30])
