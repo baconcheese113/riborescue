@@ -6,6 +6,7 @@ launched, and the reads task launches it from `pipeline/`, so a run without an e
 publishes under `pipeline/results` while calibration reads `results/reads`.
 """
 
+import os
 import shutil
 import subprocess
 import tomllib
@@ -16,6 +17,18 @@ import pytest
 ROOT = Path(__file__).parents[2]
 TASKS = tomllib.loads((ROOT / "pyproject.toml").read_text())["tool"]["pixi"]["tasks"]
 SAMPLESHEET = ROOT / "pipeline/assets/riboseq_samples.tsv"
+
+
+def _calibrate(staged: Path, alignments: Path, tmp_path: Path) -> subprocess.CompletedProcess[str]:
+    """Run the calibration driver with its results directed away from the real results tree."""
+
+    return subprocess.run(
+        ["bash", "scripts/run_psite_all.sh", "gse144140", str(staged), str(alignments)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "OUTDIR": str(tmp_path / "psite")},
+    )
 
 
 def _command(task: str) -> str:
@@ -61,12 +74,7 @@ def test_calibrating_a_dataset_refuses_when_any_of_its_libraries_is_missing(tmp_
     if not staged.exists():
         pytest.skip("no staged samplesheet in this checkout")
 
-    result = subprocess.run(
-        ["bash", "scripts/run_psite_all.sh", "gse144140", str(staged), str(alignments)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-    )
+    result = _calibrate(staged, alignments, tmp_path)
     assert result.returncode != 0
     assert "no transcriptome alignment for gse144140_" in result.stderr
 
@@ -81,11 +89,6 @@ def test_calibrating_a_dataset_names_only_that_dataset(tmp_path: Path):
     if not staged.exists():
         pytest.skip("no staged samplesheet in this checkout")
 
-    result = subprocess.run(
-        ["bash", "scripts/run_psite_all.sh", "gse144140", str(staged), str(alignments)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-    )
+    result = _calibrate(staged, alignments, tmp_path)
     named = result.stderr.split(" at ")[0].removeprefix("no transcriptome alignment for ").strip()
     assert named.startswith("gse144140_")

@@ -69,6 +69,7 @@ def _counts_row(transcript: str, sample: str) -> dict:
         "cds_frame0": 1000,
         "cds_frame1": 250,
         "cds_frame2": 250,
+        "cds_total": 1500,
         "termination": 50,
         "extension": 300,
         "extension_frame0": 10,
@@ -207,3 +208,50 @@ def test_the_assay_refuses_a_dataset_that_failed_its_calibration(tmp_path: Path)
     )
     assert result.exit_code != 0
     assert "did not pass its predeclared calibration" in result.output
+
+
+def test_each_arm_reports_the_window_it_actually_used(tmp_path: Path):
+    """The sensitivity arm printed the manifest's lengths while summing a different set."""
+
+    import gzip
+
+    import pandas as pd
+
+    sheet = tmp_path / "runs.tsv"
+    rows = [
+        {
+            "dataset": "d", "sample": f"{arm}_rep{n}", "run_accession": f"SRR{arm[:2]}{n}",
+            "cell_line": "HEK293T", "variant": "TP53:p.Arg196Ter", "treatment": arm, "replicate": n,
+            "assay": "riboseq", "layout": "single", "read_count": 1000, "adapter_3p": "ACGT",
+            "adapter_3p_2": None, "adapter_overlap": 5, "cut_5p": 0,
+            "fastq_1": "a.fastq.gz", "fastq_2": None,
+        }
+        for arm in ("dmso", "g418")
+        for n in (1, 2)
+    ]
+    pd.DataFrame(rows).to_csv(sheet, sep="\t", index=False)
+
+    counts = tmp_path / "counts.tsv"
+    pd.DataFrame(
+        [
+            {**_counts_row("T1", r["sample"]), "length": length}
+            for r in rows
+            for length in (28, 30, 31, 34)
+        ]
+    ).to_csv(counts, sep="\t", index=False)
+
+    gtf = tmp_path / "a.gtf.gz"
+    with gzip.open(gtf, "wt") as handle:
+        handle.write('chr1\tX\ttranscript\t1\t9\t.\t+\t.\tgene_id "G"; transcript_id "T1";\n')
+
+    manifest = _passing_manifest(tmp_path, "d", [r["sample"] for r in rows])
+    common = [
+        "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
+        "--treated", "g418", "--control", "dmso", "--dataset", "d",
+        "--manifest", str(manifest), "--out", str(tmp_path / "o.tsv"),
+    ]
+    selected = CliRunner().invoke(main, common)
+    published = CliRunner().invoke(main, [*common, "--published-lengths", "28", "35"])
+
+    assert "selected set: 30, 31 nt" in selected.output
+    assert "published window: 28, 29, 30, 31, 32, 33, 34, 35 nt" in published.output

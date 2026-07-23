@@ -11,16 +11,20 @@
 
 set -euo pipefail
 
-fraction=${1:-0.002}
+# Records taken from the head of each alignment. STAR writes the transcriptome BAM in read order
+# rather than by coordinate, so the head is a fair slice across transcripts, and taking it costs a
+# read of the first few hundred megabytes instead of the whole file. A fraction would be tidier and
+# would turn a one-minute smoke run into a twenty-minute one.
+records=${1:-1500000}
 alignments=${2:-results/reads/alignments}
 out=${3:-results/smoke/alignments}
-seed=1
+pattern=${SMOKE_PATTERN:-*}
 
 command -v samtools >/dev/null || { echo "samtools is not on PATH" >&2; exit 1; }
 mkdir -p "$out"
 
 count=0
-for bam in "$alignments"/*.Aligned.toTranscriptome.out.bam; do
+for bam in "$alignments"/$pattern.Aligned.toTranscriptome.out.bam; do
     [ -e "$bam" ] || { echo "no transcriptome alignments under $alignments" >&2; exit 1; }
     name=$(basename "$bam")
     target="$out/$name"
@@ -29,10 +33,15 @@ for bam in "$alignments"/*.Aligned.toTranscriptome.out.bam; do
         count=$((count + 1))
         continue
     fi
-    # -s takes seed.fraction as one number, so the same slice is reproduced on every machine.
-    samtools view -@ 2 -b -s "${seed}${fraction#0}" "$bam" >"$target.tmp"
+    # `head` closes the pipe once it has enough, which reaches samtools as SIGPIPE. Under pipefail
+    # that reads as a failed slice, so this one pipeline is exempted rather than the whole script.
+    (
+        set +o pipefail
+        { samtools view -H "$bam"; samtools view "$bam" | head -n "$records"; } \
+            | samtools view -b -o "$target.tmp" -
+    )
     mv "$target.tmp" "$target"
     echo "sliced $name to $(du -h "$target" | cut -f1)"
     count=$((count + 1))
 done
-echo "$count libraries under $out at fraction $fraction"
+echo "$count libraries under $out, $records records each"

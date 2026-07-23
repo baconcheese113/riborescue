@@ -638,7 +638,7 @@ def readthrough_assay(
         overlapping_downstream_cds(gtf),
         samples=set(arms["sample"]),
     )
-    lengths = ", ".join(str(length) for length in calibration.lengths)
+    lengths = ", ".join(str(length) for length in lengths_used)
     click.echo(f"{len(measured):,} rows, {kept['transcript'].nunique():,} transcripts qualifying")
     arm = "published window" if published_lengths is not None else "selected set"
     click.echo(f"{arm}: {lengths} nt")
