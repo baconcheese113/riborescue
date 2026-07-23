@@ -112,6 +112,16 @@ def summarise_trimming(
     )
 
 
+PLAUSIBLE_FOOTPRINT = (20, 40)
+"""The median footprint a ribosome-profiling library may report, inclusive.
+
+Presence of the declared adapter is not enough to trust it. GSE179274 carries the sequencing adapter
+in 93% of its reads and declaring that adapter would still be wrong, because a profiling linker sits
+in front of it and every footprint would come out seventeen bases long. What gives it away is the
+length: a ribosome protects around 28 to 30 nucleotides, and a library reporting 45 has something
+else in front of the sequence it trimmed to.
+"""
+
 SURVEY_READS = 200_000
 """Reads drawn from the head of a library to survey it.
 
@@ -152,8 +162,31 @@ def _sequences(fastq: Path, limit: int) -> Iterator[str]:
                 yield line.rstrip("\n")
 
 
+def _adapter_start(sequence: str, fixed: str, overlap: int) -> int:
+    """Where the adapter begins in one read, or -1.
+
+    A short read runs out before the whole adapter fits, so only its first bases are present and
+    they sit at the read's end. Cutadapt accepts that as a match once enough of them are there, and
+    so must this: demanding the whole sequence would report a 50 nt library as adapter-free while
+    cutadapt trims it correctly.
+    """
+
+    whole = sequence.find(fixed)
+    if whole >= 0:
+        return whole
+    for length in range(min(len(fixed) - 1, len(sequence)), overlap - 1, -1):
+        if sequence.endswith(fixed[:length]):
+            return len(sequence) - length
+    return -1
+
+
 def survey_adapter(
-    sample: str, fastq: Path, adapter: str, cut_5p: int = 0, limit: int = SURVEY_READS
+    sample: str,
+    fastq: Path,
+    adapter: str,
+    cut_5p: int = 0,
+    adapter_overlap: int = 1,
+    limit: int = SURVEY_READS,
 ) -> AdapterSurvey:
     """Look for the declared adapter in a library's reads, and measure the footprint before it.
 
@@ -161,15 +194,20 @@ def survey_adapter(
     of the linker identifies it. What lies between the read's start and that fixed part is the
     footprint plus whatever the chemistry adds either side of it: the bases trimmed off the 5' end,
     and the degenerate bases the linker opens with. Both are subtracted.
+
+    The declared overlap counts against the whole adapter, degenerate bases included, so the number
+    of fixed bases that have to match is what remains after them.
     """
 
     fixed = adapter.lstrip("N")
-    flanking = cut_5p + (len(adapter) - len(fixed))
+    degenerate = len(adapter) - len(fixed)
+    flanking = cut_5p + degenerate
+    overlap = max(1, adapter_overlap - degenerate)
     reads = found_in = 0
     lengths: list[int] = []
     for sequence in _sequences(fastq, limit):
         reads += 1
-        found = sequence.find(fixed)
+        found = _adapter_start(sequence, fixed, overlap)
         if found >= 0:
             found_in += 1
             lengths.append(found - flanking)
@@ -202,13 +240,22 @@ def survey_adapters(runs: pd.DataFrame, minimum_rate: float = MINIMUM_ADAPTER_RA
             Path(str(row["fastq_1"])),
             str(row["adapter_3p"]),
             int(row["cut_5p"]),
+            int(row["adapter_overlap"]),
         )
         for _, row in footprints.iterrows()
     ]
-    if failed := [s for s in surveys if s.adapter_rate < minimum_rate]:
-        detail = ", ".join(f"{s.sample} {s.adapter_rate:.1%}" for s in failed)
+    if missing := [s for s in surveys if s.adapter_rate < minimum_rate]:
+        detail = ", ".join(f"{s.sample} {s.adapter_rate:.1%}" for s in missing)
         raise AdapterNotFoundError(
             f"the declared adapter is in under {minimum_rate:.0%} of the reads: {detail}"
+        )
+    low, high = PLAUSIBLE_FOOTPRINT
+    if implausible := [
+        s for s in surveys if s.footprint_median is None or not low <= s.footprint_median <= high
+    ]:
+        detail = ", ".join(f"{s.sample} {s.footprint_median}" for s in implausible)
+        raise AdapterNotFoundError(
+            f"the footprint left after the declared adapter is not {low}-{high} nt: {detail}"
         )
     return pd.DataFrame(
         {

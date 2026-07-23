@@ -206,7 +206,11 @@ def test_two_chemistries_around_the_same_footprint_measure_the_same(tmp_path: Pa
 
 
 def test_a_linker_the_series_does_not_name_is_caught_before_alignment(tmp_path: Path):
-    """GSE179274 records only that Trimmomatic ran, and its reads carry a linker behind that."""
+    """GSE179274 records only that Trimmomatic ran, and its reads carry a linker in front of that.
+
+    The sequencing adapter really is there, so its presence proves nothing. Trimming to it would
+    leave the linker on every read, and that shows up as a footprint far too long to be a ribosome.
+    """
 
     runs = pd.DataFrame(
         {
@@ -214,7 +218,23 @@ def test_a_linker_the_series_does_not_name_is_caught_before_alignment(tmp_path: 
             "assay": ["riboseq"],
             "adapter_3p": [TRUSEQ],
             "cut_5p": [0],
+            "adapter_overlap": [5],
             "fastq_1": [str(_library(tmp_path / "a.fastq.gz", ["G" * 30] * 100))],
+        }
+    )
+    with pytest.raises(AdapterNotFoundError, match="not 20-40 nt"):
+        survey_adapters(runs)
+
+
+def test_an_adapter_absent_from_the_reads_entirely_is_refused(tmp_path: Path):
+    runs = pd.DataFrame(
+        {
+            "sample": ["a"],
+            "assay": ["riboseq"],
+            "adapter_3p": ["GGGGGGGGGGGGGGGGGG"],
+            "cut_5p": [0],
+            "adapter_overlap": [8],
+            "fastq_1": [str(_library(tmp_path / "a.fastq.gz", ["ACAC" * 8] * 100))],
         }
     )
     with pytest.raises(AdapterNotFoundError, match="under 50%"):
@@ -230,6 +250,7 @@ def test_a_transcriptome_library_is_not_surveyed(tmp_path: Path):
             "assay": ["rnaseq"],
             "adapter_3p": [TRUSEQ],
             "cut_5p": [0],
+            "adapter_overlap": [5],
             "fastq_1": ["absent.fastq.gz"],
         }
     )
@@ -245,3 +266,27 @@ def test_no_two_declared_runs_are_the_same_bytes():
     second = runs["fastq_2_md5"].dropna()
     assert second.is_unique
     assert not set(second) & set(runs["fastq_1_md5"])
+
+
+def test_a_read_too_short_to_hold_the_whole_adapter_still_carries_it(tmp_path: Path):
+    """A 50 nt read runs out mid-linker, so only its first bases are there — at the read's end."""
+
+    truncated = tmp_path / "short.fastq.gz"
+    with gzip.open(truncated, "wt") as handle:
+        for index in range(100):
+            read = ("A" * 30 + LINKER)[:38]
+            handle.write(f"@r{index}\n{read}\n+\n{'I' * len(read)}\n")
+    survey = survey_adapter("short", truncated, LINKER, adapter_overlap=5)
+    assert survey.adapter_rate == 1.0
+    assert survey.footprint_median == 30
+
+
+def test_too_little_of_the_adapter_to_be_sure_is_not_counted(tmp_path: Path):
+    """Four bases of linker at a read's end match by chance often enough to mean nothing."""
+
+    barely = tmp_path / "barely.fastq.gz"
+    with gzip.open(barely, "wt") as handle:
+        for index in range(100):
+            read = "A" * 30 + LINKER[:4]
+            handle.write(f"@r{index}\n{read}\n+\n{'I' * len(read)}\n")
+    assert survey_adapter("barely", barely, LINKER, adapter_overlap=8).adapter_rate == 0.0
