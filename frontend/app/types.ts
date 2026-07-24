@@ -53,3 +53,45 @@ export interface WebTable {
   safety: SafetyAtlas | null;
   variants: Variant[];
 }
+
+// The shape of riborescue_research.json, written by `riborescue export-research`. Aggregates only —
+// coverage frontiers and per-disease coverage — never the variant rows.
+
+export interface FrontierStep {
+  rank: number;
+  design_id: string;
+  cumulative: number;
+  cumulative_fraction: number;
+  marginal: number;
+}
+
+export interface DiseaseCoverage {
+  disease_name: string;
+  medgen: string;
+  omim: string;
+  orphanet: string;
+  eligible_variants: number;
+  model_covered: number;
+  covered_fraction: number;
+  genes: number;
+  designs_contributing: number;
+  mapping_completeness: string;
+}
+
+export interface ResearchAggregate {
+  provenance: {
+    clinvar_release: string;
+    commit: string;
+    qualifying_variants: number;
+    scoreable_variants: number;
+    diseases: number;
+  };
+  mapping_completeness: Record<string, number>;
+  frontiers: {
+    variants: FrontierStep[];
+    genes: FrontierStep[];
+    diseases: FrontierStep[];
+  };
+  disease_coverage_top: DiseaseCoverage[];
+  caveats: Record<string, string>;
+}

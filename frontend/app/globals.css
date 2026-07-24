@@ -389,3 +389,347 @@ td.num {
   .banner .tag { white-space: normal; }
   h1 { font-size: 20px; }
 }
+
+/* --- Primary nav, shared by every route -------------------------------------------------------- */
+.nav {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  flex-wrap: wrap;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 20px 0;
+}
+.nav .brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-links {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nav-link {
+  font-size: 13px;
+  color: var(--dim);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.nav-link.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* --- Landing ----------------------------------------------------------------------------------- */
+.home-hero {
+  margin: 8px 0 28px;
+}
+.home-lede {
+  color: var(--dim);
+  max-width: 70ch;
+  margin: 6px 0 0;
+}
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.role-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 20px;
+  text-decoration: none;
+  color: var(--text);
+}
+.role-card:hover,
+.role-card:focus-visible {
+  border-color: var(--accent);
+}
+.role-card h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+.role-card p {
+  margin: 0 0 14px;
+  color: var(--dim);
+  font-size: 13px;
+  line-height: 1.55;
+  flex: 1;
+}
+.role-go {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+.home-foot {
+  color: var(--faint);
+  font-size: 12.5px;
+  max-width: 74ch;
+  margin: 28px 0 0;
+}
+
+/* --- Patient ----------------------------------------------------------------------------------- */
+.patient-body {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.hit {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  background: var(--panel);
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hit:hover,
+.hit:focus-visible {
+  border-color: var(--accent);
+}
+.hit.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.hit-gene {
+  font-weight: 650;
+  font-size: 13px;
+}
+.hit-meta {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.hit-none {
+  color: var(--faint);
+  font-size: 13px;
+  padding: 8px 2px;
+}
+.detail-pane {
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 18px 20px;
+  min-height: 200px;
+}
+.detail-sub {
+  font-weight: 400;
+  color: var(--dim);
+  font-size: 15px;
+}
+.detail-empty {
+  color: var(--faint);
+}
+.cards-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  margin: 16px 0 8px;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.card {
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+}
+.card.muted {
+  opacity: 0.7;
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.card-name {
+  font-weight: 650;
+  font-size: 13px;
+}
+.card-num {
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.card-na {
+  font-size: 11px;
+  color: var(--faint);
+  font-style: italic;
+}
+.card-foot {
+  display: block;
+  font-size: 11px;
+  color: var(--faint);
+  margin-top: 6px;
+}
+.evidence {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.slot {
+  border-top: 1px solid var(--edge);
+  padding-top: 10px;
+}
+.slot dt {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.slot dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+.slot-note {
+  font-size: 12px;
+  color: var(--faint);
+}
+.slot code {
+  font-family: ui-monospace, monospace;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--text);
+}
+
+/* --- Researcher -------------------------------------------------------------------------------- */
+.prov {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 12px;
+  color: var(--faint);
+  font-family: ui-monospace, monospace;
+  margin-bottom: 20px;
+}
+.panel {
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.panel h2 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+.panel-note {
+  font-size: 12.5px;
+  color: var(--dim);
+  margin: 0 0 12px;
+  max-width: 78ch;
+}
+.chart-figure {
+  margin: 0;
+}
+.chart {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+.chart .grid {
+  stroke: var(--edge);
+  stroke-width: 1;
+}
+.axis-label {
+  fill: var(--faint);
+  font-size: 8px;
+}
+.axis-title {
+  fill: var(--faint);
+  font-size: 8px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--dim);
+}
+.legend .swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.legend-note {
+  color: var(--faint);
+}
+.bars {
+  display: grid;
+  gap: 8px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 130px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.bar-label {
+  color: var(--dim);
+  text-transform: capitalize;
+}
+.bar-track {
+  background: color-mix(in srgb, var(--faint) 16%, transparent);
+  border-radius: 4px;
+  height: 12px;
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+}
+.bar-num {
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .patient-body {
+    grid-template-columns: 1fr;
+  }
+  .hits {
+    max-height: none;
+  }
+}
