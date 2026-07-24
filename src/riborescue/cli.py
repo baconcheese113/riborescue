@@ -61,7 +61,12 @@ from riborescue.variants.native_stops import concordance, four_quadrants, native
 from riborescue.variants.residue import coverage_by_design
 from riborescue.variants.transcripts import load_transcripts, read_sequences
 from riborescue.variants.triage import classify, classify_table
-from riborescue.variants.webexport import build_web_table, diverse_sample, read_web_inputs
+from riborescue.variants.webexport import (
+    build_web_table,
+    diverse_sample,
+    read_web_inputs,
+    safety_summary,
+)
 
 __all__ = ["main"]
 
@@ -452,20 +457,33 @@ def atlas_predict(
     help="The per-therapy amenability scores.",
 )
 @click.option(
+    "--predicted",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The native-stop prediction table, to summarise the safety atlas for the viewer.",
+)
+@click.option(
     "--sample",
     type=int,
     help="Write a diverse sample of this many variants — the example artifact — instead of all.",
 )
 @_OUT
-def export_web(landscape: Path, amenability: Path, sample: int | None, out: Path) -> None:
+def export_web(
+    landscape: Path, amenability: Path, predicted: Path | None, sample: int | None, out: Path
+) -> None:
     """Build the compact JSON the web app reads from the pipeline's result tables."""
 
     land, amen = read_web_inputs(landscape, amenability)
     variant_ids = diverse_sample(land, amen, sample) if sample is not None else None
-    table = build_web_table(land, amen, variant_ids=variant_ids)
+    therapies = sorted(amen["therapy_id"].unique())
+    safety = safety_summary(read_table(predicted), therapies) if predicted is not None else None
+    table = build_web_table(land, amen, variant_ids=variant_ids, safety=safety)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(table.to_json())
-    click.echo(f"{len(table.variants):,} variants, {len(table.therapies)} therapies → {out}")
+    click.echo(
+        f"{len(table.variants):,} variants, {len(table.therapies)} therapies"
+        + (f", safety atlas over {safety['analysed']:,} stops" if safety else "")
+        + f" → {out}"
+    )
 
 
 @main.command("adapter-survey")

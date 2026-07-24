@@ -13,6 +13,34 @@
     "SJ6986",
     "SRI"
   ],
+  "safety": {
+    "measured_therapy": "G418",
+    "cell_line": "HEK293T",
+    "canonical_stops_scored": 18887,
+    "analysed": 1708,
+    "unavailable_reason": "the rest were not expressed at footprint depth in this cell line, so they carry a prediction but no measurement to compare it against",
+    "concordance": {
+      "rho": 0.2857,
+      "low": 0.2365,
+      "high": 0.3278
+    },
+    "concordance_label": "modest rank concordance, with substantial disagreement",
+    "quadrants": {
+      "both": 58,
+      "predicted only": 369,
+      "measured only": 40,
+      "neither": 1241
+    },
+    "per_therapy": {
+      "CC90009": "no matched empirical safety atlas",
+      "Clitocine": "no matched empirical safety atlas",
+      "DAP": "no matched empirical safety atlas",
+      "G418": "native-stop occupancy measured in HEK293T",
+      "SJ6986": "no matched empirical safety atlas",
+      "SRI": "no matched empirical safety atlas"
+    },
+    "caveat": "Downstream occupancy past normal stops \u2014 not protein production, toxicity, or a result in any other tissue or therapy."
+  },
   "variants": [
     {
       "id": "NC_000001.11:g.943995C>T",

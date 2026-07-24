@@ -29,6 +29,19 @@ export interface Variant {
   suppressor: Suppressor | null;
 }
 
+export interface SafetyAtlas {
+  measured_therapy: string;
+  cell_line: string;
+  canonical_stops_scored: number;
+  analysed: number;
+  unavailable_reason: string;
+  concordance: { rho: number; low: number; high: number };
+  concordance_label: string;
+  quadrants: Record<string, number>;
+  per_therapy: Record<string, string>;
+  caveat: string;
+}
+
 export interface WebTable {
   status: {
     readthrough_control: string;
@@ -37,5 +50,6 @@ export interface WebTable {
     safety_detail: string;
   };
   therapies: string[];
+  safety: SafetyAtlas | null;
   variants: Variant[];
 }

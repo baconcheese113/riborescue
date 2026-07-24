@@ -168,8 +168,8 @@ reads = { cmd = """nextflow run . --step reads -profile local -resume \
   --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs", "adapter-survey"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
-export-web = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --out frontend/public/riborescue.json"
-export-web-example = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --out frontend/public/riborescue.json"
+export-web = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --out frontend/public/riborescue.json"
+export-web-example = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --predicted results/atlas/gse144140_predicted.tsv --out frontend/public/riborescue.json"
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }

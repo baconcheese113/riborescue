@@ -132,3 +132,24 @@ def test_the_sample_prefers_the_states_a_uniform_draw_would_miss():
     chosen = diverse_sample(landscape, amenability, size=2)
     # V2 carries the missing therapy and does not escape decay; it must not be dropped.
     assert "V2" in chosen
+
+
+def test_safety_summary_reports_the_measured_layer_and_its_reach():
+    from riborescue.variants.webexport import safety_summary
+
+    predicted = pd.DataFrame(
+        {
+            "transcript": [f"T{i}" for i in range(60)],
+            "mane_select": [True] * 50 + [False] * 10,
+            "predicted_g418": [0.01 * (i % 10) for i in range(60)],
+            "measured_lift": [0.01 * (i % 7) for i in range(40)] + [None] * 20,
+            "group": (["both"] * 10 + ["predicted only"] * 15 + ["neither"] * 15) + [""] * 20,
+        }
+    )
+    summary = safety_summary(predicted, ["G418", "Clitocine"], measured="G418")
+    assert summary["measured_therapy"] == "G418"
+    assert summary["canonical_stops_scored"] == 50
+    assert summary["analysed"] == 40  # MANE with both predicted and measured
+    assert summary["per_therapy"]["G418"].startswith("native-stop occupancy measured")
+    assert summary["per_therapy"]["Clitocine"] == "no matched empirical safety atlas"
+    assert "toxicity" in summary["caveat"]

@@ -22,6 +22,7 @@ __all__ = [
     "GateStatus",
     "WebTable",
     "build_web_table",
+    "safety_summary",
 ]
 
 # The three-letter stop codons riboWaltz and the triage use, spelled as the suppressor table does.
@@ -54,6 +55,46 @@ class GateStatus:
     )
 
 
+def safety_summary(predicted: pd.DataFrame, therapies: list[str], measured: str = "G418") -> dict:
+    """The atlas summary the viewer shows: what is measured, for whom, and how far it reaches.
+
+    Every number here is the measured layer or a rank comparison to it; none is a claim about
+    protein, toxicity, or another tissue. The prediction reaches every canonical stop, the
+    measurement only the genes the cell line expressed at depth, and the gap between the two counts
+    is stated so the small analysed denominator is not mistaken for the whole genome.
+    """
+
+    from riborescue.variants.native_stops import concordance
+
+    mane = predicted[predicted["mane_select"]]
+    matched = mane.dropna(subset=["predicted_g418", "measured_lift"])
+    stats = concordance(matched["predicted_g418"], matched["measured_lift"], draws=1000)
+    groups = matched["group"].value_counts()
+    return {
+        "measured_therapy": measured,
+        "cell_line": "HEK293T",
+        "canonical_stops_scored": len(mane),
+        "analysed": len(matched),
+        "unavailable_reason": (
+            "the rest were not expressed at footprint depth in this cell line, so they carry a "
+            "prediction but no measurement to compare it against"
+        ),
+        "concordance": {"rho": stats["rho"], "low": stats["low"], "high": stats["high"]},
+        "concordance_label": "modest rank concordance, with substantial disagreement",
+        "quadrants": {g: int(groups.get(g, 0)) for g in
+                      ("both", "predicted only", "measured only", "neither")},
+        "per_therapy": {
+            t: "native-stop occupancy measured in HEK293T" if t == measured
+            else "no matched empirical safety atlas"
+            for t in therapies
+        },
+        "caveat": (
+            "Downstream occupancy past normal stops, not protein production, toxicity, or a result "
+            "in any other tissue or therapy."
+        ),
+    }
+
+
 @dataclass(frozen=True)
 class WebTable:
     """The whole payload: the gate statuses, the therapies covered, and the variant rows."""
@@ -61,12 +102,14 @@ class WebTable:
     status: dict
     therapies: list[str]
     variants: list[dict]
+    safety: dict | None = None
 
     def to_json(self) -> str:
         return json.dumps(
             {
                 "status": self.status,
                 "therapies": self.therapies,
+                "safety": self.safety,
                 "variants": self.variants,
             },
             indent=2,
@@ -91,6 +134,7 @@ def build_web_table(
     amenability: pd.DataFrame,
     status: GateStatus | None = None,
     variant_ids: list[str] | None = None,
+    safety: dict | None = None,
 ) -> WebTable:
     """Join the per-variant landscape to the per-therapy intervals into the app's table.
 
@@ -146,7 +190,12 @@ def build_web_table(
             }
         )
 
-    return WebTable(status=asdict(status or GateStatus()), therapies=therapies, variants=variants)
+    return WebTable(
+        status=asdict(status or GateStatus()),
+        therapies=therapies,
+        variants=variants,
+        safety=safety,
+    )
 
 
 def diverse_sample(landscape: pd.DataFrame, amenability: pd.DataFrame, size: int = 48) -> list[str]:
