@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from riborescue.atlas import native_stop_occupancy, translate_extension
+from riborescue.riboseq.atlas import native_stop_occupancy, translate_extension
 
 
 def _counts(rows: list[dict]) -> pd.DataFrame:
@@ -49,8 +49,12 @@ def test_an_overlapping_transcript_is_excluded_like_the_assay_does():
     counts = _counts(
         [
             {"transcript": "clean", "sample": "g418_a", "extension_frame0": 5, "cds_frame0": 200},
-            {"transcript": "overlap", "sample": "g418_a", "extension_frame0": 400,
-             "cds_frame0": 200},
+            {
+                "transcript": "overlap",
+                "sample": "g418_a",
+                "extension_frame0": 400,
+                "cds_frame0": 200,
+            },
         ]
     )
     atlas = native_stop_occupancy(
@@ -61,8 +65,15 @@ def test_an_overlapping_transcript_is_excluded_like_the_assay_does():
 
 def test_a_short_three_prime_utr_is_dropped():
     counts = _counts(
-        [{"transcript": "T1", "sample": "g418_a", "extension_frame0": 5,
-          "cds_frame0": 200, "l_utr3": 20}]
+        [
+            {
+                "transcript": "T1",
+                "sample": "g418_a",
+                "extension_frame0": 5,
+                "cds_frame0": 200,
+                "l_utr3": 20,
+            }
+        ]
     )
     atlas = native_stop_occupancy(counts, {"g418": ["g418_a"]}, [30], min_utr3=50)
     assert atlas.empty

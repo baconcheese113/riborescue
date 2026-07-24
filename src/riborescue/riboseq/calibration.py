@@ -166,9 +166,7 @@ def select_lengths(
             failures.append(f"frame-0 share {share:.1%}, under {MINIMUM_FRAME0_SHARE:.0%}")
         if not OFFSET_FROM_5[0] <= offset <= OFFSET_FROM_5[1]:
             failures.append(f"5' offset {offset} nt outside {OFFSET_FROM_5[0]}-{OFFSET_FROM_5[1]}")
-        verdicts.append(
-            LibraryVerdict(sample, psites, share, length, offset, tuple(failures))
-        )
+        verdicts.append(LibraryVerdict(sample, psites, share, length, offset, tuple(failures)))
 
     return CalibrationManifest(
         dataset=dataset,

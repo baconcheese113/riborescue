@@ -15,8 +15,8 @@ from typing import cast
 import pandas as pd
 from Bio.Seq import Seq
 
-from riborescue.contracts import REPORTER_DOWNSTREAM_NT
-from riborescue.transcripts import STOP_CODONS, TranscriptModel
+from riborescue.core.contracts import REPORTER_DOWNSTREAM_NT
+from riborescue.variants.transcripts import STOP_CODONS, TranscriptModel
 
 __all__ = [
     "ContextFailure",

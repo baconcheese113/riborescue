@@ -2,22 +2,40 @@ import json
 
 import pandas as pd
 
-from riborescue.webexport import GateStatus, build_web_table, diverse_sample
+from riborescue.variants.webexport import GateStatus, build_web_table, diverse_sample
 
 
 def _landscape() -> pd.DataFrame:
     return pd.DataFrame(
         [
-            {"variant_id": "V1", "gene_symbol": "TP53", "protein_position": 196,
-             "stop_type": "uga", "original_aa": "R", "review_stars": 2,
-             "escapes_decay_by_rule": True, "nt_to_last_junction": -80,
-             "best_therapy": "DAP", "best_readthrough": 0.02, "best_readthrough_low": 0.01,
-             "tolerable_insertion_share": 0.6},
-            {"variant_id": "V2", "gene_symbol": "CFTR", "protein_position": 1282,
-             "stop_type": "uag", "original_aa": "W", "review_stars": 3,
-             "escapes_decay_by_rule": False, "nt_to_last_junction": 40,
-             "best_therapy": "G418", "best_readthrough": 0.005, "best_readthrough_low": 0.001,
-             "tolerable_insertion_share": 0.1},
+            {
+                "variant_id": "V1",
+                "gene_symbol": "TP53",
+                "protein_position": 196,
+                "stop_type": "uga",
+                "original_aa": "R",
+                "review_stars": 2,
+                "escapes_decay_by_rule": True,
+                "nt_to_last_junction": -80,
+                "best_therapy": "DAP",
+                "best_readthrough": 0.02,
+                "best_readthrough_low": 0.01,
+                "tolerable_insertion_share": 0.6,
+            },
+            {
+                "variant_id": "V2",
+                "gene_symbol": "CFTR",
+                "protein_position": 1282,
+                "stop_type": "uag",
+                "original_aa": "W",
+                "review_stars": 3,
+                "escapes_decay_by_rule": False,
+                "nt_to_last_junction": 40,
+                "best_therapy": "G418",
+                "best_readthrough": 0.005,
+                "best_readthrough_low": 0.001,
+                "tolerable_insertion_share": 0.1,
+            },
         ]
     )
 
@@ -25,18 +43,42 @@ def _landscape() -> pd.DataFrame:
 def _amenability() -> pd.DataFrame:
     return pd.DataFrame(
         [
-            {"variant_id": "V1", "therapy_id": "DAP", "readthrough_predicted": 0.02,
-             "readthrough_low": 0.01, "readthrough_high": 0.03, "status": "present",
-             "reason": None},
-            {"variant_id": "V1", "therapy_id": "G418", "readthrough_predicted": 0.015,
-             "readthrough_low": 0.008, "readthrough_high": 0.022, "status": "present",
-             "reason": None},
-            {"variant_id": "V2", "therapy_id": "G418", "readthrough_predicted": 0.005,
-             "readthrough_low": 0.001, "readthrough_high": 0.009, "status": "present",
-             "reason": None},
-            {"variant_id": "V2", "therapy_id": "CC90009", "readthrough_predicted": None,
-             "readthrough_low": None, "readthrough_high": None, "status": "missing",
-             "reason": "not_available"},
+            {
+                "variant_id": "V1",
+                "therapy_id": "DAP",
+                "readthrough_predicted": 0.02,
+                "readthrough_low": 0.01,
+                "readthrough_high": 0.03,
+                "status": "present",
+                "reason": None,
+            },
+            {
+                "variant_id": "V1",
+                "therapy_id": "G418",
+                "readthrough_predicted": 0.015,
+                "readthrough_low": 0.008,
+                "readthrough_high": 0.022,
+                "status": "present",
+                "reason": None,
+            },
+            {
+                "variant_id": "V2",
+                "therapy_id": "G418",
+                "readthrough_predicted": 0.005,
+                "readthrough_low": 0.001,
+                "readthrough_high": 0.009,
+                "status": "present",
+                "reason": None,
+            },
+            {
+                "variant_id": "V2",
+                "therapy_id": "CC90009",
+                "readthrough_predicted": None,
+                "readthrough_low": None,
+                "readthrough_high": None,
+                "status": "missing",
+                "reason": "not_available",
+            },
         ]
     )
 

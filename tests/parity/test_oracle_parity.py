@@ -14,10 +14,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from riborescue.baseline import FORMULA, cross_validate, fit_round
-from riborescue.contracts import REPORTER_DOWNSTREAM_NT, REPORTER_UPSTREAM_NT
-from riborescue.inputs import INPUTS
-from riborescue.tables import read_table
+from riborescue.core.contracts import REPORTER_DOWNSTREAM_NT, REPORTER_UPSTREAM_NT
+from riborescue.core.inputs import INPUTS
+from riborescue.core.tables import read_table
+from riborescue.variants.baseline import FORMULA, cross_validate, fit_round
 
 ORACLE = Path(__file__).resolve().parents[1] / "fixtures" / "oracle"
 PROVENANCE = json.loads((ORACLE / "provenance.json").read_text())

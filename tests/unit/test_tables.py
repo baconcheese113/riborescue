@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from pandera.errors import SchemaError, SchemaErrors
 
-from riborescue.tables import (
+from riborescue.core.tables import (
     PathogenicNonsense,
     ReadthroughLabels,
     TriageInput,
@@ -12,7 +12,7 @@ from riborescue.tables import (
     read_table,
     write_table,
 )
-from riborescue.triage import classify_table
+from riborescue.variants.triage import classify_table
 
 DATA = Path(__file__).parents[2] / "pipeline/tests/data"
 

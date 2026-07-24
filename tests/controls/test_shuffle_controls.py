@@ -10,7 +10,7 @@ import sys
 
 import pytest
 
-from riborescue.evaluation import ShuffleKind, grouped_split_leakage, run_shuffle_control
+from riborescue.variants.evaluation import ShuffleKind, grouped_split_leakage, run_shuffle_control
 
 CONTROLS: dict[str, str] = {
     "shuffle_global": "head_to_head",

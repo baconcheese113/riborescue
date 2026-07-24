@@ -19,8 +19,8 @@ import pandas as pd
 from scipy.stats import bootstrap
 from sklearn.model_selection import GroupShuffleSplit, ShuffleSplit
 
-from riborescue.baseline import cross_validate
-from riborescue.contracts import EvalConfig
+from riborescue.core.contracts import EvalConfig
+from riborescue.variants.baseline import cross_validate
 
 __all__ = [
     "ROUNDS",

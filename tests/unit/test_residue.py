@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from riborescue.residue import (
+from riborescue.variants.residue import (
     AMINO_ACIDS,
     NEAR_COGNATE,
     SuppressorDesign,

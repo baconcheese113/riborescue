@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from riborescue.contracts import (
+from riborescue.core.contracts import (
     CONTRACTS_VERSION,
     REPORTER_DOWNSTREAM_NT,
     REPORTER_UPSTREAM_NT,
@@ -22,7 +22,7 @@ from riborescue.contracts import (
     WindowSpec,
     enforce_modality_comparability,
 )
-from riborescue.contracts import MissingReason as Reason
+from riborescue.core.contracts import MissingReason as Reason
 
 
 def _variant() -> VariantIdentity:

@@ -1,7 +1,7 @@
 import pytest
 
-from riborescue.contracts import Consequence, TriageClass
-from riborescue.triage import classify
+from riborescue.core.contracts import Consequence, TriageClass
+from riborescue.variants.triage import classify
 
 
 @pytest.mark.parametrize(

@@ -2,7 +2,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from riborescue.contracts import (
+from riborescue.core.contracts import (
     REPORTER_DOWNSTREAM_NT,
     REPORTER_UPSTREAM_NT,
     Consequence,
@@ -11,7 +11,7 @@ from riborescue.contracts import (
     MissingReason,
     WindowSpec,
 )
-from riborescue.triage import classify
+from riborescue.variants.triage import classify
 
 
 @given(st.sampled_from(Consequence), st.booleans())

@@ -126,9 +126,22 @@ def test_readthrough_refuses_a_contrast_missing_a_library(tmp_path: Path):
     result = CliRunner().invoke(
         main,
         [
-            "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
-            "--treated", "g418", "--control", "untreated", "--dataset", "hek293t",
-            "--manifest", str(manifest), "--out", str(tmp_path / "o.tsv"),
+            "readthrough",
+            str(counts),
+            "--gtf",
+            str(gtf),
+            "--samplesheet",
+            str(sheet),
+            "--treated",
+            "g418",
+            "--control",
+            "untreated",
+            "--dataset",
+            "hek293t",
+            "--manifest",
+            str(manifest),
+            "--out",
+            str(tmp_path / "o.tsv"),
         ],
     )
     assert result.exit_code != 0
@@ -201,9 +214,22 @@ def test_the_assay_refuses_a_dataset_that_failed_its_calibration(tmp_path: Path)
     result = CliRunner().invoke(
         main,
         [
-            "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
-            "--treated", "g418", "--control", "dmso", "--dataset", "gse144140",
-            "--manifest", str(manifest), "--out", str(tmp_path / "o.tsv"),
+            "readthrough",
+            str(counts),
+            "--gtf",
+            str(gtf),
+            "--samplesheet",
+            str(sheet),
+            "--treated",
+            "g418",
+            "--control",
+            "dmso",
+            "--dataset",
+            "gse144140",
+            "--manifest",
+            str(manifest),
+            "--out",
+            str(tmp_path / "o.tsv"),
         ],
     )
     assert result.exit_code != 0
@@ -220,11 +246,22 @@ def test_each_arm_reports_the_window_it_actually_used(tmp_path: Path):
     sheet = tmp_path / "runs.tsv"
     rows = [
         {
-            "dataset": "d", "sample": f"{arm}_rep{n}", "run_accession": f"SRR{arm[:2]}{n}",
-            "cell_line": "HEK293T", "variant": "TP53:p.Arg196Ter", "treatment": arm, "replicate": n,
-            "assay": "riboseq", "layout": "single", "read_count": 1000, "adapter_3p": "ACGT",
-            "adapter_3p_2": None, "adapter_overlap": 5, "cut_5p": 0,
-            "fastq_1": "a.fastq.gz", "fastq_2": None,
+            "dataset": "d",
+            "sample": f"{arm}_rep{n}",
+            "run_accession": f"SRR{arm[:2]}{n}",
+            "cell_line": "HEK293T",
+            "variant": "TP53:p.Arg196Ter",
+            "treatment": arm,
+            "replicate": n,
+            "assay": "riboseq",
+            "layout": "single",
+            "read_count": 1000,
+            "adapter_3p": "ACGT",
+            "adapter_3p_2": None,
+            "adapter_overlap": 5,
+            "cut_5p": 0,
+            "fastq_1": "a.fastq.gz",
+            "fastq_2": None,
         }
         for arm in ("dmso", "g418")
         for n in (1, 2)
@@ -246,9 +283,22 @@ def test_each_arm_reports_the_window_it_actually_used(tmp_path: Path):
 
     manifest = _passing_manifest(tmp_path, "d", [r["sample"] for r in rows])
     common = [
-        "readthrough", str(counts), "--gtf", str(gtf), "--samplesheet", str(sheet),
-        "--treated", "g418", "--control", "dmso", "--dataset", "d",
-        "--manifest", str(manifest), "--out", str(tmp_path / "o.tsv"),
+        "readthrough",
+        str(counts),
+        "--gtf",
+        str(gtf),
+        "--samplesheet",
+        str(sheet),
+        "--treated",
+        "g418",
+        "--control",
+        "dmso",
+        "--dataset",
+        "d",
+        "--manifest",
+        str(manifest),
+        "--out",
+        str(tmp_path / "o.tsv"),
     ]
     selected = CliRunner().invoke(main, common)
     published = CliRunner().invoke(main, [*common, "--published-lengths", "28", "35"])
@@ -266,11 +316,22 @@ def test_both_arms_produce_effects_after_a_passing_manifest(tmp_path: Path):
 
     rows = [
         {
-            "dataset": "d", "sample": f"{arm}_rep{n}", "run_accession": f"SRR{arm[:3]}{n}",
-            "cell_line": "HEK293T", "variant": "TP53:p.Arg196Ter", "treatment": arm, "replicate": n,
-            "assay": "riboseq", "layout": "single", "read_count": 1000, "adapter_3p": "ACGT",
-            "adapter_3p_2": None, "adapter_overlap": 5, "cut_5p": 0,
-            "fastq_1": "a.fastq.gz", "fastq_2": None,
+            "dataset": "d",
+            "sample": f"{arm}_rep{n}",
+            "run_accession": f"SRR{arm[:3]}{n}",
+            "cell_line": "HEK293T",
+            "variant": "TP53:p.Arg196Ter",
+            "treatment": arm,
+            "replicate": n,
+            "assay": "riboseq",
+            "layout": "single",
+            "read_count": 1000,
+            "adapter_3p": "ACGT",
+            "adapter_3p_2": None,
+            "adapter_overlap": 5,
+            "cut_5p": 0,
+            "fastq_1": "a.fastq.gz",
+            "fastq_2": None,
         }
         for arm in ("dmso", "g418")
         for n in (1, 2, 3)
@@ -282,10 +343,18 @@ def test_both_arms_produce_effects_after_a_passing_manifest(tmp_path: Path):
     # and the per-transcript sum clears the qualifying floor.
     counts = pd.DataFrame(
         [
-            {**_counts_row(transcript, r["sample"]),
-             "length": length,
-             "cds_frame0": 60, "cds_frame1": 15, "cds_frame2": 15, "cds_total": 90,
-             "termination": 4, "extension_frame0": 6, "extension_frame1": 1, "extension_frame2": 1}
+            {
+                **_counts_row(transcript, r["sample"]),
+                "length": length,
+                "cds_frame0": 60,
+                "cds_frame1": 15,
+                "cds_frame2": 15,
+                "cds_total": 90,
+                "termination": 4,
+                "extension_frame0": 6,
+                "extension_frame1": 1,
+                "extension_frame2": 1,
+            }
             for r in rows
             for transcript in ("T1", "T2", "T3")
             for length in (30, 31)
@@ -308,9 +377,23 @@ def test_both_arms_produce_effects_after_a_passing_manifest(tmp_path: Path):
         result = CliRunner().invoke(
             main,
             [
-                "readthrough", str(counts_path), "--gtf", str(gtf), "--samplesheet", str(sheet),
-                "--treated", "g418", "--control", "dmso", "--dataset", "d",
-                "--manifest", str(manifest), "--out", str(out), *extra,
+                "readthrough",
+                str(counts_path),
+                "--gtf",
+                str(gtf),
+                "--samplesheet",
+                str(sheet),
+                "--treated",
+                "g418",
+                "--control",
+                "dmso",
+                "--dataset",
+                "d",
+                "--manifest",
+                str(manifest),
+                "--out",
+                str(out),
+                *extra,
             ],
         )
         assert result.exit_code == 0, result.output

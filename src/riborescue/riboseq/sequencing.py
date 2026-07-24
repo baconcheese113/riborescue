@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from riborescue.inputs import Input, retrieve
+from riborescue.core.inputs import Input, retrieve
 
 __all__ = ["ATTEMPTS", "FASTQ_SUBDIR", "fastq_inputs", "stage"]
 

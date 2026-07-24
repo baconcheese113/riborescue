@@ -12,7 +12,7 @@ import pandas as pd
 import pandera.pandas as pa
 from pandera.typing import Series
 
-from riborescue.contracts import Consequence, StopCodon, TriageClass
+from riborescue.core.contracts import Consequence, StopCodon, TriageClass
 
 __all__ = [
     "PathogenicNonsense",

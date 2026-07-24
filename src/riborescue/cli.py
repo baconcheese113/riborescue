@@ -8,31 +8,30 @@ import pandera.errors
 import pandera.pandas
 
 from riborescue._version import __version__
-from riborescue.atlas import native_stop_occupancy, translate_extension
-from riborescue.baseline import fit, relative_error_quantile
-from riborescue.calibration import read_manifest, select_lengths
-from riborescue.clinvar import pathogenic_nonsense
-from riborescue.contaminants import write_contaminants
-from riborescue.context import contexts_for, disagreements_with_protein
-from riborescue.contracts import Consequence, EvalConfig
-from riborescue.evaluation import (
-    SEED,
-    UnsupportedEvalConfigError,
-    bootstrap_ci,
-    evaluate,
-    split,
+from riborescue.core.contracts import Consequence, EvalConfig
+from riborescue.core.handoff import UpstreamHandoff
+from riborescue.core.inputs import INPUTS, UnknownInputError, data_root, fetch
+from riborescue.core.tables import (
+    PathogenicNonsense,
+    ReadthroughLabels,
+    SequencingRuns,
+    StagedRuns,
+    TriageInput,
+    TriageOutput,
+    read_table,
+    write_table,
 )
-from riborescue.handoff import UpstreamHandoff
-from riborescue.inputs import INPUTS, UnknownInputError, data_root, fetch
-from riborescue.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
-from riborescue.reads import (
+from riborescue.riboseq.atlas import native_stop_occupancy, translate_extension
+from riborescue.riboseq.calibration import read_manifest, select_lengths
+from riborescue.riboseq.contaminants import write_contaminants
+from riborescue.riboseq.reads import (
     ADAPTER_REACHED_BY,
     AdapterNotFoundError,
     summarise_alignment,
     summarise_trimming,
     survey_adapters,
 )
-from riborescue.readthrough import (
+from riborescue.riboseq.readthrough import (
     PROGRAMMED_READTHROUGH,
     collapse_lengths,
     extension_windows,
@@ -45,21 +44,22 @@ from riborescue.readthrough import (
     transcript_genes,
     unpaired_effect,
 )
-from riborescue.residue import coverage_by_design
-from riborescue.sequencing import FASTQ_SUBDIR, stage
-from riborescue.tables import (
-    PathogenicNonsense,
-    ReadthroughLabels,
-    SequencingRuns,
-    StagedRuns,
-    TriageInput,
-    TriageOutput,
-    read_table,
-    write_table,
+from riborescue.riboseq.sequencing import FASTQ_SUBDIR, stage
+from riborescue.variants.baseline import fit, relative_error_quantile
+from riborescue.variants.clinvar import pathogenic_nonsense
+from riborescue.variants.context import contexts_for, disagreements_with_protein
+from riborescue.variants.evaluation import (
+    SEED,
+    UnsupportedEvalConfigError,
+    bootstrap_ci,
+    evaluate,
+    split,
 )
-from riborescue.transcripts import load_transcripts, read_sequences
-from riborescue.triage import classify, classify_table
-from riborescue.webexport import build_web_table, diverse_sample, read_web_inputs
+from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
+from riborescue.variants.residue import coverage_by_design
+from riborescue.variants.transcripts import load_transcripts, read_sequences
+from riborescue.variants.triage import classify, classify_table
+from riborescue.variants.webexport import build_web_table, diverse_sample, read_web_inputs
 
 __all__ = ["main"]
 

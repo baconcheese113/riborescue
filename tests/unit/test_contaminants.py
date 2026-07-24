@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from riborescue.contaminants import CONTAMINANT_BIOTYPES, write_contaminants
+from riborescue.riboseq.contaminants import CONTAMINANT_BIOTYPES, write_contaminants
 
 # GENCODE headers are pipe-separated with the transcript biotype eighth.
 GENCODE = """\

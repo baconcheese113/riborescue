@@ -6,7 +6,8 @@ import pandas as pd
 import pytest
 from pandera.errors import SchemaErrors
 
-from riborescue.reads import (
+from riborescue.core.tables import SequencingRuns, read_table
+from riborescue.riboseq.reads import (
     ADAPTER_REACHED_BY,
     AdapterNotFoundError,
     summarise_alignment,
@@ -14,8 +15,7 @@ from riborescue.reads import (
     survey_adapter,
     survey_adapters,
 )
-from riborescue.sequencing import fastq_inputs
-from riborescue.tables import SequencingRuns, read_table
+from riborescue.riboseq.sequencing import fastq_inputs
 
 SAMPLESHEET = Path(__file__).parents[2] / "pipeline/assets/riboseq_samples.tsv"
 

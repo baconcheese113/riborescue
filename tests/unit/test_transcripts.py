@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from riborescue.transcripts import load_transcripts, read_annotation, reverse_complement
+from riborescue.variants.transcripts import load_transcripts, read_annotation, reverse_complement
 
 MANE = Path(__file__).parents[1] / "fixtures" / "mane"
 
@@ -118,7 +118,7 @@ def test_a_junction_sits_where_one_exon_ends_and_the_next_begins(plus, minus):
 
 
 def test_a_single_exon_transcript_has_no_junctions():
-    from riborescue.transcripts import TranscriptModel
+    from riborescue.variants.transcripts import TranscriptModel
 
     single = TranscriptModel(
         transcript_id="NM_single.1",

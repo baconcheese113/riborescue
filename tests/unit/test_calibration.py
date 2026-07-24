@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from riborescue.calibration import (
+from riborescue.riboseq.calibration import (
     MINIMUM_PSITES,
     SURVEY_LENGTHS,
     read_manifest,

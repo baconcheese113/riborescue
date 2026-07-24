@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from riborescue.contracts import Consequence, TriageClass
+from riborescue.core.contracts import Consequence, TriageClass
 
 __all__ = ["TriageResult", "classify", "classify_table"]
 

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from riborescue.clinvar import REVIEW_STARS, pathogenic_nonsense
-from riborescue.tables import PathogenicNonsense
+from riborescue.core.tables import PathogenicNonsense
+from riborescue.variants.clinvar import REVIEW_STARS, pathogenic_nonsense
 
 SAMPLE = Path(__file__).parents[1] / "fixtures" / "clinvar" / "sample.vcf"
 

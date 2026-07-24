@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from riborescue import inputs
-from riborescue.inputs import INPUTS, Input, UnknownInputError, data_root, fetch
+from riborescue.core import inputs
+from riborescue.core.inputs import INPUTS, Input, UnknownInputError, data_root, fetch
 
 
 def test_every_declared_input_names_its_source_licence_and_checksum():

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from riborescue.baseline import identifiable_columns, r_squared
+from riborescue.variants.baseline import identifiable_columns, r_squared
 
 
 def test_independent_columns_are_all_kept():

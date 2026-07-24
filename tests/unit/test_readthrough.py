@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from riborescue.readthrough import (
+from riborescue.riboseq.readthrough import (
     MINIMUM_CDS_PSITES,
     MINIMUM_UTR3_LENGTH,
     PROGRAMMED_READTHROUGH,
@@ -399,15 +399,16 @@ def test_a_stalling_verdict_needs_consistent_movement_not_just_a_mean():
 def test_the_welch_interval_rounds_degrees_of_freedom_down():
     """Rounding up would narrow the interval; the conservative direction is fewer degrees."""
 
-    ratios = _ratios(
-        q={"dmso": [0.10, 0.12, 0.20], "g418": [0.30, 0.31, 0.32], "sri": [0.1] * 3}
-    )
+    ratios = _ratios(q={"dmso": [0.10, 0.12, 0.20], "g418": [0.30, 0.31, 0.32], "sri": [0.1] * 3})
     low, high = unpaired_effect(ratios, "q", CONFIRM, "g418", "dmso").interval
     # a Welch interval on these groups has df near 2.3; flooring to 2 gives t = 4.303
     assert low < high
     assert (high - low) / 2 > 4.0 * float(
-        (pd.Series([0.10, 0.12, 0.20]).var(ddof=1) / 3
-         + pd.Series([0.30, 0.31, 0.32]).var(ddof=1) / 3) ** 0.5
+        (
+            pd.Series([0.10, 0.12, 0.20]).var(ddof=1) / 3
+            + pd.Series([0.30, 0.31, 0.32]).var(ddof=1) / 3
+        )
+        ** 0.5
     )
 
 
@@ -416,15 +417,13 @@ def test_an_incomplete_coding_sequence_yields_no_window():
     measured from it would be off-register."""
 
     # position 6 holds GGG, not a stop, so the annotation does not end where it claims
-    assert next_in_frame_stop("AAACCC" "GGG" "TAA" "AAA", 6) is None
+    assert next_in_frame_stop("AAACCCGGGTAAAAA", 6) is None
 
 
 def test_the_universe_is_counted_over_the_libraries_asked_for():
     """A library named for the contrast but missing from the counts must not relax the bar."""
 
-    present = pd.concat(
-        [counts(transcript="t", sample="a"), counts(transcript="t", sample="b")]
-    )
+    present = pd.concat([counts(transcript="t", sample="a"), counts(transcript="t", sample="b")])
     assert len(qualifying(present, samples=["a", "b"])) == 2
     # 'c' was asked for and is not there, so 't' no longer qualifies everywhere
     assert qualifying(present, samples=["a", "b", "c"]).empty
@@ -450,7 +449,7 @@ def test_lengths_are_collapsed_by_summing_the_ones_a_dataset_keeps():
 
     import pandas as pd
 
-    from riborescue.readthrough import collapse_lengths
+    from riborescue.riboseq.readthrough import collapse_lengths
 
     counts = pd.DataFrame(
         {
@@ -484,7 +483,7 @@ def test_collapsing_refuses_counts_that_are_not_stratified():
     import pandas as pd
     import pytest
 
-    from riborescue.readthrough import collapse_lengths
+    from riborescue.riboseq.readthrough import collapse_lengths
 
     with pytest.raises(ValueError, match="not stratified"):
         collapse_lengths(pd.DataFrame({"transcript": ["T1"], "sample": ["a"]}), [30])
@@ -495,23 +494,34 @@ def test_collapsing_then_pooling_equals_a_direct_pooled_calculation():
 
     import pandas as pd
 
-    from riborescue.readthrough import collapse_lengths, library_ratios
+    from riborescue.riboseq.readthrough import collapse_lengths, library_ratios
 
     # Two transcripts, one library, counts split across three lengths; only two are kept.
     stratified = pd.DataFrame(
         [
-            {"transcript": t, "sample": "a", "length": length,
-             "cds_frame0": c0, "cds_frame1": c1, "cds_frame2": c2,
-             "extension_frame0": e0, "extension_frame1": e1, "extension_frame2": e2,
-             "termination": term, "cds_total": c0 + c1 + c2,
-             "extension": 300, "l_cds": 900, "l_utr3": 500}
+            {
+                "transcript": t,
+                "sample": "a",
+                "length": length,
+                "cds_frame0": c0,
+                "cds_frame1": c1,
+                "cds_frame2": c2,
+                "extension_frame0": e0,
+                "extension_frame1": e1,
+                "extension_frame2": e2,
+                "termination": term,
+                "cds_total": c0 + c1 + c2,
+                "extension": 300,
+                "l_cds": 900,
+                "l_utr3": 500,
+            }
             for t, length, c0, c1, c2, e0, e1, e2, term in [
                 ("T1", 30, 400, 90, 90, 20, 4, 4, 12),
                 ("T1", 31, 300, 70, 70, 10, 2, 2, 8),
-                ("T1", 21, 5, 1, 1, 0, 0, 0, 0),   # dropped
+                ("T1", 21, 5, 1, 1, 0, 0, 0, 0),  # dropped
                 ("T2", 30, 250, 60, 60, 8, 1, 1, 6),
                 ("T2", 31, 200, 50, 50, 6, 1, 1, 5),
-                ("T2", 21, 9, 2, 2, 0, 0, 0, 0),   # dropped
+                ("T2", 21, 9, 2, 2, 0, 0, 0, 0),  # dropped
             ]
         ]
     )
@@ -522,14 +532,34 @@ def test_collapsing_then_pooling_equals_a_direct_pooled_calculation():
     # The same reads, summed by hand over the kept lengths, one row per transcript.
     direct = pd.DataFrame(
         [
-            {"transcript": "T1", "sample": "a", "cds_frame0": 700, "cds_frame1": 160,
-             "cds_frame2": 160, "extension_frame0": 30, "extension_frame1": 6,
-             "extension_frame2": 6, "termination": 20, "extension": 300,
-             "l_cds": 900, "l_utr3": 500},
-            {"transcript": "T2", "sample": "a", "cds_frame0": 450, "cds_frame1": 110,
-             "cds_frame2": 110, "extension_frame0": 14, "extension_frame1": 2,
-             "extension_frame2": 2, "termination": 11, "extension": 300,
-             "l_cds": 900, "l_utr3": 500},
+            {
+                "transcript": "T1",
+                "sample": "a",
+                "cds_frame0": 700,
+                "cds_frame1": 160,
+                "cds_frame2": 160,
+                "extension_frame0": 30,
+                "extension_frame1": 6,
+                "extension_frame2": 6,
+                "termination": 20,
+                "extension": 300,
+                "l_cds": 900,
+                "l_utr3": 500,
+            },
+            {
+                "transcript": "T2",
+                "sample": "a",
+                "cds_frame0": 450,
+                "cds_frame1": 110,
+                "cds_frame2": 110,
+                "extension_frame0": 14,
+                "extension_frame1": 2,
+                "extension_frame2": 2,
+                "termination": 11,
+                "extension": 300,
+                "l_cds": 900,
+                "l_utr3": 500,
+            },
         ]
     )
     from_direct = library_ratios(direct)

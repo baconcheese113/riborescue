@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from riborescue.landscape import LAST_JUNCTION_RULE_NT, Thresholds, landscape, summarise
+from riborescue.variants.landscape import LAST_JUNCTION_RULE_NT, Thresholds, landscape, summarise
 
 
 @pytest.fixture

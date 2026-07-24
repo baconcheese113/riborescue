@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from riborescue.handoff import UpstreamHandoff
+from riborescue.core.handoff import UpstreamHandoff
 
 FIXTURE = Path(__file__).parents[2] / "pipeline/tests/data/handoff.json"
 

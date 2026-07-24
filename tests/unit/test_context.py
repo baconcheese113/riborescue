@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from riborescue.context import ContextFailure, context_for
-from riborescue.transcripts import load_transcripts
+from riborescue.variants.context import ContextFailure, context_for
+from riborescue.variants.transcripts import load_transcripts
 
 MANE = Path(__file__).parents[1] / "fixtures" / "mane"
 
@@ -19,7 +19,7 @@ MANE = Path(__file__).parents[1] / "fixtures" / "mane"
 def wide_window(monkeypatch: pytest.MonkeyPatch):
     """Narrow the window to what a twenty-base transcript can supply, leaving the logic intact."""
 
-    monkeypatch.setattr("riborescue.context._WINDOW", 3)
+    monkeypatch.setattr("riborescue.variants.context._WINDOW", 3)
 
 
 @pytest.fixture

@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from riborescue.contracts import EvalConfig
-from riborescue.evaluation import (
+from riborescue.core.contracts import EvalConfig
+from riborescue.variants.evaluation import (
     ROUNDS,
     BootstrapCI,
     UnsupportedEvalConfigError,
