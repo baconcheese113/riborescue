@@ -102,14 +102,21 @@ produced them. The readthrough command requires that manifest and refuses to run
 or records a failure. Nothing about library quality currently reaches the assay, and a library with
 no periodicity would flow into a frozen contrast without a word.
 
-**The second arm is a published-parameter sensitivity analysis, and is not called parity.** GSE144140
-is analysed again under the authors' numbers — lengths 28 to 35, coding denominator inset by 18 and
-15, downstream window opening 6 nucleotides past the stop — and both are reported side by side.
-That is our estimator run with their parameters. It is not a reproduction of their result, and the
-word parity is reserved for something this does not do: run their code-defined estimator entire, with
-their transcript-level calculation, their aggregation, their annotation and reference assumptions,
-and a comparison against the count tables deposited with the series. Until that is done, agreement
-here is agreement about parameters, not about implementations.
+**The second arm is a length sensitivity analysis, and is not called parity.** GSE144140 is analysed
+again over the authors' full-length window, 28 to 35 nucleotides, and both are reported side by side.
+Length is the parameter this record changed — a floor at 26 discards a treatment-correlated fraction
+of the short footprints — so whether the verdict survives restriction to the full-length class is the
+sensitivity that matters, and it is the one the stored counts support exactly, because they are
+stratified by length and this arm is a different subset sum of the same table.
+
+The authors' other two departures are not reproduced here. Their downstream window opens six
+nucleotides past the stop where ours opens at one, and their coding denominator insets fifteen
+nucleotides at the 3' end where ours insets sixteen. Both are positional conventions internal to an
+estimator, and reproducing them means running that estimator, not re-summing our counts. That is the
+parity arm, and it is deliberately not attempted here: parity would run the authors' code-defined
+estimator entire — their transcript-level calculation, their aggregation, their annotation and
+reference assumptions — against the count tables deposited with the series. Until that is done,
+agreement is agreement about a length window, not about implementations.
 
 RiboRescue's assay is primary. The sensitivity arm cannot replace it, and cannot rescue it: a
 primary result that fails is not repaired by a parameter set under which it would have passed. If

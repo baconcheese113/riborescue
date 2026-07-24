@@ -76,13 +76,26 @@ if [ -f "$outdir/script.md5" ] && [ "$(cat "$outdir/script.md5")" != "$checksum"
 fi
 echo "$checksum" >"$outdir/script.md5"
 
+# What a library's calibration depends on. A marker is honoured only when every one of these is
+# unchanged: the script bytes, the footprint lengths, the reference the extension windows came from,
+# the annotation, and the alignment itself. A re-aligned BAM or a rebuilt extension table changes the
+# fingerprint, so a stale marker cannot let a superseded input be skipped.
+ext_md5=$(md5sum "$cache/extensions.tsv" | awk '{print $1}')
+gtf_md5=$(md5sum "$gtf" | awk '{print $1}')
+fingerprint_of() {
+    local bam=$1
+    printf '%s|%s|%s|%s|%s\n' \
+        "$lengths" "$checksum" "$ext_md5" "$gtf_md5" "$(stat -c %s "$bam")"
+}
+
 done_count=0
 for sample in $samples; do
     bam="$alignments/$sample.Aligned.toTranscriptome.out.bam"
     [ -f "$bam" ] || { echo "no transcriptome alignment for $sample at $bam" >&2; exit 1; }
     marker="$outdir/$sample.done"
-    if [ -s "$marker" ] && [ "$(sed -n 2p "$marker")" = "$lengths" ]; then
-        echo "$sample: already calibrated over $lengths"
+    fingerprint=$(fingerprint_of "$bam")
+    if [ -s "$marker" ] && [ "$(cat "$marker")" = "$fingerprint" ]; then
+        echo "$sample: already calibrated, inputs unchanged"
         done_count=$((done_count + 1))
         continue
     fi
@@ -90,8 +103,24 @@ for sample in $samples; do
     /usr/bin/time -f "${sample}\t%M\t%e" -a -o "$outdir/resources.tsv" \
         Rscript "$snapshot/run_psite.R" --bam "$bam" --sample "$sample" --gtf "$gtf" \
             --outdir "$outdir" --cache "$cache" --lengths "$lengths"
+    # Written by the driver, only after R exits 0 and every table is on disk. It is the authority on
+    # whether a library is done, so a run interrupted between two of its six tables is not mistaken
+    # for a finished one.
+    printf '%s' "$fingerprint" >"$marker"
 done
 echo "$done_count of $(echo "$samples" | wc -w) libraries were already calibrated"
+
+# The combiner gathers by wildcard, so it must not run on a set that is short a library or holds one
+# calibrated against a since-changed input. Every sample of this dataset has to carry a marker whose
+# fingerprint matches the run that just finished.
+for sample in $samples; do
+    bam="$alignments/$sample.Aligned.toTranscriptome.out.bam"
+    marker="$outdir/$sample.done"
+    if [ ! -s "$marker" ] || [ "$(cat "$marker")" != "$(fingerprint_of "$bam")" ]; then
+        echo "$sample has no current calibration; refusing to combine a partial set" >&2
+        exit 1
+    fi
+done
 
 Rscript "$snapshot/run_psite.R" --combine --outdir "$outdir" --evidence "docs/figures/$dataset"
 

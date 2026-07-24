@@ -237,13 +237,5 @@ drawn <- Filter(function(x) inherits(x, "ggplot"), meta)
 ggplot2::ggsave(file.path(options$outdir, paste0(options$sample, ".metaprofile.png")),
                 drawn[[1]], width = 10, height = 4, dpi = 120)
 
-# Written last and only here. Every table this library owes is on disk by now, so a run that resumes
-# can tell a finished library from one interrupted between two of its six tables — which the combiner
-# would otherwise gather short a sample, without complaining.
-writeLines(
-  c(options$sample, options$lengths),
-  file.path(options$outdir, paste0(options$sample, ".done"))
-)
-
 cat(sprintf("%s: %d nt dominant, offset %g from 5' / %g from 3'\n", options$sample,
             dominant$length, dominant$corrected_offset_from_5, dominant$corrected_offset_from_3))

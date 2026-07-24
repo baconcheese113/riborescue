@@ -488,3 +488,51 @@ def test_collapsing_refuses_counts_that_are_not_stratified():
 
     with pytest.raises(ValueError, match="not stratified"):
         collapse_lengths(pd.DataFrame({"transcript": ["T1"], "sample": ["a"]}), [30])
+
+
+def test_collapsing_then_pooling_equals_a_direct_pooled_calculation():
+    """The point of stratifying: a subset sum must match computing over those reads directly."""
+
+    import pandas as pd
+
+    from riborescue.readthrough import collapse_lengths, library_ratios
+
+    # Two transcripts, one library, counts split across three lengths; only two are kept.
+    stratified = pd.DataFrame(
+        [
+            {"transcript": t, "sample": "a", "length": length,
+             "cds_frame0": c0, "cds_frame1": c1, "cds_frame2": c2,
+             "extension_frame0": e0, "extension_frame1": e1, "extension_frame2": e2,
+             "termination": term, "cds_total": c0 + c1 + c2,
+             "extension": 300, "l_cds": 900, "l_utr3": 500}
+            for t, length, c0, c1, c2, e0, e1, e2, term in [
+                ("T1", 30, 400, 90, 90, 20, 4, 4, 12),
+                ("T1", 31, 300, 70, 70, 10, 2, 2, 8),
+                ("T1", 21, 5, 1, 1, 0, 0, 0, 0),   # dropped
+                ("T2", 30, 250, 60, 60, 8, 1, 1, 6),
+                ("T2", 31, 200, 50, 50, 6, 1, 1, 5),
+                ("T2", 21, 9, 2, 2, 0, 0, 0, 0),   # dropped
+            ]
+        ]
+    )
+
+    collapsed = collapse_lengths(stratified, [30, 31])
+    from_subset = library_ratios(collapsed)
+
+    # The same reads, summed by hand over the kept lengths, one row per transcript.
+    direct = pd.DataFrame(
+        [
+            {"transcript": "T1", "sample": "a", "cds_frame0": 700, "cds_frame1": 160,
+             "cds_frame2": 160, "extension_frame0": 30, "extension_frame1": 6,
+             "extension_frame2": 6, "termination": 20, "extension": 300,
+             "l_cds": 900, "l_utr3": 500},
+            {"transcript": "T2", "sample": "a", "cds_frame0": 450, "cds_frame1": 110,
+             "cds_frame2": 110, "extension_frame0": 14, "extension_frame1": 2,
+             "extension_frame2": 2, "termination": 11, "extension": 300,
+             "l_cds": 900, "l_utr3": 500},
+        ]
+    )
+    from_direct = library_ratios(direct)
+
+    for column in ("downstream_occupancy", "termination_occupancy", "frame_gap"):
+        assert from_subset.loc[0, column] == pytest.approx(from_direct.loc[0, column])

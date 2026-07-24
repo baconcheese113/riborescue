@@ -255,3 +255,68 @@ def test_each_arm_reports_the_window_it_actually_used(tmp_path: Path):
 
     assert "selected set: 30, 31 nt" in selected.output
     assert "published window: 28, 29, 30, 31, 32, 33, 34, 35 nt" in published.output
+
+
+def test_both_arms_produce_effects_after_a_passing_manifest(tmp_path: Path):
+    """The inconclusive path is proven elsewhere; this shows a passing manifest yields a verdict."""
+
+    import gzip
+
+    import pandas as pd
+
+    rows = [
+        {
+            "dataset": "d", "sample": f"{arm}_rep{n}", "run_accession": f"SRR{arm[:3]}{n}",
+            "cell_line": "HEK293T", "variant": "TP53:p.Arg196Ter", "treatment": arm, "replicate": n,
+            "assay": "riboseq", "layout": "single", "read_count": 1000, "adapter_3p": "ACGT",
+            "adapter_3p_2": None, "adapter_overlap": 5, "cut_5p": 0,
+            "fastq_1": "a.fastq.gz", "fastq_2": None,
+        }
+        for arm in ("dmso", "g418")
+        for n in (1, 2, 3)
+    ]
+    sheet = tmp_path / "runs.tsv"
+    pd.DataFrame(rows).to_csv(sheet, sep="\t", index=False)
+
+    # Each transcript's coding depth is split across two lengths, so collapsing has real work to do
+    # and the per-transcript sum clears the qualifying floor.
+    counts = pd.DataFrame(
+        [
+            {**_counts_row(transcript, r["sample"]),
+             "length": length,
+             "cds_frame0": 60, "cds_frame1": 15, "cds_frame2": 15, "cds_total": 90,
+             "termination": 4, "extension_frame0": 6, "extension_frame1": 1, "extension_frame2": 1}
+            for r in rows
+            for transcript in ("T1", "T2", "T3")
+            for length in (30, 31)
+        ]
+    )
+    counts_path = tmp_path / "counts.tsv"
+    counts.to_csv(counts_path, sep="\t", index=False)
+
+    gtf = tmp_path / "a.gtf.gz"
+    with gzip.open(gtf, "wt") as handle:
+        for transcript in ("T1", "T2", "T3"):
+            handle.write(
+                f'chr1\tX\ttranscript\t1\t9\t.\t+\t.\tgene_id "G{transcript}"; '
+                f'transcript_id "{transcript}";\n'
+            )
+
+    manifest = _passing_manifest(tmp_path, "d", [r["sample"] for r in rows])
+    for suffix, extra in (("selected", []), ("published", ["--published-lengths", "28", "35"])):
+        out = tmp_path / f"{suffix}.tsv"
+        result = CliRunner().invoke(
+            main,
+            [
+                "readthrough", str(counts_path), "--gtf", str(gtf), "--samplesheet", str(sheet),
+                "--treated", "g418", "--control", "dmso", "--dataset", "d",
+                "--manifest", str(manifest), "--out", str(out), *extra,
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        effects = pd.read_csv(out, sep="\t")
+        assert set(effects["quantity"]) == {
+            "downstream_occupancy",
+            "termination_occupancy",
+            "frame_gap",
+        }
