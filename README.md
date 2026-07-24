@@ -31,16 +31,34 @@ with uncertainty shown by default.
 
 ## Getting started
 
-The toolchain lives in Pixi on `linux-64` (WSL2 or the dev container), so the host machine stays
-clean. One lockfile pins Python, Nextflow, R and every tool; `pixi install` resolves it. It holds
-three environments: `default` to develop in, `runtime` for what the container ships, and `psite`
-for riboWaltz, which pins an older R than the reproduction oracle.
+The toolchain lives in Pixi on `linux-64` (Ubuntu, WSL2, or the dev container), so the host machine
+stays clean. One lockfile pins Python, Node, Nextflow, R and every tool; `pixi install` resolves it.
+It holds three environments: `default` to develop in, `runtime` for what the container ships, and
+`psite` for riboWaltz, which pins an older R than the reproduction oracle.
+
+Pixi is the only prerequisite — it brings everything else, Node included:
 
 ```bash
+curl -fsSL https://pixi.sh/install.sh | bash   # then restart the shell
 pixi install        # resolve the pinned toolchain
 pixi run check      # lint, type-check, and run the full test suite
 pixi run fetch      # fetch the public inputs (ClinVar, MANE, GENCODE), verified by checksum
 ```
+
+**On a laptop, without sequencing (≈16 GB RAM).** The scored table and the web app are entirely
+dry-lab: they need no Ribo-seq. Skip it — the alignment builds a ~32 GB STAR index and wants a
+workstation — and run only the variant chain, which fits comfortably:
+
+```bash
+pixi run fetch clinvar_grch38 mane_annotation mane_transcripts mane_proteins   # dry-lab inputs only
+pixi run clinvar && pixi run contexts       # ClinVar nonsense variants, placed on MANE
+pixi run score && pixi run landscape        # the scored variant × therapy table
+pixi run site                               # → frontend/public/riborescue.json, then builds the app
+pixi run app-dev                            # serve at http://localhost:3000
+```
+
+The safety panel is the one part that needs the Ribo-seq atlas; add it with `pixi run
+export-web-safety` where `results/atlas/` exists, otherwise the app simply omits it.
 
 **Reproduce the published model** — refit it and check parity to the R oracle:
 

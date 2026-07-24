@@ -168,11 +168,16 @@ reads = { cmd = """nextflow run . --step reads -profile local -resume \
   --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs", "adapter-survey"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
-export-web = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --out frontend/public/riborescue.json"
-export-web-example = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --predicted results/atlas/gse144140_predicted.tsv --out frontend/public/riborescue.json"
+# The dry-lab chain alone builds the viewer's data; the safety panel is added by export-web-safety
+# where the Ribo-seq atlas exists, so the app builds on a laptop that never ran the sequencing arm.
+export-web = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --out frontend/public/riborescue.json"
+export-web-safety = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --out frontend/public/riborescue.json"
+export-web-example = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --out frontend/public/riborescue.json"
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }
+# Regenerate the viewer's data from the result tables and build the static bundle in one step.
+site = { depends-on = ["export-web", "app-install", "app-build"] }
 
 [tool.ruff]
 line-length = 100
