@@ -1,0 +1,3330 @@
+{
+  "status": {
+    "readthrough_control": "inconclusive",
+    "readthrough_detail": "The G418 positive control returned an incomplete signature on the libraries that shaped the rule. Confirmation on GSE144140 is pending, so a low readthrough score is not yet evidence a therapy will not work.",
+    "safety_atlas": "unavailable",
+    "safety_detail": "The native-stop safety atlas is not built, so no page here says whether a therapy reads through normal stop codons elsewhere in the genome."
+  },
+  "therapies": [
+    "CC90009",
+    "Clitocine",
+    "DAP",
+    "G418",
+    "SJ6986",
+    "SRI"
+  ],
+  "variants": [
+    {
+      "id": "NC_000001.11:g.943995C>T",
+      "gene": "SAMD11",
+      "protein_position": 793,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.01956,
+        "low": 0.00696
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00438,
+          "low": 0.00158,
+          "high": 0.00718,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01737,
+          "low": 0.00979,
+          "high": 0.02495,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.01956,
+          "low": 0.00696,
+          "high": 0.03216,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00486,
+          "low": 0.00193,
+          "high": 0.00779,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01651,
+          "low": 0.00439,
+          "high": 0.02863,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.0143,
+          "low": 0.00395,
+          "high": 0.02466,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1014143C>T",
+      "gene": "ISG15",
+      "protein_position": 55,
+      "stop": "UAG",
+      "residue": "Q",
+      "review_stars": 0,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01409,
+        "low": 0.00374
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00355,
+          "low": 0.00128,
+          "high": 0.00583,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00305,
+          "low": 0.00172,
+          "high": 0.00438,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0055,
+          "low": 0.00196,
+          "high": 0.00905,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00524,
+          "low": 0.00208,
+          "high": 0.00841,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01409,
+          "low": 0.00374,
+          "high": 0.02444,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01165,
+          "low": 0.00322,
+          "high": 0.02009,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1014359G>T",
+      "gene": "ISG15",
+      "protein_position": 127,
+      "stop": "UAG",
+      "residue": "E",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01385,
+        "low": 0.00368
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00389,
+          "low": 0.0014,
+          "high": 0.00638,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00309,
+          "low": 0.00174,
+          "high": 0.00444,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0074,
+          "low": 0.00263,
+          "high": 0.01217,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00723,
+          "low": 0.00287,
+          "high": 0.01159,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01385,
+          "low": 0.00368,
+          "high": 0.02402,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01132,
+          "low": 0.00312,
+          "high": 0.01952,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-E",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1022368C>A",
+      "gene": "AGRN",
+      "protein_position": 123,
+      "stop": "UAA",
+      "residue": "Y",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.02027,
+        "low": 0.01142
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00431,
+          "low": 0.00155,
+          "high": 0.00706,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02027,
+          "low": 0.01142,
+          "high": 0.02912,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.01045,
+          "low": 0.00372,
+          "high": 0.01718,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00404,
+          "low": 0.0016,
+          "high": 0.00647,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01554,
+          "low": 0.00413,
+          "high": 0.02695,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01414,
+          "low": 0.0039,
+          "high": 0.02438,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-Y",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1041582C>T",
+      "gene": "AGRN",
+      "protein_position": 353,
+      "stop": "UAG",
+      "residue": "Q",
+      "review_stars": 0,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.00691,
+        "low": 0.00191
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00239,
+          "low": 0.00086,
+          "high": 0.00393,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00206,
+          "low": 0.00116,
+          "high": 0.00296,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0046,
+          "low": 0.00164,
+          "high": 0.00756,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00289,
+          "low": 0.00115,
+          "high": 0.00464,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00683,
+          "low": 0.00182,
+          "high": 0.01185,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00691,
+          "low": 0.00191,
+          "high": 0.01191,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1041975C>A",
+      "gene": "AGRN",
+      "protein_position": 399,
+      "stop": "UGA",
+      "residue": "C",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.03286,
+        "low": 0.01169
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00666,
+          "low": 0.0024,
+          "high": 0.01092,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01466,
+          "low": 0.00826,
+          "high": 0.02106,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.03286,
+          "low": 0.01169,
+          "high": 0.05402,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01734,
+          "low": 0.00688,
+          "high": 0.02779,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.02029,
+          "low": 0.00539,
+          "high": 0.03518,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01671,
+          "low": 0.00461,
+          "high": 0.02881,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-C",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1042053C>G",
+      "gene": "AGRN",
+      "protein_position": 425,
+      "stop": "UAG",
+      "residue": "Y",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00957,
+        "low": 0.00254
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00303,
+          "low": 0.00109,
+          "high": 0.00497,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00302,
+          "low": 0.0017,
+          "high": 0.00434,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0062,
+          "low": 0.00221,
+          "high": 0.01019,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00543,
+          "low": 0.00216,
+          "high": 0.00871,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00957,
+          "low": 0.00254,
+          "high": 0.01661,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00885,
+          "low": 0.00244,
+          "high": 0.01526,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Y",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1042101G>A",
+      "gene": "AGRN",
+      "protein_position": 441,
+      "stop": "UGA",
+      "residue": "W",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.03301,
+        "low": 0.01175
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00756,
+          "low": 0.00273,
+          "high": 0.0124,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01813,
+          "low": 0.01022,
+          "high": 0.02605,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.03301,
+          "low": 0.01175,
+          "high": 0.05427,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01852,
+          "low": 0.00735,
+          "high": 0.0297,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.03102,
+          "low": 0.00824,
+          "high": 0.05379,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.02435,
+          "low": 0.00672,
+          "high": 0.04198,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1043668C>A",
+      "gene": "AGRN",
+      "protein_position": 578,
+      "stop": "UGA",
+      "residue": "C",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.03032,
+        "low": 0.00805
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00655,
+          "low": 0.00236,
+          "high": 0.01075,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02048,
+          "low": 0.01154,
+          "high": 0.02942,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.02949,
+          "low": 0.01049,
+          "high": 0.04849,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00522,
+          "low": 0.00207,
+          "high": 0.00837,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.03032,
+          "low": 0.00805,
+          "high": 0.05258,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.0259,
+          "low": 0.00715,
+          "high": 0.04465,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-C",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1044111G>T",
+      "gene": "AGRN",
+      "protein_position": 668,
+      "stop": "UAG",
+      "residue": "E",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01139,
+        "low": 0.00303
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00306,
+          "low": 0.0011,
+          "high": 0.00502,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00306,
+          "low": 0.00173,
+          "high": 0.0044,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0058,
+          "low": 0.00206,
+          "high": 0.00953,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00772,
+          "low": 0.00306,
+          "high": 0.01238,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01139,
+          "low": 0.00303,
+          "high": 0.01975,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.0101,
+          "low": 0.00279,
+          "high": 0.01741,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-E",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1044436C>T",
+      "gene": "AGRN",
+      "protein_position": 751,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.02529,
+        "low": 0.009
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00374,
+          "low": 0.00135,
+          "high": 0.00614,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.0176,
+          "low": 0.00992,
+          "high": 0.02529,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.02529,
+          "low": 0.009,
+          "high": 0.04158,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00713,
+          "low": 0.00283,
+          "high": 0.01143,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.0166,
+          "low": 0.00441,
+          "high": 0.02879,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01258,
+          "low": 0.00347,
+          "high": 0.02169,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1045487C>T",
+      "gene": "AGRN",
+      "protein_position": 834,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.03083,
+        "low": 0.01097
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0041,
+          "low": 0.00148,
+          "high": 0.00672,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01948,
+          "low": 0.01098,
+          "high": 0.02799,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.03083,
+          "low": 0.01097,
+          "high": 0.05069,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01054,
+          "low": 0.00418,
+          "high": 0.0169,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01313,
+          "low": 0.00349,
+          "high": 0.02276,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01103,
+          "low": 0.00304,
+          "high": 0.01901,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1047868C>T",
+      "gene": "AGRN",
+      "protein_position": 1242,
+      "stop": "UAG",
+      "residue": "Q",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01314,
+        "low": 0.00349
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00377,
+          "low": 0.00136,
+          "high": 0.00619,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00337,
+          "low": 0.0019,
+          "high": 0.00483,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00585,
+          "low": 0.00208,
+          "high": 0.00961,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00416,
+          "low": 0.00165,
+          "high": 0.00666,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01314,
+          "low": 0.00349,
+          "high": 0.02279,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01103,
+          "low": 0.00304,
+          "high": 0.01901,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1049326G>A",
+      "gene": "AGRN",
+      "protein_position": 1463,
+      "stop": "UGA",
+      "residue": "W",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.0316,
+        "low": 0.01124
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00675,
+          "low": 0.00243,
+          "high": 0.01107,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01727,
+          "low": 0.00973,
+          "high": 0.02481,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0316,
+          "low": 0.01124,
+          "high": 0.05195,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01887,
+          "low": 0.00749,
+          "high": 0.03025,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.03114,
+          "low": 0.00827,
+          "high": 0.05401,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.02801,
+          "low": 0.00773,
+          "high": 0.0483,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1049672C>T",
+      "gene": "AGRN",
+      "protein_position": 1541,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.02683,
+        "low": 0.00955
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00343,
+          "low": 0.00124,
+          "high": 0.00562,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01639,
+          "low": 0.00923,
+          "high": 0.02354,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.02683,
+          "low": 0.00955,
+          "high": 0.04411,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.0069,
+          "low": 0.00274,
+          "high": 0.01106,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01232,
+          "low": 0.00327,
+          "high": 0.02137,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.0098,
+          "low": 0.00271,
+          "high": 0.0169,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1050461C>T",
+      "gene": "AGRN",
+      "protein_position": 1671,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "DAP",
+        "readthrough": 0.03238,
+        "low": 0.01152
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00516,
+          "low": 0.00186,
+          "high": 0.00846,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02087,
+          "low": 0.01176,
+          "high": 0.02999,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.03238,
+          "low": 0.01152,
+          "high": 0.05324,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00854,
+          "low": 0.00339,
+          "high": 0.0137,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.02049,
+          "low": 0.00544,
+          "high": 0.03554,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01847,
+          "low": 0.0051,
+          "high": 0.03185,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1232362C>G",
+      "gene": "B3GALT6",
+      "protein_position": 28,
+      "stop": "UAG",
+      "residue": "Y",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.02362,
+        "low": 0.00627
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00575,
+          "low": 0.00207,
+          "high": 0.00943,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00346,
+          "low": 0.00195,
+          "high": 0.00497,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00751,
+          "low": 0.00267,
+          "high": 0.01234,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01601,
+          "low": 0.00635,
+          "high": 0.02567,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.02362,
+          "low": 0.00627,
+          "high": 0.04096,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.02164,
+          "low": 0.00597,
+          "high": 0.03732,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Y",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1232517G>A",
+      "gene": "B3GALT6",
+      "protein_position": 80,
+      "stop": "UAG",
+      "residue": "W",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.02309,
+        "low": 0.00613
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0051,
+          "low": 0.00184,
+          "high": 0.00836,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00241,
+          "low": 0.00136,
+          "high": 0.00346,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00563,
+          "low": 0.002,
+          "high": 0.00925,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00583,
+          "low": 0.00231,
+          "high": 0.00934,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.02309,
+          "low": 0.00613,
+          "high": 0.04004,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01875,
+          "low": 0.00517,
+          "high": 0.03233,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1232703G>A",
+      "gene": "B3GALT6",
+      "protein_position": 142,
+      "stop": "UAG",
+      "residue": "W",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.02557,
+        "low": 0.00679
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0057,
+          "low": 0.00205,
+          "high": 0.00935,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.0035,
+          "low": 0.00197,
+          "high": 0.00502,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00775,
+          "low": 0.00276,
+          "high": 0.01274,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01571,
+          "low": 0.00623,
+          "high": 0.02519,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.02557,
+          "low": 0.00679,
+          "high": 0.04435,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.0231,
+          "low": 0.00637,
+          "high": 0.03982,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1232738A>T",
+      "gene": "B3GALT6",
+      "protein_position": 154,
+      "stop": "UAG",
+      "residue": "K",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.00978,
+        "low": 0.0027
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00333,
+          "low": 0.0012,
+          "high": 0.00546,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00319,
+          "low": 0.0018,
+          "high": 0.00458,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00669,
+          "low": 0.00238,
+          "high": 0.011,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00523,
+          "low": 0.00207,
+          "high": 0.00838,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00931,
+          "low": 0.00247,
+          "high": 0.01615,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00978,
+          "low": 0.0027,
+          "high": 0.01687,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-K",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1232855A>T",
+      "gene": "B3GALT6",
+      "protein_position": 193,
+      "stop": "UAG",
+      "residue": "K",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01684,
+        "low": 0.00447
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00369,
+          "low": 0.00133,
+          "high": 0.00604,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00318,
+          "low": 0.00179,
+          "high": 0.00457,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00672,
+          "low": 0.00239,
+          "high": 0.01106,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00625,
+          "low": 0.00248,
+          "high": 0.01002,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01684,
+          "low": 0.00447,
+          "high": 0.02921,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01479,
+          "low": 0.00408,
+          "high": 0.0255,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-K",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.1232914C>G",
+      "gene": "B3GALT6",
+      "protein_position": 212,
+      "stop": "UAG",
+      "residue": "Y",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.00645,
+        "low": 0.00178
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00253,
+          "low": 0.00091,
+          "high": 0.00414,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00243,
+          "low": 0.00137,
+          "high": 0.00349,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00601,
+          "low": 0.00214,
+          "high": 0.00989,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00337,
+          "low": 0.00134,
+          "high": 0.0054,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00637,
+          "low": 0.00169,
+          "high": 0.01104,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00645,
+          "low": 0.00178,
+          "high": 0.01112,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Y",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.3722204G>T",
+      "gene": "TP73",
+      "protein_position": 205,
+      "stop": "UAA",
+      "residue": "E",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.667,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.01357,
+        "low": 0.00764
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00236,
+          "low": 0.00085,
+          "high": 0.00388,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01357,
+          "low": 0.00764,
+          "high": 0.01949,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00663,
+          "low": 0.00236,
+          "high": 0.01091,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00255,
+          "low": 0.00101,
+          "high": 0.00409,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00735,
+          "low": 0.00195,
+          "high": 0.01274,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00676,
+          "low": 0.00186,
+          "high": 0.01165,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-E",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.7467892G>A",
+      "gene": "CAMTA1",
+      "protein_position": 167,
+      "stop": "UGA",
+      "residue": "W",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.09006,
+        "low": 0.02485
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.01456,
+          "low": 0.00524,
+          "high": 0.02387,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02638,
+          "low": 0.01486,
+          "high": 0.03789,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.05122,
+          "low": 0.01823,
+          "high": 0.08422,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01667,
+          "low": 0.00662,
+          "high": 0.02673,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.07661,
+          "low": 0.02035,
+          "high": 0.13287,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.09006,
+          "low": 0.02485,
+          "high": 0.15527,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.9981107A>T",
+      "gene": "NMNAT1",
+      "protein_position": 126,
+      "stop": "UAG",
+      "residue": "K",
+      "review_stars": 0,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00435,
+        "low": 0.00116
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00189,
+          "low": 0.00068,
+          "high": 0.0031,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.0017,
+          "low": 0.00096,
+          "high": 0.00245,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00391,
+          "low": 0.00139,
+          "high": 0.00642,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00347,
+          "low": 0.00138,
+          "high": 0.00557,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00435,
+          "low": 0.00116,
+          "high": 0.00755,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00355,
+          "low": 0.00098,
+          "high": 0.00612,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-K",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.158638120A>T",
+      "gene": "SPTA1",
+      "protein_position": 1701,
+      "stop": "UAG",
+      "residue": "L",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.143,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01049,
+        "low": 0.00279
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0034,
+          "low": 0.00122,
+          "high": 0.00557,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00335,
+          "low": 0.00189,
+          "high": 0.00481,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00715,
+          "low": 0.00254,
+          "high": 0.01176,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00362,
+          "low": 0.00143,
+          "high": 0.0058,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01049,
+          "low": 0.00279,
+          "high": 0.0182,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00891,
+          "low": 0.00246,
+          "high": 0.01536,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-L",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.160283009A>T",
+      "gene": "PEX19",
+      "protein_position": 94,
+      "stop": "UAG",
+      "residue": "L",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.143,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00939,
+        "low": 0.00249
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00313,
+          "low": 0.00113,
+          "high": 0.00513,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00304,
+          "low": 0.00171,
+          "high": 0.00437,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00529,
+          "low": 0.00188,
+          "high": 0.0087,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00279,
+          "low": 0.00111,
+          "high": 0.00448,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00939,
+          "low": 0.00249,
+          "high": 0.01628,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00808,
+          "low": 0.00223,
+          "high": 0.01393,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-L",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.161171067T>A",
+      "gene": "PPOX",
+      "protein_position": 442,
+      "stop": "UAG",
+      "residue": "L",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.143,
+      "best": {
+        "therapy": "G418",
+        "readthrough": 0.00866,
+        "low": 0.00344
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00254,
+          "low": 0.00092,
+          "high": 0.00417,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00175,
+          "low": 0.00098,
+          "high": 0.00251,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00445,
+          "low": 0.00158,
+          "high": 0.00731,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00866,
+          "low": 0.00344,
+          "high": 0.01388,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00667,
+          "low": 0.00177,
+          "high": 0.01157,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00528,
+          "low": 0.00146,
+          "high": 0.0091,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-L",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.164559899T>A",
+      "gene": "PBX1",
+      "protein_position": 26,
+      "stop": "UAG",
+      "residue": "L",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.143,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.0199,
+        "low": 0.00529
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0048,
+          "low": 0.00173,
+          "high": 0.00787,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00301,
+          "low": 0.0017,
+          "high": 0.00433,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.0059,
+          "low": 0.0021,
+          "high": 0.0097,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00953,
+          "low": 0.00378,
+          "high": 0.01529,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.0199,
+          "low": 0.00529,
+          "high": 0.03452,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01901,
+          "low": 0.00525,
+          "high": 0.03278,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-L",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.169477465A>T",
+      "gene": "SLC19A2",
+      "protein_position": 166,
+      "stop": "UAG",
+      "residue": "L",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.143,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00866,
+        "low": 0.0023
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0027,
+          "low": 0.00097,
+          "high": 0.00442,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00248,
+          "low": 0.0014,
+          "high": 0.00357,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00609,
+          "low": 0.00217,
+          "high": 0.01002,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00468,
+          "low": 0.00186,
+          "high": 0.0075,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00866,
+          "low": 0.0023,
+          "high": 0.01501,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00671,
+          "low": 0.00185,
+          "high": 0.01157,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-L",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000001.11:g.179575614A>T",
+      "gene": "NPHS2",
+      "protein_position": 84,
+      "stop": "UAG",
+      "residue": "L",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.143,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.01314,
+        "low": 0.00349
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00377,
+          "low": 0.00136,
+          "high": 0.00619,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00337,
+          "low": 0.0019,
+          "high": 0.00483,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00585,
+          "low": 0.00208,
+          "high": 0.00961,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00416,
+          "low": 0.00165,
+          "high": 0.00666,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01314,
+          "low": 0.00349,
+          "high": 0.02279,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.01103,
+          "low": 0.00304,
+          "high": 0.01901,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-L",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000002.12:g.47429881C>T",
+      "gene": "MSH2",
+      "protein_position": 406,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 3,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.09006,
+        "low": 0.02485
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.01456,
+          "low": 0.00524,
+          "high": 0.02387,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02638,
+          "low": 0.01486,
+          "high": 0.03789,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.05122,
+          "low": 0.01823,
+          "high": 0.08422,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01667,
+          "low": 0.00662,
+          "high": 0.02673,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.07661,
+          "low": 0.02035,
+          "high": 0.13287,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.09006,
+          "low": 0.02485,
+          "high": 0.15527,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000002.12:g.73862254C>T",
+      "gene": "STAMBP",
+      "protein_position": 424,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 2,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": NaN,
+        "readthrough": NaN,
+        "low": NaN
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "Clitocine",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "DAP",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "G418",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "SJ6986",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "SRI",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000004.12:g.5756288C>T",
+      "gene": "EVC",
+      "protein_position": 497,
+      "stop": "UAG",
+      "residue": "Q",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00435,
+        "low": 0.00116
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00189,
+          "low": 0.00068,
+          "high": 0.0031,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.0017,
+          "low": 0.00096,
+          "high": 0.00245,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00391,
+          "low": 0.00139,
+          "high": 0.00642,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00347,
+          "low": 0.00138,
+          "high": 0.00557,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00435,
+          "low": 0.00116,
+          "high": 0.00755,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00355,
+          "low": 0.00098,
+          "high": 0.00612,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000009.12:g.108927396G>A",
+      "gene": "ELP1",
+      "protein_position": 121,
+      "stop": "UAA",
+      "residue": "Q",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.667,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.01562,
+        "low": 0.0088
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.0032,
+          "low": 0.00115,
+          "high": 0.00524,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01562,
+          "low": 0.0088,
+          "high": 0.02244,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00748,
+          "low": 0.00266,
+          "high": 0.0123,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00383,
+          "low": 0.00152,
+          "high": 0.00614,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.01026,
+          "low": 0.00273,
+          "high": 0.0178,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00979,
+          "low": 0.0027,
+          "high": 0.01688,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000010.11:g.11329050C>G",
+      "gene": "CELF2",
+      "protein_position": 521,
+      "stop": "UAG",
+      "residue": "Y",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": NaN,
+        "readthrough": NaN,
+        "low": NaN
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "Clitocine",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "DAP",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "G418",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "SJ6986",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        },
+        {
+          "id": "SRI",
+          "available": false,
+          "readthrough": null,
+          "low": null,
+          "high": null,
+          "reason": "not_available"
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Y",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000011.10:g.108335932A>T",
+      "gene": "ATM",
+      "protein_position": 2747,
+      "stop": "UAG",
+      "residue": "K",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00435,
+        "low": 0.00116
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00189,
+          "low": 0.00068,
+          "high": 0.0031,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.0017,
+          "low": 0.00096,
+          "high": 0.00245,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00391,
+          "low": 0.00139,
+          "high": 0.00642,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00347,
+          "low": 0.00138,
+          "high": 0.00557,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00435,
+          "low": 0.00116,
+          "high": 0.00755,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00355,
+          "low": 0.00098,
+          "high": 0.00612,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-K",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000012.12:g.12717897C>T",
+      "gene": "CDKN1B",
+      "protein_position": 20,
+      "stop": "UAG",
+      "residue": "Q",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00459,
+        "low": 0.00122
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00206,
+          "low": 0.00074,
+          "high": 0.00338,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00182,
+          "low": 0.00102,
+          "high": 0.00261,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00435,
+          "low": 0.00155,
+          "high": 0.00716,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00328,
+          "low": 0.0013,
+          "high": 0.00526,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00459,
+          "low": 0.00122,
+          "high": 0.00796,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00419,
+          "low": 0.00116,
+          "high": 0.00723,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000013.11:g.110508038G>A",
+      "gene": "COL4A2",
+      "protein_position": 1566,
+      "stop": "UGA",
+      "residue": "W",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.09006,
+        "low": 0.02485
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.01456,
+          "low": 0.00524,
+          "high": 0.02387,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02638,
+          "low": 0.01486,
+          "high": 0.03789,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.05122,
+          "low": 0.01823,
+          "high": 0.08422,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01667,
+          "low": 0.00662,
+          "high": 0.02673,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.07661,
+          "low": 0.02035,
+          "high": 0.13287,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.09006,
+          "low": 0.02485,
+          "high": 0.15527,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000016.10:g.56893038G>A",
+      "gene": "SLC12A3",
+      "protein_position": 835,
+      "stop": "UGA",
+      "residue": "W",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.09006,
+        "low": 0.02485
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.01456,
+          "low": 0.00524,
+          "high": 0.02387,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02638,
+          "low": 0.01486,
+          "high": 0.03789,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.05122,
+          "low": 0.01823,
+          "high": 0.08422,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01667,
+          "low": 0.00662,
+          "high": 0.02673,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.07661,
+          "low": 0.02035,
+          "high": 0.13287,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.09006,
+          "low": 0.02485,
+          "high": 0.15527,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-W",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000016.10:g.57659612C>T",
+      "gene": "ADGRG1",
+      "protein_position": 496,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.09006,
+        "low": 0.02485
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.01456,
+          "low": 0.00524,
+          "high": 0.02387,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02638,
+          "low": 0.01486,
+          "high": 0.03789,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.05122,
+          "low": 0.01823,
+          "high": 0.08422,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01667,
+          "low": 0.00662,
+          "high": 0.02673,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.07661,
+          "low": 0.02035,
+          "high": 0.13287,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.09006,
+          "low": 0.02485,
+          "high": 0.15527,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000017.11:g.4902311G>A",
+      "gene": "CHRNE",
+      "protein_position": 84,
+      "stop": "UGA",
+      "residue": "R",
+      "review_stars": 2,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.167,
+      "best": {
+        "therapy": "SRI",
+        "readthrough": 0.09006,
+        "low": 0.02485
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.01456,
+          "low": 0.00524,
+          "high": 0.02387,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.02638,
+          "low": 0.01486,
+          "high": 0.03789,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.05122,
+          "low": 0.01823,
+          "high": 0.08422,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.01667,
+          "low": 0.00662,
+          "high": 0.02673,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.07661,
+          "low": 0.02035,
+          "high": 0.13287,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.09006,
+          "low": 0.02485,
+          "high": 0.15527,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UGA-R",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000018.10:g.31546132C>T",
+      "gene": "DSG2",
+      "protein_position": 916,
+      "stop": "UAG",
+      "residue": "Q",
+      "review_stars": 1,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.571,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00459,
+        "low": 0.00122
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00206,
+          "low": 0.00074,
+          "high": 0.00338,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.00182,
+          "low": 0.00102,
+          "high": 0.00261,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00435,
+          "low": 0.00155,
+          "high": 0.00716,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00328,
+          "low": 0.0013,
+          "high": 0.00526,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00459,
+          "low": 0.00122,
+          "high": 0.00796,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00419,
+          "low": 0.00116,
+          "high": 0.00723,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Q",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000023.11:g.31180478G>C",
+      "gene": "DMD",
+      "protein_position": 3326,
+      "stop": "UAG",
+      "residue": "Y",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.286,
+      "best": {
+        "therapy": "SJ6986",
+        "readthrough": 0.00435,
+        "low": 0.00116
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00189,
+          "low": 0.00068,
+          "high": 0.0031,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.0017,
+          "low": 0.00096,
+          "high": 0.00245,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00391,
+          "low": 0.00139,
+          "high": 0.00642,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00347,
+          "low": 0.00138,
+          "high": 0.00557,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00435,
+          "low": 0.00116,
+          "high": 0.00755,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00355,
+          "low": 0.00098,
+          "high": 0.00612,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAG-Y",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000023.11:g.154902150C>A",
+      "gene": "F8",
+      "protein_position": 2006,
+      "stop": "UAA",
+      "residue": "E",
+      "review_stars": 0,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.667,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.01792,
+        "low": 0.0101
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00344,
+          "low": 0.00124,
+          "high": 0.00565,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01792,
+          "low": 0.0101,
+          "high": 0.02574,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00648,
+          "low": 0.00231,
+          "high": 0.01065,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00258,
+          "low": 0.00102,
+          "high": 0.00414,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00954,
+          "low": 0.00253,
+          "high": 0.01655,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00878,
+          "low": 0.00242,
+          "high": 0.01514,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-E",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000023.11:g.154969469C>A",
+      "gene": "F8",
+      "protein_position": 291,
+      "stop": "UAA",
+      "residue": "E",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.667,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.01329,
+        "low": 0.00749
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00279,
+          "low": 0.001,
+          "high": 0.00457,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01329,
+          "low": 0.00749,
+          "high": 0.01909,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00558,
+          "low": 0.00198,
+          "high": 0.00917,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00354,
+          "low": 0.00141,
+          "high": 0.00568,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00865,
+          "low": 0.0023,
+          "high": 0.015,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00838,
+          "low": 0.00231,
+          "high": 0.01444,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-E",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000023.11:g.154984729T>A",
+      "gene": "F8",
+      "protein_position": 249,
+      "stop": "UAA",
+      "residue": "K",
+      "review_stars": 1,
+      "escapes_decay": false,
+      "tolerable_insertion_share": 0.667,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.01216,
+        "low": 0.00685
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00256,
+          "low": 0.00092,
+          "high": 0.00419,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01216,
+          "low": 0.00685,
+          "high": 0.01747,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00673,
+          "low": 0.00239,
+          "high": 0.01107,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00372,
+          "low": 0.00148,
+          "high": 0.00597,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00553,
+          "low": 0.00147,
+          "high": 0.00959,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00468,
+          "low": 0.00129,
+          "high": 0.00807,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-K",
+        "restores_exactly": true
+      }
+    },
+    {
+      "id": "NC_000024.10:g.2787600G>A",
+      "gene": "SRY",
+      "protein_position": 2,
+      "stop": "UAA",
+      "residue": "Q",
+      "review_stars": 0,
+      "escapes_decay": true,
+      "tolerable_insertion_share": 0.667,
+      "best": {
+        "therapy": "Clitocine",
+        "readthrough": 0.01472,
+        "low": 0.00829
+      },
+      "therapies": [
+        {
+          "id": "CC90009",
+          "available": true,
+          "readthrough": 0.00247,
+          "low": 0.00089,
+          "high": 0.00405,
+          "reason": null
+        },
+        {
+          "id": "Clitocine",
+          "available": true,
+          "readthrough": 0.01472,
+          "low": 0.00829,
+          "high": 0.02115,
+          "reason": null
+        },
+        {
+          "id": "DAP",
+          "available": true,
+          "readthrough": 0.00538,
+          "low": 0.00192,
+          "high": 0.00885,
+          "reason": null
+        },
+        {
+          "id": "G418",
+          "available": true,
+          "readthrough": 0.00307,
+          "low": 0.00122,
+          "high": 0.00492,
+          "reason": null
+        },
+        {
+          "id": "SJ6986",
+          "available": true,
+          "readthrough": 0.00706,
+          "low": 0.00188,
+          "high": 0.01225,
+          "reason": null
+        },
+        {
+          "id": "SRI",
+          "available": true,
+          "readthrough": 0.00651,
+          "low": 0.0018,
+          "high": 0.01122,
+          "reason": null
+        }
+      ],
+      "suppressor": {
+        "design": "UAA-Q",
+        "restores_exactly": true
+      }
+    }
+  ]
+}

@@ -22,7 +22,7 @@ with uncertainty shown by default.
 | `tests/` | `pytest` suites — unit, property-based (`hypothesis`), and protected negative controls |
 | `pipeline/` | The hand-authored Nextflow pipeline: Ribo-seq read processing and the scored variant × therapy table |
 | `scripts/` | R analysis (reproduction oracle, P-site calibration) and data-fetch scripts |
-| `frontend/` | The static web app (Next.js) that presents the table — *planned* |
+| `frontend/` | The static web app (Next.js) that presents the table |
 | `data/` | Fetched inputs — from public sources, verified by checksum, never committed |
 | `results/` | Pipeline and analysis outputs — regenerated from inputs, never committed |
 | `docs/decisions/` | Architecture decision records — the reasoning behind each major technical choice |
@@ -77,7 +77,7 @@ A single `riborescue` command backs every pipeline step; `pixi run triage --help
   machines.
 - **The pipeline** runs offline on a workstation. It is not hosted; anyone with Docker and Nextflow
   reproduces its outputs from pinned inputs.
-- **Results** publish to Zenodo with a DOI; a static app (planned) will read them and deploy to the
+- **Results** publish to Zenodo with a DOI; a static app reads a compact JSON export and deploys to the
   edge with no backend.
 
 The reasoning behind each major technical choice is recorded in

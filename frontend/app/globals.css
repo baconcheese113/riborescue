@@ -1,0 +1,272 @@
+:root {
+  --bg: #f6f7f6;
+  --panel: #ffffff;
+  --edge: #e2e6e3;
+  --text: #16201f;
+  --dim: #5c6a6b;
+  --faint: #8a9899;
+  --good: #3d7a5f;
+  --good-wash: #e4efe9;
+  --warn: #8a7a4e;
+  --warn-wash: #f1ecde;
+  --bad: #a6453c;
+  --bad-wash: #f6e5e2;
+  --accent: #4e7b94;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1416;
+    --panel: #151d1f;
+    --edge: #2a3639;
+    --text: #e4eae8;
+    --dim: #97a6a6;
+    --faint: #6b7b7c;
+    --good: #63a886;
+    --good-wash: #1b2c25;
+    --warn: #b39d63;
+    --warn-wash: #2a2519;
+    --bad: #ce6a5f;
+    --bad-wash: #2e1d1b;
+    --accent: #6d9cb6;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.lede {
+  color: var(--dim);
+  max-width: 70ch;
+  margin: 0 0 24px;
+}
+
+.banner {
+  display: flex;
+  gap: 12px;
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--warn);
+  border-radius: 4px;
+  background: var(--panel);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+}
+
+.banner.unavailable {
+  border-left-color: var(--faint);
+}
+
+.banner .tag {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warn);
+  white-space: nowrap;
+}
+
+.banner.unavailable .tag {
+  color: var(--faint);
+}
+
+.banner p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 20px 0 12px;
+  flex-wrap: wrap;
+}
+
+input[type="search"] {
+  flex: 1;
+  min-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 14px;
+}
+
+label.check {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--dim);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.scroller {
+  overflow-x: auto;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--edge);
+  white-space: nowrap;
+}
+
+th {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+th .arrow {
+  color: var(--accent);
+}
+
+tbody tr.parent:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+tbody tr.parent {
+  cursor: pointer;
+}
+
+td.num {
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.pill {
+  display: inline-block;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+
+.pill.good {
+  color: var(--good);
+  background: var(--good-wash);
+}
+
+.pill.bad {
+  color: var(--bad);
+  background: var(--bad-wash);
+}
+
+.pill.muted {
+  color: var(--faint);
+  background: color-mix(in srgb, var(--faint) 14%, transparent);
+}
+
+.detail {
+  padding: 14px 18px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.detail h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  font-weight: 600;
+}
+
+.therapy {
+  display: grid;
+  grid-template-columns: 90px 120px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.therapy .name {
+  font-weight: 600;
+}
+
+.track {
+  position: relative;
+  height: 8px;
+  background: color-mix(in srgb, var(--faint) 18%, transparent);
+  border-radius: 4px;
+}
+
+.track .ci {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--accent);
+  opacity: 0.4;
+  border-radius: 4px;
+}
+
+.track .point {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 12px;
+  background: var(--accent);
+}
+
+.unavailable-therapy {
+  color: var(--faint);
+  font-style: italic;
+}
+
+.suppressor {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.suppressor code {
+  font-family: ui-monospace, monospace;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--text);
+}
+
+.count {
+  color: var(--faint);
+  font-size: 12px;
+  margin: 10px 2px 0;
+}

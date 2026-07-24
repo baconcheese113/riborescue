@@ -57,6 +57,7 @@ from riborescue.tables import (
 )
 from riborescue.transcripts import load_transcripts, read_sequences
 from riborescue.triage import classify, classify_table
+from riborescue.webexport import build_web_table, diverse_sample, read_web_inputs
 
 __all__ = ["main"]
 
@@ -241,6 +242,36 @@ def select_calibration_lengths(
             click.echo(f"       {failure}")
     if not manifest.passes:
         raise click.ClickException(f"{dataset} is inconclusive; its thresholds are not to be moved")
+
+
+@main.command("export-web")
+@click.option(
+    "--landscape",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The per-variant landscape table.",
+)
+@click.option(
+    "--amenability",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The per-therapy amenability scores.",
+)
+@click.option(
+    "--sample",
+    type=int,
+    help="Write a diverse sample of this many variants — the example artifact — instead of all.",
+)
+@_OUT
+def export_web(landscape: Path, amenability: Path, sample: int | None, out: Path) -> None:
+    """Build the compact JSON the web app reads from the pipeline's result tables."""
+
+    land, amen = read_web_inputs(landscape, amenability)
+    variant_ids = diverse_sample(land, amen, sample) if sample is not None else None
+    table = build_web_table(land, amen, variant_ids=variant_ids)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(table.to_json())
+    click.echo(f"{len(table.variants):,} variants, {len(table.therapies)} therapies → {out}")
 
 
 @main.command("adapter-survey")
