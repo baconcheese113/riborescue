@@ -58,6 +58,7 @@ from riborescue.variants.evaluation import (
 )
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
 from riborescue.variants.native_stops import concordance, four_quadrants, native_stop_features
+from riborescue.variants.panels import coverage_frontier
 from riborescue.variants.residue import coverage_by_design
 from riborescue.variants.transcripts import load_transcripts, read_sequences
 from riborescue.variants.triage import classify, classify_table
@@ -770,6 +771,42 @@ def trna_coverage(contexts: Path, out: Path) -> None:
             f"  {row.design_id:<7} {row.conservative:>6} conservative, "
             f"{row.restores_exactly:>6} restored exactly"
         )
+
+
+@main.command("trna-panel")
+@click.argument("contexts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--objective",
+    type=click.Choice(["variants", "genes"]),
+    default="variants",
+    help="What each added design should cover the most of.",
+)
+@_OUT
+def trna_panel(contexts: Path, objective: str, out: Path) -> None:
+    """Greedy suppressor-tRNA panel: the fewest designs covering the most variants or genes.
+
+    Coverage is exact restoration — the design puts the native residue back at the stop — and
+    nothing more; it is model coverage, not a therapeutic or clinical claim, with no safety axis.
+    """
+
+    table = read_table(contexts)
+    frontier = coverage_frontier(table, objective=objective)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(frontier, out)
+
+    total = int(frontier["cumulative"].iloc[-1]) if len(frontier) else 0
+    click.echo(
+        f"{len(frontier)} exact-restoration designs observed, covering all {total} {objective} "
+        f"in the qualifying ClinVar nonsense-variant set"
+    )
+    for k in (1, 3, 5, 10):
+        if k <= len(frontier):
+            row = frontier.iloc[k - 1]
+            click.echo(
+                f"  panel of {k:>2}: {int(row['cumulative']):>5} of {total} {objective} "
+                f"({row['cumulative_fraction'] * 100:>5.1f}%), "
+                f"+{int(row['marginal'])} from {row['design_id']}"
+            )
 
 
 @main.command("extensions")
