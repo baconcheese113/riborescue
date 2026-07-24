@@ -24,7 +24,13 @@ __all__ = [
 ]
 
 # MedGen concept ids for ClinVar's non-disease placeholders — a real concept, but not a disease.
-_PLACEHOLDER_MEDGEN = {"CN517202": "not provided", "CN169374": "not specified"}
+# C3661900 is the trap: a plain CUI, not a CN* id, that ClinVar uses for "not provided", so it slips
+# past a filter that only knows the CN* placeholders and becomes a 25,000-variant phantom disease.
+_PLACEHOLDER_MEDGEN = {
+    "CN517202": "not provided",
+    "CN169374": "not specified",
+    "C3661900": "not provided",
+}
 _SOURCES = ("MedGen", "OMIM", "Orphanet", "MONDO", "MeSH")
 
 

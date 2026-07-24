@@ -30,6 +30,12 @@ def test_a_placeholder_condition_is_recognised_as_not_a_disease():
     assert "not provided" in not_provided.reason
 
 
+def test_the_plain_cui_not_provided_placeholder_is_also_caught():
+    # C3661900 is a regular MedGen CUI, not a CN* id, but it still means "not provided".
+    [condition] = parse_conditions("not_provided", "MedGen:C3661900")
+    assert condition.mapping_status == "placeholder"
+
+
 def test_a_condition_with_no_medgen_is_unmapped():
     [condition] = parse_conditions("Some_rare_thing", "OMIM:123456")
     assert condition.medgen == ""

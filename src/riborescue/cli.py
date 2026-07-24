@@ -49,6 +49,7 @@ from riborescue.riboseq.sequencing import FASTQ_SUBDIR, stage
 from riborescue.variants.baseline import fit, relative_error_quantile
 from riborescue.variants.clinvar import pathogenic_nonsense
 from riborescue.variants.context import contexts_for, disagreements_with_protein
+from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
 from riborescue.variants.diseases import normalize_conditions
 from riborescue.variants.evaluation import (
     SEED,
@@ -669,6 +670,72 @@ def diseases(table: Path, out: Path) -> None:
     )
     for status, count in normalized["mapping_status"].value_counts().items():
         click.echo(f"  {status:<12} {count}")
+
+
+_CONTEXTS = click.option(
+    "--contexts",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The contexts table, for which variants are scoreable and at which stop and residue.",
+)
+
+
+@main.command("disease-coverage")
+@_IN
+@_CONTEXTS
+@_OUT
+def disease_coverage_cmd(table: Path, contexts: Path, out: Path) -> None:
+    """Per-disease model coverage over each disease's eligible nonsense-variant denominator.
+
+    The fraction is model-covered over eligible; "reached by at least one design" is reported
+    separately as reach, never as the coverage number. Makes no claim about unmet therapeutic need.
+    """
+
+    coverage = disease_coverage(read_table(table), read_table(contexts))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(coverage, out)
+
+    reached = int(coverage["reach"].sum())
+    fully = int((coverage["covered_fraction"] == 1.0).sum())
+    click.echo(
+        f"{len(coverage)} diseases; {reached} reached by at least one design, "
+        f"{fully} with every eligible variant model-covered"
+    )
+    head = coverage.head(5)
+    for i in range(len(head)):
+        row = head.iloc[i]
+        click.echo(
+            f"  {str(row['disease_name'])[:40]:<40} "
+            f"{int(row['model_covered']):>4}/{int(row['eligible_variants']):<4} "
+            f"({row['covered_fraction'] * 100:>5.1f}%)"
+        )
+
+
+@main.command("disease-panel")
+@_IN
+@_CONTEXTS
+@_OUT
+def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
+    """Greedy panel reaching the most diseases — a disease with any model-covered variant.
+
+    This is the reach frontier, distinct from the per-disease coverage fraction: a design reaches a
+    disease when it restores at least one of its variants.
+    """
+
+    frontier = disease_reach_frontier(read_table(table), read_table(contexts))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(frontier, out)
+
+    total = int(frontier["cumulative"].iloc[-1]) if len(frontier) else 0
+    click.echo(f"{len(frontier)} designs reach all {total} diseases with a model-covered variant")
+    for k in (1, 3, 5, 10):
+        if k <= len(frontier):
+            row = frontier.iloc[k - 1]
+            click.echo(
+                f"  panel of {k:>2}: {int(row['cumulative']):>4} of {total} diseases "
+                f"({row['cumulative_fraction'] * 100:>5.1f}%), "
+                f"+{int(row['marginal'])} from {row['design_id']}"
+            )
 
 
 @main.command("contexts")
