@@ -56,6 +56,7 @@ from riborescue.variants.evaluation import (
     split,
 )
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
+from riborescue.variants.native_stops import concordance, four_quadrants, native_stop_features
 from riborescue.variants.residue import coverage_by_design
 from riborescue.variants.transcripts import load_transcripts, read_sequences
 from riborescue.variants.triage import classify, classify_table
@@ -332,6 +333,92 @@ def atlas_command(
             continue
         lift = (included[f"{arm}_occupancy"] - included["control_occupancy"]).mean()
         click.echo(f"  {arm}: mean downstream occupancy {lift:+.4f} over {control}")
+
+
+@main.command("atlas-predict")
+@click.option(
+    "--transcripts",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Transcript FASTA.",
+)
+@click.option(
+    "--annotation",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The riboWaltz annotation table, for each native stop's position.",
+)
+@click.option(
+    "--training",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The G418 training features the amenability model is fit on.",
+)
+@click.option(
+    "--measured",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The empirical atlas table, for the measured occupancy to compare against.",
+)
+@_OUT
+def atlas_predict(
+    transcripts: Path, annotation: Path, training: Path, measured: Path, out: Path
+) -> None:
+    """Score every canonical stop with the model, and rank-compare it to the measured occupancy.
+
+    The predicted layer of the safety atlas, and an extrapolation: the model was fit on premature
+    stops, so a canonical stop is out of its distribution. The prediction is kept in its own column
+    and never blended with the measurement — the two are compared only by rank, to ask whether the
+    model orders native stops the way the ribosomes do.
+    """
+
+    features = native_stop_features(transcripts, read_table(annotation)).set_index("transcript")
+    model = fit(read_table(training))
+    known = model.known_levels(features)
+    predicted = model.predict(features[known])
+
+    table = pd.DataFrame(
+        {
+            "predicted_g418": predicted.reindex(features.index),
+            "model_support": ["in_distribution" if k else "unseen_context" for k in known],
+        },
+        index=features.index,
+    ).reset_index()
+
+    atlas = read_table(measured)
+    atlas = atlas[atlas["included"]].copy()
+    atlas["measured_lift"] = atlas["g418_occupancy"] - atlas["control_occupancy"]
+    combined = table.merge(
+        atlas[["transcript", "gene", "control_occupancy", "g418_occupancy", "g418_depth",
+               "measured_lift"]],
+        on="transcript",
+        how="left",
+    )
+    combined["measurable"] = combined["measured_lift"].notna()
+
+    both = combined.dropna(subset=["predicted_g418", "measured_lift"])
+    stats = concordance(both["predicted_g418"], both["measured_lift"])
+    cut_p = float(both["predicted_g418"].quantile(0.75)) if len(both) else 0.0
+    cut_m = 0.05
+    combined["group"] = ""
+    combined.loc[both.index, "group"] = four_quadrants(
+        both["predicted_g418"], both["measured_lift"], cut_p, cut_m
+    )
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(combined, out)
+
+    click.echo(
+        f"{len(table):,} canonical stops scored "
+        f"({int(known.sum()):,} in-distribution, {int((~known).sum()):,} unseen contexts)"
+    )
+    click.echo(
+        f"rank concordance with measured occupancy over {stats['n']:,} shared stops: "
+        f"Spearman {stats['rho']} [{stats['low']}, {stats['high']}]"
+    )
+    counts = combined.loc[both.index, "group"].value_counts()
+    for group in ("both", "predicted only", "measured only", "neither"):
+        click.echo(f"  {group:>14}: {int(counts.get(group, 0)):,}")
 
 
 @main.command("export-web")

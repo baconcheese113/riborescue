@@ -143,6 +143,12 @@ atlas = """riborescue atlas results/psite/gse144140/readthrough_counts.tsv \
   --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv \
   --extensions results/psite/_reference/gencode.v50.primary_assembly.annotation/extensions.tsv \
   --out results/atlas/gse144140_native_stops.tsv"""
+atlas-predict = """riborescue atlas-predict \
+  --transcripts data/gencode/gencode.v50.transcripts.fa.gz \
+  --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv \
+  --training tests/fixtures/oracle/features_G418.tsv.gz \
+  --measured results/atlas/gse144140_native_stops.tsv \
+  --out results/atlas/gse144140_predicted.tsv"""
 readthrough = "bash scripts/run_readthrough.sh hek293t untreated both"
 select-lengths-gse144140 = "riborescue select-lengths gse144140 --frames results/psite/gse144140/frame_by_length.tsv --offsets results/psite/gse144140/psite_offsets.tsv --script-md5 results/psite/gse144140/script.md5 --out results/psite/gse144140/calibration.json"
 readthrough-gse144140 = { cmd = "bash scripts/run_readthrough.sh gse144140 dmso both", depends-on = ["select-lengths-gse144140"] }
