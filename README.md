@@ -53,12 +53,18 @@ workstation — and run only the variant chain, which fits comfortably:
 pixi run fetch clinvar_grch38 mane_annotation mane_transcripts mane_proteins   # dry-lab inputs only
 pixi run clinvar && pixi run contexts       # ClinVar nonsense variants, placed on MANE
 pixi run score && pixi run landscape        # the scored variant × therapy table
-pixi run site                               # → frontend/public/riborescue.json, then builds the app
+pixi run diseases                           # ClinVar conditions → MedGen/OMIM/Orphanet, for coverage
+pixi run site                               # → the two viewer JSONs, then builds the app
 pixi run app-dev                            # serve at http://localhost:3000
 ```
 
-The safety panel is the one part that needs the Ribo-seq atlas; add it with `pixi run
-export-web-safety` where `results/atlas/` exists, otherwise the app simply omits it.
+`site` writes both `riborescue.json` (the per-variant example the explorer and patient views read)
+and `riborescue_research.json` (the coverage aggregate the researcher dashboard reads), then builds
+the static bundle. The app has three views over that data: **/patient** searches an example subset
+and lays out each therapy as a card with evidence slots; **/researcher** draws the suppressor-tRNA
+coverage frontiers and per-disease coverage with their denominators; **/explorer** is the full
+per-variant table. The native-stop safety panel is the one part that needs the Ribo-seq atlas; add it
+with `pixi run export-web-safety` where `results/atlas/` exists, otherwise the app simply omits it.
 
 **Reproduce the published model** — refit it and check parity to the R oracle:
 
