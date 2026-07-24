@@ -59,7 +59,51 @@ function SafetyPanel({ safety }: { safety: SafetyAtlas }) {
 }
 
 const percent = (value: number | null) =>
-  value === null ? "—" : `${(value * 100).toFixed(2)}%`;
+  value === null ? "—" : `${(value * 100).toFixed(1)}%`;
+
+// Plain-language definitions for the terms the table now names precisely. Every entry says what the
+// number is and, where it matters, what it is not — a prediction, a rule stand-in, a coarse estimate.
+const GLOSSARY: Record<string, string> = {
+  "Highest-readthrough therapy":
+    "The therapy selected here has the highest predicted readthrough for this variant — that single number is the only ranking criterion. NMD, residue compatibility, and native-stop safety are shown but do not yet feed the choice, so this is not an integrated recommendation.",
+  "Predicted readthrough":
+    "The model's estimate of how often the ribosome reads through this premature stop under the therapy, with the lower bound of its uncertainty interval. A prediction, not a measured or clinical result.",
+  "Predicted NMD escape":
+    "Whether the transcript is predicted to escape nonsense-mediated decay and still be present to translate. This is a rule-based estimate — the 50-nucleotide last-exon-junction rule — not yet an ensemble prediction, and not an established fact for the transcript.",
+  "Residue compatibility":
+    "The share of amino acids that, inserted at this stop, are compatible with the residue the protein normally carries there. A coarse tolerance estimate, not a function prediction.",
+};
+
+// A focusable question-mark button that toggles a definition, not a hover bubble: it works by
+// keyboard and touch, and it stops its click from reaching the header's sort handler.
+function Header({ label, term }: { label: string; term: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="th-head">
+      {label}
+      <button
+        type="button"
+        className="info"
+        aria-label={`About ${term}`}
+        aria-expanded={open}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setOpen(false);
+        }}
+      >
+        ?
+      </button>
+      {open && (
+        <span className="info-pop" role="note" onClick={(e) => e.stopPropagation()}>
+          {GLOSSARY[term]}
+        </span>
+      )}
+    </span>
+  );
+}
 
 const column = createColumnHelper<Variant>();
 
@@ -146,23 +190,26 @@ export default function Page() {
       }),
       column.accessor("stop", { header: "Stop" }),
       column.accessor("residue", { header: "Residue" }),
-      column.accessor((v) => v.best?.therapy ?? "—", { id: "therapy", header: "Best therapy" }),
+      column.accessor((v) => v.best?.therapy ?? "—", {
+        id: "therapy",
+        header: () => <Header label="Highest-readthrough therapy" term="Highest-readthrough therapy" />,
+      }),
       column.accessor((v) => v.best?.readthrough ?? null, {
         id: "best",
-        header: "Readthrough",
+        header: () => <Header label="Predicted readthrough" term="Predicted readthrough" />,
         cell: (c) => {
           const best = c.row.original.best;
           if (!best) return <span style={{ color: "var(--faint)" }}>no therapy available</span>;
           return (
             <span>
               {percent(best.readthrough)}
-              <span style={{ color: "var(--faint)" }}> ≥ {percent(best.low)}</span>
+              <span style={{ color: "var(--faint)" }}> · lower bound {percent(best.low)}</span>
             </span>
           );
         },
       }),
       column.accessor("escapes_decay", {
-        header: "Escapes decay",
+        header: () => <Header label="Predicted NMD escape" term="Predicted NMD escape" />,
         cell: (c) => (
           <span className={`pill ${c.getValue() ? "good" : "bad"}`}>
             {c.getValue() ? "yes" : "no"}
@@ -170,7 +217,7 @@ export default function Page() {
         ),
       }),
       column.accessor("tolerable_insertion_share", {
-        header: "Tolerable",
+        header: () => <Header label="Residue compatibility" term="Residue compatibility" />,
         cell: (c) => percent(c.getValue()),
       }),
     ],
@@ -212,10 +259,11 @@ export default function Page() {
     <div className="wrap">
       <h1>Variant × therapy</h1>
       <p className="lede">
-        Each pathogenic nonsense variant and the readthrough therapy it looks most amenable to.
-        Predictions are the amenability model&apos;s; they are not a claim any therapy works.
-        This is a <b>{data.variants.length}-variant example</b> — type a gene to filter, click a row
-        to see every therapy&apos;s interval and the suppressor tRNA.
+        <b>Advanced data explorer.</b> One row per pathogenic nonsense variant and the therapy with
+        the highest predicted readthrough. Every number is a model prediction — not a claim any
+        therapy works, and not a clinical recommendation. This <b>{data.variants.length}-variant
+        slice</b> is for inspecting the data; type a gene to filter, click a row for every
+        therapy&apos;s interval and the suppressor tRNA.
       </p>
 
       <div className="banner">

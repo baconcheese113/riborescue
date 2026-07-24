@@ -331,3 +331,61 @@ td.num {
   border-top: 1px solid var(--edge);
   padding-top: 8px;
 }
+
+.th-head {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.info {
+  all: unset;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--faint);
+  border-radius: 50%;
+  color: var(--faint);
+  font-size: 9px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.info:hover,
+.info:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* The definition drops out of the header's uppercase, condensed styling back to plain running text. */
+.info-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  width: 260px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--dim);
+  white-space: normal;
+  cursor: default;
+}
+
+/* On a phone the banners stack instead of forcing a nowrap tag past the edge, and the frame gives
+   its horizontal room back to the content. The table keeps its own scroller. */
+@media (max-width: 640px) {
+  .wrap { padding: 20px 12px 60px; }
+  .banner { flex-direction: column; gap: 4px; }
+  .banner .tag { white-space: normal; }
+  h1 { font-size: 20px; }
+}
