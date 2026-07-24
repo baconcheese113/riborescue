@@ -8,6 +8,7 @@ import pandera.errors
 import pandera.pandas
 
 from riborescue._version import __version__
+from riborescue.atlas import native_stop_occupancy, translate_extension
 from riborescue.baseline import fit, relative_error_quantile
 from riborescue.calibration import read_manifest, select_lengths
 from riborescue.clinvar import pathogenic_nonsense
@@ -32,6 +33,7 @@ from riborescue.reads import (
     survey_adapters,
 )
 from riborescue.readthrough import (
+    PROGRAMMED_READTHROUGH,
     collapse_lengths,
     extension_windows,
     library_ratios,
@@ -242,6 +244,94 @@ def select_calibration_lengths(
             click.echo(f"       {failure}")
     if not manifest.passes:
         raise click.ClickException(f"{dataset} is inconclusive; its thresholds are not to be moved")
+
+
+@main.command("atlas")
+@click.argument("counts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--gtf", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--samplesheet",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The staged runs, naming each library's dataset and treatment.",
+)
+@click.option("--dataset", required=True, help="The experiment whose libraries the atlas measures.")
+@click.option(
+    "--control", required=True, help="The untreated arm a native stop should be tight in."
+)
+@click.option(
+    "--transcripts",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Transcript FASTA, to translate the peptide each readthrough would add.",
+)
+@click.option(
+    "--annotation",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The riboWaltz annotation table, for the native stop's position.",
+)
+@click.option(
+    "--extensions",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The extension windows, for how far each readthrough runs.",
+)
+@click.option("--lengths", default="28:35", show_default=True, help="Footprint lengths to pool.")
+@_OUT
+def atlas_command(
+    counts: Path,
+    gtf: Path,
+    samplesheet: Path,
+    dataset: str,
+    control: str,
+    transcripts: Path | None,
+    annotation: Path | None,
+    extensions: Path | None,
+    lengths: str,
+    out: Path,
+) -> None:
+    """Measure readthrough past every transcript's NATIVE stop, per treatment arm.
+
+    The empirical layer of the safety atlas: the same window that measured a drug's effect past
+    premature stops, read at the native stop of each transcript. It is an anchor, not ground truth —
+    it covers only what the cell line expressed at depth, and its per-transcript counts are small.
+    """
+
+    lo, hi = (int(part) for part in lengths.split(":"))
+    footprints = range(lo, hi + 1)
+
+    runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
+    library = runs.loc[
+        (runs["assay"] == "riboseq") & (runs["dataset"] == dataset),
+        ["sample", "treatment"],
+    ]
+    arms = {str(t): list(rows["sample"]) for t, rows in library.groupby("treatment")}
+    if control not in arms:
+        raise click.ClickException(f"{samplesheet} names no {control} arm for {dataset}")
+
+    genes = transcript_genes(gtf)
+    programmed = frozenset(genes.index[genes.isin(PROGRAMMED_READTHROUGH)])
+    excluded = overlapping_downstream_cds(gtf) | programmed
+
+    measured = read_table(counts)
+    table = native_stop_occupancy(measured, arms, footprints, excluded_transcripts=excluded)
+    table["gene"] = table["transcript"].map(genes)
+    table["control_occupancy"] = table[f"{control}_occupancy"]
+
+    if transcripts is not None and annotation is not None and extensions is not None:
+        peptides = translate_extension(transcripts, read_table(annotation), read_table(extensions))
+        table = table.merge(peptides, on="transcript", how="left")
+
+    write_table(table, out)
+    included = table[table["included"]]
+    tight = included[included["control_occupancy"] < 0.05]
+    click.echo(
+        f"{len(table):,} transcripts, {len(included):,} deep enough, "
+        f"{len(tight):,} with a native stop tight in {control}"
+    )
+    for arm in sorted(arms):
+        if arm == control:
+            continue
+        lift = (included[f"{arm}_occupancy"] - included["control_occupancy"]).mean()
+        click.echo(f"  {arm}: mean downstream occupancy {lift:+.4f} over {control}")
 
 
 @main.command("export-web")
