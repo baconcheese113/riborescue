@@ -66,19 +66,29 @@ def test_the_aggregate_carries_provenance_and_denominators():
     assert prov["commit"] == "abc1234"
     assert prov["qualifying_variants"] == 3
     assert prov["scoreable_variants"] == 2
-    assert prov["diseases"] == 2
+    assert prov["condition_entities"] == 2
 
 
 def test_all_three_frontiers_are_present():
     aggregate = build_research_aggregate(_diseases(), _contexts(), clinvar_release="r")
-    assert set(aggregate.frontiers) == {"variants", "genes", "diseases"}
+    assert set(aggregate.frontiers) == {"variants", "genes", "conditions"}
     assert aggregate.frontiers["variants"][0]["design_id"] == "UGA-R"
+
+
+def test_the_reach_denominator_is_spelled_out():
+    aggregate = build_research_aggregate(_diseases(), _contexts(), clinvar_release="r")
+    d = aggregate.reach_denominator
+    assert d["eligible_condition_entities"] == 2
+    assert d["unique_variant_condition_pairs"] == 3
+    assert d["reachable_entities"] == 1  # only C1 has a scoreable variant
 
 
 def test_the_top_list_is_bounded_and_ordered_by_denominator():
     aggregate = build_research_aggregate(_diseases(), _contexts(), clinvar_release="r", top=1)
-    assert len(aggregate.disease_coverage_top) == 1
-    assert aggregate.disease_coverage_top[0]["eligible_variants"] == 2
+    assert len(aggregate.condition_coverage_top) == 1
+    assert aggregate.condition_coverage_top[0]["eligible_variants"] == 2
+    assert "reach" in aggregate.condition_coverage_top[0]
+    assert "complete" in aggregate.condition_coverage_top[0]
 
 
 def test_the_json_is_strictly_valid_and_round_trips():
@@ -86,5 +96,5 @@ def test_the_json_is_strictly_valid_and_round_trips():
     text = aggregate.to_json()
     assert "NaN" not in text
     parsed = json.loads(text)
-    assert parsed["provenance"]["diseases"] == 2
+    assert parsed["provenance"]["condition_entities"] == 2
     assert "unmet_need" in parsed["caveats"]

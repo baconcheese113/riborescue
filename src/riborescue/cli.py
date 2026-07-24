@@ -664,7 +664,7 @@ def diseases(table: Path, out: Path) -> None:
     """Normalize each variant's ClinVar conditions to MedGen/OMIM/Orphanet identifiers.
 
     One row per variant-condition, keyed on MedGen. Placeholder and partially-mapped conditions are
-    kept and labelled rather than dropped, so a disease denominator excludes them deliberately.
+    kept and labelled rather than dropped, so a denominator excludes them deliberately.
     """
 
     variants = read_table(table)
@@ -676,7 +676,7 @@ def diseases(table: Path, out: Path) -> None:
     click.echo(
         f"{len(normalized)} variant-condition rows over "
         f"{variants['variant_id'].nunique()} variants; "
-        f"{real['medgen'].nunique()} distinct MedGen diseases"
+        f"{real['medgen'].nunique()} distinct MedGen condition entities (not all diseases)"
     )
     for status, count in normalized["mapping_status"].value_counts().items():
         click.echo(f"  {status:<12} {count}")
@@ -695,10 +695,11 @@ _CONTEXTS = click.option(
 @_CONTEXTS
 @_OUT
 def disease_coverage_cmd(table: Path, contexts: Path, out: Path) -> None:
-    """Per-disease model coverage over each disease's eligible nonsense-variant denominator.
+    """Per-condition-entity model coverage over each entity's eligible nonsense-variant denominator.
 
-    The fraction is model-covered over eligible; "reached by at least one design" is reported
-    separately as reach, never as the coverage number. Makes no claim about unmet therapeutic need.
+    A MedGen concept is a ClinVar condition — a disease, but possibly a finding or susceptibility —
+    so these are condition entities, not verified diseases. Three metrics are kept apart: reach, the
+    covered fraction, and complete coverage. Makes no claim about unmet therapeutic need.
     """
 
     coverage = disease_coverage(read_table(table), read_table(contexts))
@@ -706,16 +707,16 @@ def disease_coverage_cmd(table: Path, contexts: Path, out: Path) -> None:
     write_table(coverage, out)
 
     reached = int(coverage["reach"].sum())
-    fully = int((coverage["covered_fraction"] == 1.0).sum())
+    complete = int(coverage["complete"].sum())
     click.echo(
-        f"{len(coverage)} diseases; {reached} reached by at least one design, "
-        f"{fully} with every eligible variant model-covered"
+        f"{len(coverage)} condition entities (MedGen concepts, not all diseases); "
+        f"{reached} reached by ≥1 design, {complete} with every eligible variant covered"
     )
     head = coverage.head(5)
     for i in range(len(head)):
         row = head.iloc[i]
         click.echo(
-            f"  {str(row['disease_name'])[:40]:<40} "
+            f"  {str(row['condition_name'])[:40]:<40} "
             f"{int(row['model_covered']):>4}/{int(row['eligible_variants']):<4} "
             f"({row['covered_fraction'] * 100:>5.1f}%)"
         )
@@ -726,23 +727,40 @@ def disease_coverage_cmd(table: Path, contexts: Path, out: Path) -> None:
 @_CONTEXTS
 @_OUT
 def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
-    """Greedy panel reaching the most diseases — a disease with any model-covered variant.
+    """Greedy panel reaching the most condition entities — one with any model-covered variant.
 
-    This is the reach frontier, distinct from the per-disease coverage fraction: a design reaches a
-    disease when it restores at least one of its variants.
+    This is the reach frontier, distinct from the per-entity coverage fraction: a design reaches an
+    entity when it restores at least one of its variants. Reaching every entity is partly a closure
+    property of the design universe, not a therapeutic result.
     """
 
-    frontier = disease_reach_frontier(read_table(table), read_table(contexts))
+    diseases = read_table(table)
+    frontier = disease_reach_frontier(diseases, read_table(contexts))
     out.parent.mkdir(parents=True, exist_ok=True)
     write_table(frontier, out)
 
+    eligible = diseases[diseases["mapping_status"].isin(["mapped", "medgen_only"])]
+    entities = int(eligible["medgen"].nunique())
+    pairs = len(eligible)
+    excluded = int(len(diseases) - pairs)
     total = int(frontier["cumulative"].iloc[-1]) if len(frontier) else 0
-    click.echo(f"{len(frontier)} designs reach all {total} diseases with a model-covered variant")
+
+    click.echo(
+        f"{len(frontier)} designs reach every one of {total} condition entities represented by an "
+        f"exact-restorable ClinVar nonsense SNV"
+    )
+    click.echo(
+        f"  denominator: {entities} eligible condition entities over {pairs} unique "
+        f"variant-condition pairs; {excluded} placeholder/unmapped rows excluded, "
+        f"one-to-many deduplicated to distinct MedGen; {entities - total} entities have no "
+        f"restorable variant"
+    )
+    click.echo("  reaching all is partly a closure property of the design universe, not a result")
     for k in (1, 3, 5, 10):
         if k <= len(frontier):
             row = frontier.iloc[k - 1]
             click.echo(
-                f"  panel of {k:>2}: {int(row['cumulative']):>4} of {total} diseases "
+                f"  panel of {k:>2}: {int(row['cumulative']):>4} of {total} entities "
                 f"({row['cumulative_fraction'] * 100:>5.1f}%), "
                 f"+{int(row['marginal'])} from {row['design_id']}"
             )
@@ -784,9 +802,9 @@ def export_research(
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(aggregate.to_json())
     click.echo(
-        f"research aggregate: {aggregate.provenance['diseases']} diseases over "
+        f"research aggregate: {aggregate.provenance['condition_entities']} condition entities over "
         f"{aggregate.provenance['qualifying_variants']} variants, "
-        f"{len(aggregate.disease_coverage_top)} in the top list"
+        f"{len(aggregate.condition_coverage_top)} in the top list"
     )
 
 

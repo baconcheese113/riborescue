@@ -44,9 +44,15 @@ not a disease), `medgen_only` for a real concept with no OMIM or Orphanet cross-
 `mapped` for one that has at least one. None is dropped; the completeness of the crosswalk is itself
 reported data, not a filter applied out of sight.
 
+**Terminology: condition entity, not disease.** A MedGen concept reached this way is a ClinVar
+*condition*, which is not always a disease — the set includes findings, susceptibilities, and broad
+umbrella labels ("Hereditary cancer-predisposing syndrome", "Cardiovascular phenotype"). Counts and
+UI therefore say *condition entities*, and a headline never calls the 6,058 MedGen concepts
+"diseases" unless each has been verified as one, which they have not.
+
 ## Consequences
 
-Disease-level aggregation keys on MedGen, and its denominators (ADR to follow on coverage semantics)
+Condition-entity aggregation keys on MedGen, and its denominators (ADR-0016-style coverage semantics)
 are computed per MedGen concept over the non-placeholder rows. Provenance is exactly the ClinVar
 release already pinned — no licensed input, no second source to version, and the crosswalk cannot
 drift out of step with the variant set because both are read from one file.

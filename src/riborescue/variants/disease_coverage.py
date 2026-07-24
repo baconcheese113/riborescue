@@ -25,22 +25,25 @@ __all__ = [
     "disease_reach_frontier",
 ]
 
-# Conditions that carry a real MedGen concept and can key a disease; placeholders and the
-# no-MedGen rows are excluded here because they are not diseases (ADR-0015).
-_DISEASE_STATUS = ("mapped", "medgen_only")
+# Rows that carry a real MedGen concept and can key a condition entity; placeholders and the
+# no-MedGen rows are excluded because they name no entity (ADR-0015). A MedGen concept is a ClinVar
+# *condition* — a disease, but also possibly a finding, a susceptibility, or a broad label — so
+# the counts here are condition entities, not verified diseases.
+_ENTITY_STATUS = ("mapped", "medgen_only")
 
 _COVERAGE_COLUMNS = [
     "medgen",
-    "disease_name",
+    "condition_name",
     "omim",
     "orphanet",
     "eligible_variants",
     "model_covered",
     "covered_fraction",
+    "reach",
+    "complete",
     "genes",
     "designs_contributing",
     "designs",
-    "reach",
     "mapping_completeness",
 ]
 
@@ -61,14 +64,16 @@ def _designs(contexts: pd.DataFrame) -> pd.DataFrame:
 
 
 def disease_coverage(diseases: pd.DataFrame, contexts: pd.DataFrame) -> pd.DataFrame:
-    """Per-disease coverage with its eligible denominator, one row per MedGen concept.
+    """Per-condition-entity coverage with its eligible denominator, one row per MedGen concept.
 
     `diseases` is the normalized table (ADR-0015); `contexts` says which variants are scoreable and
-    at which stop and residue. Only real diseases are kept — placeholder and no-MedGen conditions
-    are not diseases. The fraction is model-covered over eligible, never a bare "reached" flag.
+    at which stop and residue. Only rows naming a real MedGen concept are kept — placeholder and
+    no-MedGen rows name no entity. Three distinct metrics ride together and are never conflated:
+    `reach` (at least one eligible variant covered), `covered_fraction` (the variant fraction:
+    covered over eligible), and `complete` (every eligible variant covered).
     """
 
-    keyed = diseases[diseases["mapping_status"].isin(_DISEASE_STATUS)].copy()
+    keyed = diseases[diseases["mapping_status"].isin(_ENTITY_STATUS)].copy()
     # A TSV round-trip reads empty cells back as NaN, and NaN is truthy — it would slip through the
     # "first non-empty" pick below and reach the JSON as a token no browser parses. Coerce it to "".
     for column in ("condition_name", "medgen", "omim", "orphanet"):
@@ -88,16 +93,17 @@ def disease_coverage(diseases: pd.DataFrame, contexts: pd.DataFrame) -> pd.DataF
         rows.append(
             {
                 "medgen": medgen,
-                "disease_name": names.iloc[0] if not names.empty else "",
+                "condition_name": names.iloc[0] if not names.empty else "",
                 "omim": omim,
                 "orphanet": orphanet,
                 "eligible_variants": eligible,
                 "model_covered": model_covered,
                 "covered_fraction": round(model_covered / eligible, 4) if eligible else 0.0,
+                "reach": bool(model_covered >= 1),
+                "complete": bool(eligible > 0 and model_covered == eligible),
                 "genes": group["gene_symbol"].nunique(),
                 "designs_contributing": len(designs),
                 "designs": ";".join(designs),
-                "reach": bool(model_covered >= 1),
                 "mapping_completeness": "mapped" if (omim or orphanet) else "medgen_only",
             }
         )
@@ -106,14 +112,16 @@ def disease_coverage(diseases: pd.DataFrame, contexts: pd.DataFrame) -> pd.DataF
 
 
 def disease_reach_frontier(diseases: pd.DataFrame, contexts: pd.DataFrame) -> pd.DataFrame:
-    """The greedy panel that *reaches* the most diseases — a disease with any covered variant.
+    """The greedy panel that *reaches* the most condition entities — one with any covered variant.
 
-    This is the reach frontier, and it is labelled that way: a design reaches a disease when it
-    restores at least one of the disease's variants. It answers "which designs touch the most
-    distinct diseases", not "which diseases are fully covered", and reuses the ADR-0014 engine.
+    This is the reach frontier, and it is labelled that way: a design reaches an entity when it
+    restores at least one of its variants. It answers "which designs touch the most distinct
+    condition entities", not "which are fully covered", and reuses the ADR-0014 engine. The panel
+    reaching every entity is partly a closure property of the design universe — every scoreable
+    variant defines a restoring design — not a therapeutic result.
     """
 
-    keyed = diseases[diseases["mapping_status"].isin(_DISEASE_STATUS)]
+    keyed = diseases[diseases["mapping_status"].isin(_ENTITY_STATUS)]
     scoreable = contexts[contexts["scoreable"].fillna(False).astype(bool)]
     reached = keyed.merge(_designs(scoreable), on="variant_id", how="inner")
 

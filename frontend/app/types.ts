@@ -65,14 +65,16 @@ export interface FrontierStep {
   marginal: number;
 }
 
-export interface DiseaseCoverage {
-  disease_name: string;
+export interface ConditionCoverage {
+  condition_name: string;
   medgen: string;
   omim: string;
   orphanet: string;
   eligible_variants: number;
   model_covered: number;
   covered_fraction: number;
+  reach: boolean;
+  complete: boolean;
   genes: number;
   designs_contributing: number;
   mapping_completeness: string;
@@ -84,14 +86,21 @@ export interface ResearchAggregate {
     commit: string;
     qualifying_variants: number;
     scoreable_variants: number;
-    diseases: number;
+    condition_entities: number;
   };
   mapping_completeness: Record<string, number>;
+  reach_denominator: {
+    eligible_condition_entities: number;
+    unique_variant_condition_pairs: number;
+    excluded_placeholder_or_unmapped_rows: number;
+    reachable_entities: number;
+    note: string;
+  };
   frontiers: {
     variants: FrontierStep[];
     genes: FrontierStep[];
-    diseases: FrontierStep[];
+    conditions: FrontierStep[];
   };
-  disease_coverage_top: DiseaseCoverage[];
+  condition_coverage_top: ConditionCoverage[];
   caveats: Record<string, string>;
 }

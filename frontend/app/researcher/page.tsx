@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { FrontierStep, ResearchAggregate } from "../types";
 
 // Validated categorical hues (blue / aqua / orange), assigned in fixed order to the three frontiers.
-const SERIES: { key: "variants" | "genes" | "diseases"; label: string; color: string }[] = [
+const SERIES: { key: "variants" | "genes" | "conditions"; label: string; color: string }[] = [
   { key: "variants", label: "Variants", color: "#2a78d6" },
   { key: "genes", label: "Genes", color: "#1baf7a" },
-  { key: "diseases", label: "Diseases (reach)", color: "#eb6834" },
+  { key: "conditions", label: "Conditions (reach)", color: "#eb6834" },
 ];
 
 const W = 360;
@@ -110,7 +110,7 @@ export default function ResearcherPage() {
       .catch((e) => setError(String(e?.message ?? e)));
   }, []);
 
-  const top = useMemo(() => data?.disease_coverage_top.slice(0, 25) ?? [], [data]);
+  const top = useMemo(() => data?.condition_coverage_top.slice(0, 25) ?? [], [data]);
 
   if (error)
     return (
@@ -129,13 +129,16 @@ export default function ResearcherPage() {
   if (!data) return <div className="wrap">Loading…</div>;
 
   const p = data.provenance;
+  const r = data.reach_denominator;
   return (
     <div className="wrap">
       <h1>Researcher</h1>
       <p className="lede">
         Where the suppressor-tRNA designs reach across the ClinVar nonsense-variant set, and how far
-        each disease&apos;s variants are covered. Coverage is exact restoration — a design decodes the
-        stop and reinserts the native residue — and is a prioritisation aid, <b>not a clinical claim</b>.
+        each condition&apos;s variants are covered. Coverage is exact restoration — a design decodes
+        the stop and reinserts the native residue — a prioritisation aid, <b>not a clinical claim</b>.
+        Entities are ClinVar <b>conditions</b> (MedGen concepts): diseases, but also findings and
+        broad labels, so they are counted as condition entities, not verified diseases.
       </p>
 
       <div className="prov">
@@ -143,15 +146,18 @@ export default function ResearcherPage() {
         <span>commit {p.commit || "—"}</span>
         <span>{p.qualifying_variants.toLocaleString()} qualifying variants</span>
         <span>{p.scoreable_variants.toLocaleString()} scoreable</span>
-        <span>{p.diseases.toLocaleString()} diseases</span>
+        <span>{p.condition_entities.toLocaleString()} condition entities</span>
       </div>
 
       <section className="panel">
         <h2>Coverage frontiers</h2>
         <p className="panel-note">
-          The fewest designs covering the most variants, genes, and — as a reach frontier — diseases.
-          A disease is reached when a design restores at least one of its variants; that is weaker
-          than covering all of it.
+          The fewest designs covering the most variants, genes, and — as a <b>reach</b> frontier —
+          condition entities. An entity is reached when a design restores at least one of its
+          variants; that is weaker than covering all of it. That {r.reachable_entities.toLocaleString()}{" "}
+          reachable entities (of {r.eligible_condition_entities.toLocaleString()} eligible, over{" "}
+          {r.unique_variant_condition_pairs.toLocaleString()} unique variant–condition pairs) are all
+          reached by the full panel is partly a closure property of the design universe, not a result.
         </p>
         <FrontierChart frontiers={data.frontiers} />
       </section>
@@ -159,40 +165,47 @@ export default function ResearcherPage() {
       <section className="panel">
         <h2>Cross-reference completeness</h2>
         <p className="panel-note">
-          How many variant-condition rows carry OMIM or Orphanet beyond MedGen. Completeness is
-          reported, not filtered — placeholder and MedGen-only rows are kept and shown.
+          How many variant-condition rows carry OMIM or Orphanet beyond MedGen — and these are
+          identifiers only, adding no prevalence or treatment status. Roughly a quarter of rows are
+          placeholder or unmapped, a material missingness for any condition-level reading; it is
+          reported, not filtered.
         </p>
         <CompletenessBars counts={data.mapping_completeness} />
       </section>
 
       <section className="panel">
-        <h2>Diseases by eligible variants</h2>
+        <h2>Conditions by eligible variants</h2>
         <p className="panel-note">
-          The largest diseases by their eligible nonsense-variant denominator, with the fraction
-          model-covered. Coverage is a fraction over that denominator, never a single reached flag.
+          The largest condition entities by eligible nonsense-variant denominator. Three metrics are
+          kept apart: <b>reach</b> (any variant covered), the <b>covered fraction</b> (covered over
+          eligible), and <b>complete</b> (every eligible variant covered).
         </p>
         <div className="scroller">
           <table>
             <thead>
               <tr>
-                <th>Disease</th>
+                <th>Condition entity</th>
                 <th>Covered</th>
                 <th>Fraction</th>
+                <th>Complete</th>
                 <th>Genes</th>
-                <th>Designs</th>
                 <th>Refs</th>
               </tr>
             </thead>
             <tbody>
               {top.map((d) => (
                 <tr key={d.medgen}>
-                  <td>{d.disease_name.replace(/_/g, " ")}</td>
+                  <td>{d.condition_name.replace(/_/g, " ")}</td>
                   <td className="num">
                     {d.model_covered.toLocaleString()} / {d.eligible_variants.toLocaleString()}
                   </td>
                   <td className="num">{(d.covered_fraction * 100).toFixed(1)}%</td>
+                  <td>
+                    <span className={`pill ${d.complete ? "good" : "muted"}`}>
+                      {d.complete ? "complete" : "partial"}
+                    </span>
+                  </td>
                   <td className="num">{d.genes}</td>
-                  <td className="num">{d.designs_contributing}</td>
                   <td>
                     <span className={`pill ${d.mapping_completeness === "mapped" ? "good" : "muted"}`}>
                       {d.mapping_completeness === "mapped" ? "OMIM/Orphanet" : "MedGen only"}
@@ -211,13 +224,13 @@ export default function ResearcherPage() {
           <a href="/riborescue_research.json" download>
             Download the aggregate JSON
           </a>{" "}
-          — frontiers, per-disease coverage, and provenance.
+          — frontiers, per-condition coverage, denominators, and provenance.
         </p>
         <div className="banner unavailable">
           <span className="tag">Planned</span>
           <p>
-            A therapy × disease heatmap needs a therapy-level disease join, and an NMD/function model
-            filter needs those layers built. They are deliberately absent rather than mocked.
+            A therapy × condition heatmap needs a therapy-level condition join, and an NMD/function
+            model filter needs those layers built. They are deliberately absent rather than mocked.
           </p>
         </div>
       </section>

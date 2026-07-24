@@ -44,6 +44,7 @@ def test_a_disease_fraction_is_covered_over_eligible_not_a_reached_flag():
     assert row["model_covered"] == 1
     assert row["covered_fraction"] == 0.5
     assert row["reach"]  # reached, but reach is not the coverage number
+    assert not row["complete"]  # and reach is not complete coverage either
 
 
 def test_placeholder_and_unmapped_conditions_are_not_diseases():
@@ -59,6 +60,7 @@ def test_designs_contributing_are_the_covering_designs():
     assert row["designs"] == "UAA-K;UGA-R"
     assert row["designs_contributing"] == 2
     assert row["genes"] == 2
+    assert row["complete"]  # both eligible variants covered
 
 
 def test_mapping_completeness_reflects_the_cross_references():
