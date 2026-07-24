@@ -68,7 +68,11 @@ def disease_coverage(diseases: pd.DataFrame, contexts: pd.DataFrame) -> pd.DataF
     are not diseases. The fraction is model-covered over eligible, never a bare "reached" flag.
     """
 
-    keyed = diseases[diseases["mapping_status"].isin(_DISEASE_STATUS)]
+    keyed = diseases[diseases["mapping_status"].isin(_DISEASE_STATUS)].copy()
+    # A TSV round-trip reads empty cells back as NaN, and NaN is truthy — it would slip through the
+    # "first non-empty" pick below and reach the JSON as a token no browser parses. Coerce it to "".
+    for column in ("condition_name", "medgen", "omim", "orphanet"):
+        keyed[column] = keyed[column].fillna("")
     merged = keyed.merge(_designs(contexts), on="variant_id", how="left")
     merged["covered"] = merged["covered"].fillna(False).astype(bool)
 

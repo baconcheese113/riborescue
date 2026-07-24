@@ -1,5 +1,6 @@
 """The riborescue command line — every scientific step the pipeline runs enters through here."""
 
+import subprocess
 from pathlib import Path
 
 import click
@@ -61,6 +62,7 @@ from riborescue.variants.evaluation import (
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
 from riborescue.variants.native_stops import concordance, four_quadrants, native_stop_features
 from riborescue.variants.panels import coverage_frontier
+from riborescue.variants.researchexport import build_research_aggregate
 from riborescue.variants.residue import coverage_by_design
 from riborescue.variants.transcripts import load_transcripts, read_sequences
 from riborescue.variants.triage import classify, classify_table
@@ -407,8 +409,16 @@ def atlas_predict(
     atlas = atlas[atlas["included"]].copy()
     atlas["measured_lift"] = atlas["g418_occupancy"] - atlas["control_occupancy"]
     combined = table.merge(
-        atlas[["transcript", "gene", "control_occupancy", "g418_occupancy", "g418_depth",
-               "measured_lift"]],
+        atlas[
+            [
+                "transcript",
+                "gene",
+                "control_occupancy",
+                "g418_occupancy",
+                "g418_depth",
+                "measured_lift",
+            ]
+        ],
         on="transcript",
         how="left",
     )
@@ -736,6 +746,48 @@ def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
                 f"({row['cumulative_fraction'] * 100:>5.1f}%), "
                 f"+{int(row['marginal'])} from {row['design_id']}"
             )
+
+
+@main.command("export-research")
+@_IN
+@_CONTEXTS
+@click.option(
+    "--clinvar-release", required=True, help="ClinVar release id for provenance, e.g. 20260715."
+)
+@click.option(
+    "--commit", default="", help="Commit SHA for provenance; read from git HEAD if omitted."
+)
+@_OUT
+def export_research(
+    table: Path, contexts: Path, clinvar_release: str, commit: str, out: Path
+) -> None:
+    """Build the researcher dashboard aggregate: coverage frontiers and per-disease coverage.
+
+    Reads the normalized disease table and the contexts table; writes one small JSON of aggregates,
+    never per-variant rows, so the dashboard ships without loading the variant set.
+    """
+
+    if not commit:
+        try:
+            commit = subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            commit = ""
+
+    aggregate = build_research_aggregate(
+        read_table(table), read_table(contexts), clinvar_release=clinvar_release, commit=commit
+    )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(aggregate.to_json())
+    click.echo(
+        f"research aggregate: {aggregate.provenance['diseases']} diseases over "
+        f"{aggregate.provenance['qualifying_variants']} variants, "
+        f"{len(aggregate.disease_coverage_top)} in the top list"
+    )
 
 
 @main.command("contexts")
