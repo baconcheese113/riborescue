@@ -36,6 +36,7 @@ from riborescue.riboseq.readthrough import (
     collapse_lengths,
     extension_windows,
     library_ratios,
+    mane_select_transcripts,
     overlapping_downstream_cds,
     paired_effect,
     qualifying,
@@ -360,27 +361,36 @@ def atlas_command(
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help="The empirical atlas table, for the measured occupancy to compare against.",
 )
+@click.option(
+    "--gtf",
+    required=True,
+    type=click.Path(exists=True, path_type=Path),
+    help="The GENCODE annotation, to pick the MANE Select transcript per gene.",
+)
 @_OUT
 def atlas_predict(
-    transcripts: Path, annotation: Path, training: Path, measured: Path, out: Path
+    transcripts: Path, annotation: Path, training: Path, measured: Path, gtf: Path, out: Path
 ) -> None:
     """Score every canonical stop with the model, and rank-compare it to the measured occupancy.
 
-    The predicted layer of the safety atlas, and an extrapolation: the model was fit on premature
-    stops, so a canonical stop is out of its distribution. The prediction is kept in its own column
-    and never blended with the measurement — the two are compared only by rank, to ask whether the
-    model orders native stops the way the ribosomes do.
+    The predicted layer of the safety atlas, and an extrapolation by design: the model was fit on
+    premature stops, so applying it to a canonical stop is out of distribution even where the stop's
+    own feature levels were seen in training. The prediction is kept in its own column and never
+    blended with the measurement. A prediction row is one GENCODE coding transcript; the concordance
+    is computed only over MANE Select transcripts, one canonical stop per gene, so a gene's isoforms
+    do not pseudo-replicate a shared context.
     """
 
     features = native_stop_features(transcripts, read_table(annotation)).set_index("transcript")
     model = fit(read_table(training))
-    known = model.known_levels(features)
-    predicted = model.predict(features[known])
+    supported = model.known_levels(features)
+    predicted = model.predict(features[supported])
 
     table = pd.DataFrame(
         {
             "predicted_g418": predicted.reindex(features.index),
-            "model_support": ["in_distribution" if k else "unseen_context" for k in known],
+            "application_domain": "native_stop_extrapolation",
+            "feature_support": ["supported" if k else "unsupported" for k in supported],
         },
         index=features.index,
     ).reset_index()
@@ -395,30 +405,37 @@ def atlas_predict(
         how="left",
     )
     combined["measurable"] = combined["measured_lift"].notna()
+    combined["mane_select"] = combined["transcript"].isin(mane_select_transcripts(gtf))
 
-    both = combined.dropna(subset=["predicted_g418", "measured_lift"])
-    stats = concordance(both["predicted_g418"], both["measured_lift"])
-    cut_p = float(both["predicted_g418"].quantile(0.75)) if len(both) else 0.0
+    # One canonical stop per gene: isoforms sharing a stop context must not each count as evidence.
+    primary = combined[combined["mane_select"]].dropna(subset=["predicted_g418", "measured_lift"])
+    stats = concordance(primary["predicted_g418"], primary["measured_lift"])
+
+    # Thresholds are chosen here, after the fact, so the four groups describe the data rather than
+    # classify against a pre-registered line: the predicted cut is the upper quartile, the measured
+    # cut a five-point occupancy lift.
+    cut_p = float(primary["predicted_g418"].quantile(0.75)) if len(primary) else 0.0
     cut_m = 0.05
     combined["group"] = ""
-    combined.loc[both.index, "group"] = four_quadrants(
-        both["predicted_g418"], both["measured_lift"], cut_p, cut_m
+    combined.loc[primary.index, "group"] = four_quadrants(
+        primary["predicted_g418"], primary["measured_lift"], cut_p, cut_m
     )
 
     out.parent.mkdir(parents=True, exist_ok=True)
     write_table(combined, out)
 
     click.echo(
-        f"{len(table):,} canonical stops scored "
-        f"({int(known.sum()):,} in-distribution, {int((~known).sum()):,} unseen contexts)"
+        f"{len(table):,} canonical stops scored, one per GENCODE coding transcript "
+        f"({int(supported.sum()):,} feature-supported, {int((~supported).sum()):,} unsupported)"
     )
     click.echo(
-        f"rank concordance with measured occupancy over {stats['n']:,} shared stops: "
+        f"rank concordance over {stats['n']:,} MANE Select stops (one per gene): "
         f"Spearman {stats['rho']} [{stats['low']}, {stats['high']}]"
     )
-    counts = combined.loc[both.index, "group"].value_counts()
+    click.echo(f"  four groups at predicted≥{cut_p:.3f}, measured lift≥{cut_m:.2f} (descriptive):")
+    counts = combined.loc[primary.index, "group"].value_counts()
     for group in ("both", "predicted only", "measured only", "neither"):
-        click.echo(f"  {group:>14}: {int(counts.get(group, 0)):,}")
+        click.echo(f"    {group:>14}: {int(counts.get(group, 0)):,}")
 
 
 @main.command("export-web")

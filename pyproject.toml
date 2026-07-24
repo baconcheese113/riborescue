@@ -148,6 +148,7 @@ atlas-predict = """riborescue atlas-predict \
   --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv \
   --training tests/fixtures/oracle/features_G418.tsv.gz \
   --measured results/atlas/gse144140_native_stops.tsv \
+  --gtf data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
   --out results/atlas/gse144140_predicted.tsv"""
 readthrough = "bash scripts/run_readthrough.sh hek293t untreated both"
 select-lengths-gse144140 = "riborescue select-lengths gse144140 --frames results/psite/gse144140/frame_by_length.tsv --offsets results/psite/gse144140/psite_offsets.tsv --script-md5 results/psite/gse144140/script.md5 --out results/psite/gse144140/calibration.json"

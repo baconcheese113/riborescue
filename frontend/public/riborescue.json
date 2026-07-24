@@ -1,9 +1,9 @@
 {
   "status": {
-    "readthrough_control": "inconclusive",
-    "readthrough_detail": "The G418 positive control returned an incomplete signature on the libraries that shaped the rule. Confirmation on GSE144140 is pending, so a low readthrough score is not yet evidence a therapy will not work.",
-    "safety_atlas": "unavailable",
-    "safety_detail": "The native-stop safety atlas is not built, so no page here says whether a therapy reads through normal stop codons elsewhere in the genome."
+    "readthrough_control": "passed for G418, within one laboratory",
+    "readthrough_detail": "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it in the stalling direction \u2014 so the assay detects canonical G418 readthrough. This is confirmation within one laboratory and protocol family, not independent replication, and it does not license a null about a therapy of different data quality, modality or context.",
+    "safety_atlas": "G418 only, in HEK293T",
+    "safety_detail": "Native-stop occupancy is measured for G418 in HEK293T cells only; the other therapies have no matched empirical safety atlas. It is downstream occupancy past normal stops, not protein production, toxicity, or a result in any other tissue."
   },
   "therapies": [
     "CC90009",

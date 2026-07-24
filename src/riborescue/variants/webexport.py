@@ -3,8 +3,8 @@
 One row per variant, carrying the best therapy and every therapy's interval, whether the transcript
 is expected to escape decay, whether most insertions at the site are tolerated, and which suppressor
 tRNA would restore the original residue exactly. The gate statuses ride along at the top, because a
-reader has to know that the readthrough control is unconfirmed and the safety atlas is not built
-before trusting a number on the page.
+reader has to know what the readthrough control and the safety atlas do and do not cover before
+trusting a number on the page.
 
 This is the boundary the frontend depends on. It is small and JSON so the app ships as static files
 and never touches a BAM, and it is produced here rather than in the app so the schema has one owner.
@@ -39,16 +39,18 @@ _ARM_COLUMNS = {
 class GateStatus:
     """What the reader must know before trusting a number: which claims are still unbacked."""
 
-    readthrough_control: str = "inconclusive"
+    readthrough_control: str = "passed for G418, within one laboratory"
     readthrough_detail: str = (
-        "The G418 positive control returned an incomplete signature on the libraries that shaped "
-        "the rule. Confirmation on GSE144140 is pending, so a low readthrough score is not yet "
-        "evidence a therapy will not work."
+        "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it "
+        "in the stalling direction — so the assay detects canonical G418 readthrough. This is "
+        "confirmation within one laboratory and protocol family, not independent replication, and "
+        "it does not license a null about a therapy of different data quality, modality or context."
     )
-    safety_atlas: str = "unavailable"
+    safety_atlas: str = "G418 only, in HEK293T"
     safety_detail: str = (
-        "The native-stop safety atlas is not built, so no page here says whether a therapy reads "
-        "through normal stop codons elsewhere in the genome."
+        "Native-stop occupancy is measured for G418 in HEK293T cells only; the other therapies "
+        "have no matched empirical safety atlas. It is downstream occupancy past normal stops, not "
+        "protein production, toxicity, or a result in any other tissue."
     )
 
 

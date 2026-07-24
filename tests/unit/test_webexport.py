@@ -85,8 +85,8 @@ def _amenability() -> pd.DataFrame:
 
 def test_the_payload_carries_the_gate_statuses():
     table = build_web_table(_landscape(), _amenability())
-    assert table.status["readthrough_control"] == "inconclusive"
-    assert table.status["safety_atlas"] == "unavailable"
+    assert "G418" in table.status["readthrough_control"]
+    assert "HEK293T" in table.status["safety_atlas"]
 
 
 def test_a_variant_carries_every_therapy_and_its_interval():

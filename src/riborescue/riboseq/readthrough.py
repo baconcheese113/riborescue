@@ -171,6 +171,24 @@ def transcript_genes(gtf: Path) -> pd.Series:
     return pd.Series(found, name="gene_name")
 
 
+def mane_select_transcripts(gtf: Path) -> frozenset[str]:
+    """The one MANE Select transcript per gene — the canonical stop, without its isoforms.
+
+    A gene contributes many isoforms, and counting each as an independent native stop would
+    pseudo-replicate a shared context in any correlation. MANE Select names the single canonical
+    transcript per protein-coding gene, so restricting to it gives one stop per gene.
+    """
+
+    selected: set[str] = set()
+    for field in _features(gtf, frozenset({"transcript"})):
+        if 'tag "MANE_Select"' not in field[8]:
+            continue
+        transcript = _TRANSCRIPT_ID.search(field[8])
+        if transcript:
+            selected.add(transcript.group(1))
+    return frozenset(selected)
+
+
 def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
     """Transcripts whose 3' untranslated region runs into another gene's coding sequence.
 
