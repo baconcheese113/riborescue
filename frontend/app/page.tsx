@@ -117,6 +117,7 @@ function TherapyBars({ variant }: { variant: Variant }) {
 
 export default function Page() {
   const [data, setData] = useState<WebTable | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "best", desc: true },
   ]);
@@ -125,10 +126,15 @@ export default function Page() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("riborescue.json")
-      .then((r) => r.json())
+    // Same-origin file written by `riborescue export-web`. A leading slash so it resolves from the
+    // site root whatever route the viewer is on.
+    fetch("/riborescue.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(`riborescue.json returned ${r.status}`);
+        return r.json();
+      })
       .then(setData)
-      .catch(() => setData({ status: {}, therapies: [], variants: [] } as unknown as WebTable));
+      .catch((e) => setError(String(e?.message ?? e)));
   }, []);
 
   const columns = useMemo(
@@ -186,6 +192,19 @@ export default function Page() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  if (error)
+    return (
+      <div className="wrap">
+        <h1>Variant × therapy</h1>
+        <div className="banner" style={{ borderLeftColor: "var(--bad)" }}>
+          <span className="tag" style={{ color: "var(--bad)" }}>Could not load data</span>
+          <p>
+            {error}. Generate it with <code>pixi run export-web-example</code>, which writes{" "}
+            <code>frontend/public/riborescue.json</code>, then reload.
+          </p>
+        </div>
+      </div>
+    );
   if (!data) return <div className="wrap">Loading…</div>;
 
   return (
@@ -194,6 +213,8 @@ export default function Page() {
       <p className="lede">
         Each pathogenic nonsense variant and the readthrough therapy it looks most amenable to.
         Predictions are the amenability model&apos;s; they are not a claim any therapy works.
+        This is a <b>{data.variants.length}-variant example</b> — type a gene to filter, click a row
+        to see every therapy&apos;s interval and the suppressor tRNA.
       </p>
 
       <div className="banner">
