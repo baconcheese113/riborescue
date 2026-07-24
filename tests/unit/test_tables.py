@@ -74,6 +74,11 @@ def test_a_variant_table_survives_a_write_and_read(tmp_path: Path):
             "review_status": ["practice_guideline"] * 3,
             "review_stars": [4, 4, 4],
             "conditions": ["Cystic_fibrosis", "MPS_I", "Muscular_dystrophy"],
+            "condition_xrefs": [
+                "MedGen:C0010674,OMIM:219700,Orphanet:586",
+                "MedGen:C0026705,OMIM:607014,Orphanet:579",
+                "MedGen:C0026850",
+            ],
         }
     )
     written = tmp_path / "variants.tsv"

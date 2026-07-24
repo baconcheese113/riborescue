@@ -49,6 +49,7 @@ from riborescue.riboseq.sequencing import FASTQ_SUBDIR, stage
 from riborescue.variants.baseline import fit, relative_error_quantile
 from riborescue.variants.clinvar import pathogenic_nonsense
 from riborescue.variants.context import contexts_for, disagreements_with_protein
+from riborescue.variants.diseases import normalize_conditions
 from riborescue.variants.evaluation import (
     SEED,
     UnsupportedEvalConfigError,
@@ -643,6 +644,31 @@ def clinvar_variants(vcf: Path, out: Path) -> None:
     )
     if found.ambiguous_alleles:
         click.echo(f"excluded {found.ambiguous_alleles} with an ambiguous alternate allele")
+
+
+@main.command("diseases")
+@_IN
+@_OUT
+def diseases(table: Path, out: Path) -> None:
+    """Normalize each variant's ClinVar conditions to MedGen/OMIM/Orphanet identifiers.
+
+    One row per variant-condition, keyed on MedGen. Placeholder and partially-mapped conditions are
+    kept and labelled rather than dropped, so a disease denominator excludes them deliberately.
+    """
+
+    variants = read_table(table)
+    normalized = normalize_conditions(variants)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(normalized, out)
+
+    real = normalized[~normalized["mapping_status"].isin(["placeholder", "unmapped"])]
+    click.echo(
+        f"{len(normalized)} variant-condition rows over "
+        f"{variants['variant_id'].nunique()} variants; "
+        f"{real['medgen'].nunique()} distinct MedGen diseases"
+    )
+    for status, count in normalized["mapping_status"].value_counts().items():
+        click.echo(f"  {status:<12} {count}")
 
 
 @main.command("contexts")

@@ -92,6 +92,7 @@ def _records(path: Path) -> Iterator[dict[str, object]]:
             "review_status": review,
             "review_stars": REVIEW_STARS.get(review, 0),
             "conditions": str(info.get("CLNDN", "")),
+            "condition_xrefs": str(info.get("CLNDISDB", "")),
         }
 
 

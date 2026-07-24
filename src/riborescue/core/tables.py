@@ -71,6 +71,7 @@ class PathogenicNonsense(_Strict):
     review_status: Series[str]
     review_stars: Series[int] = pa.Field(ge=0, le=4)
     conditions: Series[str]
+    condition_xrefs: Series[str]
 
 
 class TriageInput(_Strict):
