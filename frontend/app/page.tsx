@@ -146,19 +146,20 @@ export default function Page() {
       }),
       column.accessor("stop", { header: "Stop" }),
       column.accessor("residue", { header: "Residue" }),
-      column.accessor((v) => v.best.therapy, { id: "therapy", header: "Best therapy" }),
-      column.accessor((v) => v.best.readthrough, {
+      column.accessor((v) => v.best?.therapy ?? "—", { id: "therapy", header: "Best therapy" }),
+      column.accessor((v) => v.best?.readthrough ?? null, {
         id: "best",
         header: "Readthrough",
-        cell: (c) => (
-          <span>
-            {percent(c.getValue())}
-            <span style={{ color: "var(--faint)" }}>
-              {" "}
-              ≥ {percent(c.row.original.best.low)}
+        cell: (c) => {
+          const best = c.row.original.best;
+          if (!best) return <span style={{ color: "var(--faint)" }}>no therapy available</span>;
+          return (
+            <span>
+              {percent(best.readthrough)}
+              <span style={{ color: "var(--faint)" }}> ≥ {percent(best.low)}</span>
             </span>
-          </span>
-        ),
+          );
+        },
       }),
       column.accessor("escapes_decay", {
         header: "Escapes decay",

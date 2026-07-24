@@ -39,7 +39,7 @@
       "SJ6986": "no matched empirical safety atlas",
       "SRI": "no matched empirical safety atlas"
     },
-    "caveat": "Downstream occupancy past normal stops \u2014 not protein production, toxicity, or a result in any other tissue or therapy."
+    "caveat": "Downstream occupancy past normal stops, not protein production, toxicity, or a result in any other tissue or therapy."
   },
   "variants": [
     {
@@ -2259,11 +2259,7 @@
       "review_stars": 2,
       "escapes_decay": true,
       "tolerable_insertion_share": 0.167,
-      "best": {
-        "therapy": NaN,
-        "readthrough": NaN,
-        "low": NaN
-      },
+      "best": null,
       "therapies": [
         {
           "id": "CC90009",
@@ -2466,11 +2462,7 @@
       "review_stars": 1,
       "escapes_decay": true,
       "tolerable_insertion_share": 0.286,
-      "best": {
-        "therapy": NaN,
-        "readthrough": NaN,
-        "low": NaN
-      },
+      "best": null,
       "therapies": [
         {
           "id": "CC90009",

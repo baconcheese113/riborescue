@@ -24,7 +24,7 @@ export interface Variant {
   review_stars: number | null;
   escapes_decay: boolean;
   tolerable_insertion_share: number;
-  best: { therapy: string; readthrough: number; low: number };
+  best: { therapy: string; readthrough: number; low: number } | null;
   therapies: Therapy[];
   suppressor: Suppressor | null;
 }

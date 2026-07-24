@@ -105,6 +105,8 @@ class WebTable:
     safety: dict | None = None
 
     def to_json(self) -> str:
+        # allow_nan=False turns a stray NaN or Infinity into an error here rather than the tokens
+        # NaN/Infinity, which are not JSON and make the browser's parser reject the whole file.
         return json.dumps(
             {
                 "status": self.status,
@@ -113,6 +115,7 @@ class WebTable:
                 "variants": self.variants,
             },
             indent=2,
+            allow_nan=False,
         )
 
 
@@ -170,6 +173,18 @@ def build_web_table(
                 }
             )
         position = row["protein_position"]
+        # A variant whose every therapy is unavailable has no best — the landscape leaves it NaN.
+        # That must reach the page as null, not as the token NaN, which is not JSON and stops the
+        # browser's parser dead on the whole file.
+        best = (
+            None
+            if pd.isna(row["best_readthrough"])
+            else {
+                "therapy": row["best_therapy"],
+                "readthrough": round(float(row["best_readthrough"]), 5),
+                "low": round(float(row["best_readthrough_low"]), 5),
+            }
+        )
         variants.append(
             {
                 "id": row["variant_id"],
@@ -180,11 +195,7 @@ def build_web_table(
                 "review_stars": None if pd.isna(row["review_stars"]) else int(row["review_stars"]),
                 "escapes_decay": bool(row["escapes_decay_by_rule"]),
                 "tolerable_insertion_share": round(float(row["tolerable_insertion_share"]), 3),
-                "best": {
-                    "therapy": row["best_therapy"],
-                    "readthrough": round(float(row["best_readthrough"]), 5),
-                    "low": round(float(row["best_readthrough_low"]), 5),
-                },
+                "best": best,
                 "therapies": offered,
                 "suppressor": _suppressor(str(row["stop_type"]), str(row["original_aa"])),
             }

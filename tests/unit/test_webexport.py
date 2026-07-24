@@ -153,3 +153,30 @@ def test_safety_summary_reports_the_measured_layer_and_its_reach():
     assert summary["per_therapy"]["G418"].startswith("native-stop occupancy measured")
     assert summary["per_therapy"]["Clitocine"] == "no matched empirical safety atlas"
     assert "toxicity" in summary["caveat"]
+
+
+def test_a_variant_with_no_available_therapy_has_null_best_not_nan():
+    """NaN is not JSON; a browser's parser rejects the whole file on it."""
+
+    landscape = pd.DataFrame(
+        [{
+            "variant_id": "V0", "gene_symbol": "STAMBP", "protein_position": 424,
+            "stop_type": "uga", "original_aa": "R", "review_stars": 2,
+            "escapes_decay_by_rule": True, "nt_to_last_junction": -10,
+            "best_therapy": float("nan"), "best_readthrough": float("nan"),
+            "best_readthrough_low": float("nan"), "tolerable_insertion_share": 0.167,
+        }]
+    )
+    amenability = pd.DataFrame(
+        [{
+            "variant_id": "V0", "therapy_id": "G418", "readthrough_predicted": None,
+            "readthrough_low": None, "readthrough_high": None, "status": "missing",
+            "reason": "not_available",
+        }]
+    )
+    table = build_web_table(landscape, amenability)
+    assert table.variants[0]["best"] is None
+    # to_json must not raise and must not contain the NaN token
+    text = table.to_json()
+    assert "NaN" not in text
+    assert json.loads(text)["variants"][0]["best"] is None
