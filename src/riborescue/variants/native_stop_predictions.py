@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from riborescue.riboseq.readthrough_assay import _sequences
+from riborescue.riboseq.readthrough_assay import gencode_sequences
 
 __all__ = [
     "concordance",
@@ -42,7 +42,7 @@ def native_stop_features(transcripts: Path, annotation: pd.DataFrame) -> pd.Data
     fitted model can score them unchanged.
     """
 
-    sequences = _sequences(transcripts)
+    sequences = gencode_sequences(transcripts)
     coding = annotation.loc[annotation["l_cds"] >= 6]
     rows = []
     for transcript, utr5, cds in zip(

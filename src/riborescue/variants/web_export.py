@@ -50,6 +50,7 @@ def therapy_name(therapy_id: str) -> str:
 
     return THERAPY_NAMES.get(therapy_id, therapy_id)
 
+
 # The interval each available therapy carries, keyed by the name it takes in the payload.
 _ARM_COLUMNS = {
     "readthrough": "readthrough_predicted",

@@ -257,6 +257,9 @@ readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp
 # effect its design could have resolved, and what would have to change to resolve a smaller one
 # (ADR-0019). Exploratory, written where no production task reads.
 detectability-fibroblast = "bash scripts/run_detectability.sh gse179274_fibroblast suptrna_tyr egfp g418_0.1:untreated g418_0.5:untreated"
+# The kinetic layer's input (ADR-0020). Vehicle libraries only, both sites and both length windows,
+# and the command refuses a treated library rather than skipping it.
+codon-occupancy = "bash scripts/run_codon_occupancy.sh gse144140 dmso"
 disk = "bash scripts/require_disk.sh 200"
 prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv", depends-on = ["disk"] }
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }

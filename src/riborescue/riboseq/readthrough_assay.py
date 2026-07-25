@@ -33,6 +33,7 @@ __all__ = [
     "PairedEffect",
     "UnpairedEffect",
     "collapse_lengths",
+    "gencode_sequences",
     "library_ratios",
     "overlapping_downstream_cds",
     "paired_effect",
@@ -85,7 +86,7 @@ PROGRAMMED_READTHROUGH = frozenset(
 STOP_CODONS = frozenset({"TAA", "TAG", "TGA"})
 
 
-def _sequences(transcripts: Path) -> dict[str, str]:
+def gencode_sequences(transcripts: Path) -> dict[str, str]:
     """Transcript sequences keyed by accession, from a GENCODE FASTA."""
 
     found: dict[str, str] = {}
@@ -132,7 +133,7 @@ def extension_windows(transcripts: Path, annotation: pd.DataFrame) -> pd.DataFra
     turns the whole build from quadratic into a single pass.
     """
 
-    sequences = _sequences(transcripts)
+    sequences = gencode_sequences(transcripts)
     coding = annotation.loc[annotation["l_cds"] > 0]
     rows: list[tuple[str, int | None]] = []
     for transcript, utr5, cds in zip(

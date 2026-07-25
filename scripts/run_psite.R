@@ -63,6 +63,7 @@ if (options$combine) {
   fwrite(gather("metaprofile"), file.path(options$outdir, "metaprofile.tsv"), sep = "\t")
   fwrite(gather("readthrough"), file.path(options$outdir, "readthrough_counts.tsv"), sep = "\t")
 
+
   frame_cds <- frames[, .(n = sum(n)), by = .(sample, frame)]
   frame_cds[, fraction := n / sum(n), by = sample]
   fwrite(frame_cds, file.path(options$outdir, "frame_cds.tsv"), sep = "\t")
@@ -213,6 +214,23 @@ readthrough <- readthrough[cds_total > 0 | termination > 0 |
                              extension_frame0 > 0 | extension_frame1 > 0 | extension_frame2 > 0]
 readthrough[, sample := options$sample]
 write_part(readthrough, "readthrough", options$sample)
+
+# Codon occupancy, per ADR-0020. In-frame P-sites over the coding sequence, counted per codon of each
+# transcript. An out-of-frame read is not reporting a codon, so it takes no part.
+#
+# Nothing else is decided here. The index is the P-site codon; the A site the features are built from
+# is one codon 3' of it, the internal-CDS window belongs to whichever site is being scored, and which
+# codon sits at an index needs the transcript sequence. All of that is computed from this table in
+# Python, where it is tested, and exporting the window instead would bake one site's choice into the
+# only pass over the alignment.
+#
+# Stratified by footprint length for the reason the readthrough counts are: the selected set is not
+# known when this runs, and ADR-0020 declares both it and the 28-35 nt window, so both come out of one
+# read of each BAM as a subset sum.
+codons <- sample_reads[psite_region == "cds" & psite_from_start %% 3L == 0L,
+                       .(sample = options$sample, n = .N),
+                       by = .(transcript, length, codon_index = psite_from_start %/% 3L)]
+write_part(codons, "codon", options$sample)
 
 # An internal consistency check, not held-out validation: it re-scores the same reads the offset was
 # inferred from. A resolved offset should still beat its immediate neighbours on coding-frame

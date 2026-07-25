@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from riborescue.riboseq.readthrough_assay import _sequences
+from riborescue.riboseq.readthrough_assay import gencode_sequences
 
 __all__ = [
     "AMINO_ACIDS",
@@ -164,7 +164,7 @@ def translate_extension(
     what it is, is a novel C-terminal tail whose own sequence is the thing worth reading.
     """
 
-    sequences = _sequences(transcripts)
+    sequences = gencode_sequences(transcripts)
     windows = extensions.dropna(subset=["extension"]).set_index("transcript")["extension"].to_dict()
     coords = annotation.set_index("transcript")[["l_utr5", "l_cds"]].to_dict("index")
 

@@ -24,6 +24,12 @@ from riborescue.core.tables import (
     write_table,
 )
 from riborescue.riboseq.calibration import load_manifest, read_manifest, select_lengths
+from riborescue.riboseq.codon_occupancy import (
+    SITE_SHIFT,
+    aggregate_libraries,
+    library_table,
+    transcript_codons,
+)
 from riborescue.riboseq.contaminants import write_contaminants
 from riborescue.riboseq.detectability import (
     CONFIDENCE,
@@ -54,6 +60,7 @@ from riborescue.riboseq.readthrough_assay import (
     PROGRAMMED_READTHROUGH,
     collapse_lengths,
     extension_windows,
+    gencode_sequences,
     library_ratios,
     mane_select_transcripts,
     overlapping_downstream_cds,
@@ -1388,6 +1395,141 @@ def readthrough_assay(
     click.echo(f"  {'signature':>22}: {'complete' if all(met.values()) else 'incomplete'}")
     if stalling(effects):
         click.echo(f"  {'stalling':>22}: yes — raised at the stop, not beyond it")
+
+
+@main.command("codon-occupancy")
+@click.argument(
+    "counts", nargs=-1, required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
+@click.option(
+    "--annotation",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The reference annotation table, for each transcript's untranslated and coding lengths.",
+)
+@click.option(
+    "--transcripts",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Transcript FASTA, for which codon sits at each position.",
+)
+@click.option("--dataset", required=True, help="The experiment these libraries belong to.")
+@click.option(
+    "--manifest",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The calibration manifest. Refused when it records a failure.",
+)
+@click.option(
+    "--samplesheet",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The staged runs, naming each library's treatment.",
+)
+@click.option(
+    "--control-arm",
+    required=True,
+    help="The vehicle or untreated arm. A library outside it is refused, not skipped.",
+)
+@click.option(
+    "--site",
+    type=click.Choice(sorted(SITE_SHIFT)),
+    default="a",
+    show_default=True,
+    help="Which ribosomal site the codon is scored in. The A site is the one being decoded.",
+)
+@click.option(
+    "--published-lengths",
+    type=(int, int),
+    help="Score this inclusive length range instead of the manifest's selected set.",
+)
+@_OUT
+def codon_occupancy_command(
+    counts: tuple[Path, ...],
+    annotation: Path,
+    transcripts: Path,
+    dataset: str,
+    manifest: Path,
+    samplesheet: Path,
+    control_arm: str,
+    site: str,
+    published_lengths: tuple[int, int] | None,
+    out: Path,
+) -> None:
+    """Build the transcriptome-wide codon occupancy table from per-library COUNTS.
+
+    ADR-0020. Occupancy, not dwell time: P-sites per codon position normalised within their own
+    transcript, averaged over every position of that codon in every qualifying transcript.
+    """
+
+    try:
+        calibration = read_manifest(manifest)
+    except (ValueError, KeyError, OSError) as error:
+        raise click.ClickException(str(error)) from error
+    if calibration.dataset != dataset:
+        raise click.ClickException(f"{manifest} calibrates {calibration.dataset}, not {dataset}")
+    lengths = (
+        tuple(range(published_lengths[0], published_lengths[1] + 1))
+        if published_lengths is not None
+        else calibration.lengths
+    )
+
+    # A feature built from a treated library and used to predict response to a treatment is
+    # circular. The arm is checked here rather than trusted to the caller's file list.
+    runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
+    arms = runs.loc[runs["dataset"] == dataset].set_index("sample")["treatment"]
+    tables: dict[str, pd.DataFrame] = {}
+    codons: dict[str, str] = {}
+
+    annotated = read_table(annotation)
+    codons = transcript_codons(gencode_sequences(transcripts), annotated)
+    click.echo(f"{len(codons):,} coding transcripts carry a scorable window")
+
+    for path in counts:
+        measured = read_table(path)
+        samples = sorted(set(measured["sample"]))
+        for sample in samples:
+            treatment = arms.get(sample)
+            if treatment is None:
+                raise click.ClickException(f"{samplesheet} does not name {sample} in {dataset}")
+            if treatment != control_arm:
+                raise click.ClickException(
+                    f"{sample} is {treatment}, not {control_arm} — a treated library cannot build "
+                    "a feature used to predict response to that treatment"
+                )
+            try:
+                tables[sample] = library_table(
+                    measured.loc[measured["sample"] == sample],
+                    annotated,
+                    codons,
+                    site=site,
+                    lengths=lengths,
+                )
+            except ValueError as error:
+                raise click.ClickException(f"{sample}: {error}") from error
+            built = tables[sample]
+            click.echo(
+                f"  {sample}: {built['transcripts'].iloc[0]:,} transcripts, "
+                f"{int(built['positions'].sum()):,} positions"
+            )
+
+    table = aggregate_libraries(tables)
+    write_table(table, out)
+    write_table(
+        pd.concat([t.assign(sample=s) for s, t in tables.items()], ignore_index=True),
+        out.with_name(f"{out.stem}_by_library{out.suffix}"),
+    )
+
+    arm = "published window" if published_lengths is not None else "selected set"
+    named = ", ".join(str(length) for length in lengths)
+    click.echo(f"{arm}: {named} nt, {site} site, {len(tables)} {control_arm} libraries")
+    ordered = table.sort_values("occupancy")
+    for label, rows in (("slowest", ordered.tail(5)[::-1]), ("fastest", ordered.head(5))):
+        listed = ", ".join(f"{r.codon}/{r.amino_acid} {r.occupancy:.2f}" for r in rows.itertuples())
+        click.echo(f"  {label:>8}: {listed}")
+    if len(tables) > 1:
+        spread = table["occupancy_sd"] / table["occupancy"]
+        click.echo(f"  {'spread':>8}: between libraries, median {spread.median():.1%} of the score")
 
 
 @main.command("detectability")
