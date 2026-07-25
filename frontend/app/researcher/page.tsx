@@ -168,9 +168,10 @@ export default function ResearcherPage() {
         <h2>NMD escape: two rules, and where they disagree</h2>
         <p className="panel-note">
           Whether a premature stop escapes nonsense-mediated decay decides how much transcript
-          survives to rescue. The 50-nt guideline rule ACMG applies, against the fuller Lindeboom rule
-          set that adds start-proximal and long-exon escape. These are <b>rule-based predictors, not
-          the ML models</b> — a disagreement is the guideline&apos;s blind spot, not model uncertainty.
+          survives to rescue. The 50-nt last-junction rule (the one ClinGen PVS1 uses), against the
+          fuller Lindeboom rule set that adds start-proximal and long-exon escape. These are{" "}
+          <b>rule-based predictors, not the ML models</b> — a disagreement is where the fuller rules
+          turn the classification, not evidence of which rule is correct or model uncertainty.
         </p>
         <div className="bars">
           <div className="bar-row">

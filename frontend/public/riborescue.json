@@ -116,7 +116,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
         }
@@ -196,7 +196,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
         }
@@ -276,7 +276,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
         }
@@ -2276,7 +2276,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
         }
@@ -2672,7 +2672,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
         }
@@ -2908,7 +2908,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
         }
@@ -3468,7 +3468,7 @@
         "disagree": false,
         "rules": {
           "last_exon": true,
-          "within_last_junction": true,
+          "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
         }

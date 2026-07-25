@@ -12,12 +12,14 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from riborescue.variants.nmd import LAST_JUNCTION_NT
 from riborescue.variants.residue import NEAR_COGNATE, conservative
 
 __all__ = ["LAST_JUNCTION_RULE_NT", "TOLERABLE_SHARE", "Thresholds", "landscape", "summarise"]
 
-LAST_JUNCTION_RULE_NT = 55
-"""Distance from the last exon junction within which a premature stop escapes decay by the rule."""
+LAST_JUNCTION_RULE_NT = LAST_JUNCTION_NT
+"""The guideline NMD rule's last-junction window, shared with the ensemble (`nmd.py`) so the single
+rule the landscape reports and the ensemble's `guideline` predictor can never diverge."""
 
 TOLERABLE_SHARE = 0.5
 """The share of available insertions that must be conservative for the outcome to be robust."""
@@ -35,7 +37,10 @@ class Thresholds:
 
 
 def _escapes_decay(contexts: pd.DataFrame) -> pd.Series:
-    within_rule = contexts["nt_to_last_junction"] < LAST_JUNCTION_RULE_NT
+    # The window is strictly 5' of the junction: a last-exon stop has a negative distance and is
+    # carried by in_last_exon, not by this term — matching the ensemble's guideline predictor.
+    distance = contexts["nt_to_last_junction"]
+    within_rule = (distance > 0) & (distance <= LAST_JUNCTION_RULE_NT)
     return contexts["in_last_exon"] | within_rule.fillna(False)
 
 

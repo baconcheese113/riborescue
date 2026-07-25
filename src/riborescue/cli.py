@@ -935,9 +935,9 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
 def nmd(table: Path, out: Path) -> None:
     """Two rule-based NMD escape predictors per variant, and where they disagree.
 
-    The guideline predictor is the 50-nt rule ACMG applies; the full rule set adds the
-    start-proximal and long-exon escapes. Disagreement is where the fuller rules escape a stop the
-    guideline calls decay — the 50-nt rule's blind spot, made visible (ADR-0016).
+    The guideline predictor is the 50-nt last-junction rule (the one ClinGen PVS1 uses); the full
+    rule set adds the start-proximal and long-exon escapes. Disagreement is where the fuller rules
+    escape a stop the guideline calls decay — not evidence of which rule is right (ADR-0016).
     """
 
     predictors = nmd_predictors(read_table(table))

@@ -171,8 +171,9 @@ def build_research_aggregate(
             ),
             "nmd": (
                 "NMD escape is two rule-based predictors — the 50-nt guideline and the fuller "
-                "Lindeboom rule set — not yet the ML models (NMDetective-AI, predNMD). A "
-                "disagreement is the guideline's blind spot, not model uncertainty."
+                "Lindeboom rule set — not yet the ML models (NMDetective-AI, predNMD, aenmd). A "
+                "disagreement is where the fuller rules turn the classification, not evidence of "
+                "which rule is correct and not model uncertainty."
             ),
         },
     )

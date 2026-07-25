@@ -1,14 +1,16 @@
 """Whether a premature stop escapes nonsense-mediated decay, by more than one rule.
 
-`escapes_decay` used to be a single rule — the 50-nt rule ACMG applies. This computes two named
+`escapes_decay` used to be a single rule — the 50-nt last-junction rule. This computes two named
 rule-based predictors from the transcript geometry the context step already records, and exposes
-where they disagree, because the disagreement is the point: the 50-nt rule alone mislabels a large
-share of escaping stops, and a curator setting PVS1 strength should see that boundary rather than
-one verdict. See ADR-0016; the model predictors (NMDetective-AI, predNMD) are specified there.
+where they disagree, because the disagreement is the point: on a large share of stops the fuller
+rule set predicts escape where the 50-nt rule predicts decay, and a curator setting PVS1 strength
+should see that split rather than one verdict. Which rule is right at a split is not settled here —
+that needs an empirical benchmark, not a second rule. See ADR-0016; the model predictors
+(NMDetective-AI, predNMD, aenmd) are specified there.
 
 Two predictors, deterministic and one-directional:
 
-- `guideline` — the PTC is in the last exon, or within 55 nt of the last exon-exon junction.
+- `guideline` — the PTC is in the last exon, or within 50 nt of the last exon-exon junction.
 - `full_rules` — the guideline conditions, plus start-proximal escape (within 150 nt of the start)
   and long-exon escape (the PTC's exon is longer than 407 nt), after Lindeboom, Supek & Lehner
   (Nat. Genet. 2016).
@@ -33,8 +35,10 @@ __all__ = [
     "nmd_predictors",
 ]
 
-# The published thresholds (Lindeboom, Supek & Lehner, Nat. Genet. 2016; Nagy & Maquat 1998).
-LAST_JUNCTION_NT = 55
+# The published thresholds (Lindeboom, Supek & Lehner, Nat. Genet. 2016; Nagy & Maquat 1998). The
+# last-junction distance is the 50 nt ClinGen PVS1 (Abou Tayoun et al. 2018) applies — the 3'-most
+# 50 nt of the penultimate exon — the conservative end of Nagy & Maquat's "50-55 nt".
+LAST_JUNCTION_NT = 50
 START_PROXIMAL_NT = 150
 LONG_EXON_NT = 407
 
@@ -50,7 +54,7 @@ class NmdRules:
 
     @property
     def guideline(self) -> bool:
-        """The 50-nt rule as ACMG applies it: last exon, or within 55 nt of the last junction."""
+        """The 50-nt rule ClinGen PVS1 uses: last exon, or within 50 nt of the last junction."""
 
         return self.last_exon or self.within_last_junction
 
@@ -83,9 +87,11 @@ def nmd_predictors(contexts: pd.DataFrame) -> pd.DataFrame:
         junction = cast(Any, row.nt_to_last_junction)
         rules = NmdRules(
             last_exon=bool(row.in_last_exon),
-            # A NaN junction distance means the stop is in the last exon (no downstream junction),
-            # already carried by the last-exon flag — so an absent distance is just not in-window.
-            within_last_junction=bool(pd.notna(junction) and junction < LAST_JUNCTION_NT),
+            # The window is strictly upstream of the junction (0 < d): a stop in the last exon has a
+            # negative distance and is carried by the last-exon flag, not counted here, so this rule
+            # reads as "within 50 nt and 5' of the junction". A NaN distance (single-exon, or last
+            # exon of a transcript with no downstream junction) is likewise just not in-window.
+            within_last_junction=bool(pd.notna(junction) and 0 < junction <= LAST_JUNCTION_NT),
             start_proximal=int(cast(Any, row.nt_from_start)) < START_PROXIMAL_NT,
             long_exon=int(cast(Any, row.ptc_exon_length)) > LONG_EXON_NT,
         )
@@ -123,7 +129,8 @@ def disagreement_atlas(predictors: pd.DataFrame) -> dict:
 
     Every disagreement is the fuller rule set escaping a stop the guideline calls decay, so the
     split is attributable: it is driven by the start-proximal rule, the long-exon rule, or both.
-    That attribution is the atlas — it says which blind spot of the 50-nt rule is doing the work.
+    That attribution is the atlas — it says which added rule turns the classification, not which
+    verdict is correct; establishing error would take an empirical benchmark, not the second rule.
     """
 
     total = len(predictors)

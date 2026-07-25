@@ -9,8 +9,10 @@ be read through, and it is Layer 2 of the PRD — Claim 2 asks *"do independent 
 variant-curator persona's whole value is *"NMD efficiency with disagreement exposed"*, and §7.3 names
 an NMD disagreement atlas. It is also the weakest load-bearing thing in the product: `escapes_decay`
 has rested on a single rule — the 50-nt rule (escape if the PTC is in the last exon or within 55 nt of
-the last exon-exon junction) — and the PRD notes that rule mislabels ≥30% of escaping PTCs as decay.
-ACMG applies exactly that rule to set PVS1 strength, so its blind spots have clinical reach.
+the last exon-exon junction) — which is coarse: the fuller Lindeboom rule set classifies many more
+stops as escaping, and where the two split the single rule gives a curator no signal that the call is
+contested. ClinGen's PVS1 decision tree uses that same 50-nt rule to decide whether a PTC triggers NMD
+and thus PVS1 strength, so the boundary has clinical reach.
 
 The PRD names three predictors: **NMDetective-AI** (`Vejni/NMDetectiveAI`, an Orthrus-encoder model,
 bioRxiv Mar 2026), **predNMD** (a random forest precomputed for all 13,968,776 GRCh38 stop-gain SNVs,
@@ -26,17 +28,21 @@ each PTC on its MANE Select transcript; extended to carry distance from the star
 of the PTC's exon, that geometry supports the full classic rule set with no download. Two named
 predictors are computed, each deterministic:
 
-- **`guideline`** — the 50-nt rule as ACMG applies it: escape if the PTC is in the last exon or within
-  55 nt of the last exon-exon junction.
+- **`guideline`** — the 50-nt rule as ClinGen PVS1 uses it: escape if the PTC is in the last exon or
+  within 50 nt (5') of the last exon-exon junction.
 - **`full_rules`** — the Lindeboom–Supek–Lehner rule set (Nat. Genet. 2016): the guideline conditions
   *plus* start-proximal escape (PTC within 150 nt of the start codon) and long-exon escape (PTC in an
   exon longer than 407 nt).
 
 The per-rule flags are exposed, not just the verdicts. Because `full_rules` is a strict superset of
 `guideline`, the two disagree in one direction only, and the disagreement set is exactly the
-start-proximal and long-exon escapes the guideline misses — a concrete, inspectable rendering of the
-"≥30% the 50-nt rule gets wrong." Thresholds (55 nt, 150 nt, 407 nt) are the published ones and are
-constants, cited in the module.
+start-proximal and long-exon escapes the guideline does not call. On the full ClinVar set (70,386
+scoreable stops) the guideline escapes 10.1%, the full rule set 30.3%, and the two split on 20.2%
+(14,231 stops — long-exon 10,593, start-proximal 2,933, both 705). The split is a change of
+classification, not a measured error rate: which rule is right at a split needs an empirical NMD
+benchmark, which the model tier below is meant to supply. Thresholds (50 nt, 150 nt, 407 nt) are the
+published ones and are constants, cited in the module; the last-junction distance is the 50 nt
+ClinGen PVS1 (Abou Tayoun et al. 2018) applies, the conservative end of Nagy & Maquat's "50-55 nt".
 
 **Do not integrate the model predictors in this pass.** NMDetective-AI and predNMD stay specified, not
 wired, until their licensing, versions and inputs are verified and — for NMDetective-AI — the overlap
