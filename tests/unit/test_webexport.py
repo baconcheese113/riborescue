@@ -89,6 +89,31 @@ def test_the_payload_carries_the_gate_statuses():
     assert "HEK293T" in table.status["safety_atlas"]
 
 
+def test_nmd_verdicts_ride_along_when_given_and_are_null_otherwise():
+    nmd = pd.DataFrame(
+        [
+            {
+                "variant_id": "V1",
+                "rule_last_exon": False,
+                "rule_within_last_junction": False,
+                "rule_start_proximal": True,
+                "rule_long_exon": False,
+                "escape_guideline": False,
+                "escape_full_rules": True,
+                "predictors_disagree": True,
+            }
+        ]
+    )
+    with_nmd = build_web_table(_landscape(), _amenability(), nmd=nmd)
+    by_id = {v["id"]: v for v in with_nmd.variants}
+    assert by_id["V1"]["nmd"]["disagree"] is True
+    assert by_id["V1"]["nmd"]["rules"]["start_proximal"] is True
+    assert by_id["V2"]["nmd"] is None  # not in the nmd table
+
+    without = build_web_table(_landscape(), _amenability())
+    assert all(v["nmd"] is None for v in without.variants)
+
+
 def test_a_variant_carries_every_therapy_and_its_interval():
     table = build_web_table(_landscape(), _amenability())
     v1 = next(v for v in table.variants if v["id"] == "V1")
@@ -159,20 +184,35 @@ def test_a_variant_with_no_available_therapy_has_null_best_not_nan():
     """NaN is not JSON; a browser's parser rejects the whole file on it."""
 
     landscape = pd.DataFrame(
-        [{
-            "variant_id": "V0", "gene_symbol": "STAMBP", "protein_position": 424,
-            "stop_type": "uga", "original_aa": "R", "review_stars": 2,
-            "escapes_decay_by_rule": True, "nt_to_last_junction": -10,
-            "best_therapy": float("nan"), "best_readthrough": float("nan"),
-            "best_readthrough_low": float("nan"), "tolerable_insertion_share": 0.167,
-        }]
+        [
+            {
+                "variant_id": "V0",
+                "gene_symbol": "STAMBP",
+                "protein_position": 424,
+                "stop_type": "uga",
+                "original_aa": "R",
+                "review_stars": 2,
+                "escapes_decay_by_rule": True,
+                "nt_to_last_junction": -10,
+                "best_therapy": float("nan"),
+                "best_readthrough": float("nan"),
+                "best_readthrough_low": float("nan"),
+                "tolerable_insertion_share": 0.167,
+            }
+        ]
     )
     amenability = pd.DataFrame(
-        [{
-            "variant_id": "V0", "therapy_id": "G418", "readthrough_predicted": None,
-            "readthrough_low": None, "readthrough_high": None, "status": "missing",
-            "reason": "not_available",
-        }]
+        [
+            {
+                "variant_id": "V0",
+                "therapy_id": "G418",
+                "readthrough_predicted": None,
+                "readthrough_low": None,
+                "readthrough_high": None,
+                "status": "missing",
+                "reason": "not_available",
+            }
+        ]
     )
     table = build_web_table(landscape, amenability)
     assert table.variants[0]["best"] is None

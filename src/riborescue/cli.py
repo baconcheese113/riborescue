@@ -476,13 +476,24 @@ def atlas_predict(
     help="The native-stop prediction table, to summarise the safety atlas for the viewer.",
 )
 @click.option(
+    "--nmd",
+    "nmd_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The NMD predictors table, to show each variant's two escape verdicts and their rules.",
+)
+@click.option(
     "--sample",
     type=int,
     help="Write a diverse sample of this many variants — the example artifact — instead of all.",
 )
 @_OUT
 def export_web(
-    landscape: Path, amenability: Path, predicted: Path | None, sample: int | None, out: Path
+    landscape: Path,
+    amenability: Path,
+    predicted: Path | None,
+    nmd_table: Path | None,
+    sample: int | None,
+    out: Path,
 ) -> None:
     """Build the compact JSON the web app reads from the pipeline's result tables."""
 
@@ -490,7 +501,8 @@ def export_web(
     variant_ids = diverse_sample(land, amen, sample) if sample is not None else None
     therapies = sorted(amen["therapy_id"].unique())
     safety = safety_summary(read_table(predicted), therapies) if predicted is not None else None
-    table = build_web_table(land, amen, variant_ids=variant_ids, safety=safety)
+    nmd = read_table(nmd_table) if nmd_table is not None else None
+    table = build_web_table(land, amen, variant_ids=variant_ids, safety=safety, nmd=nmd)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(table.to_json())
     click.echo(

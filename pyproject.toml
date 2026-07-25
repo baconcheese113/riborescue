@@ -172,11 +172,12 @@ reads = { cmd = """nextflow run . --step reads -profile local -resume \
   --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs", "adapter-survey"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
+nmd = { cmd = "riborescue nmd results/clinvar_contexts.tsv --out results/nmd.tsv", depends-on = ["contexts"] }
 # The dry-lab chain alone builds the viewer's data; the safety panel is added by export-web-safety
 # where the Ribo-seq atlas exists, so the app builds on a laptop that never ran the sequencing arm.
-export-web = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --out frontend/public/riborescue.json"
-export-web-safety = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --out frontend/public/riborescue.json"
-export-web-example = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --out frontend/public/riborescue.json"
+export-web = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
+export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
+export-web-example = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
 app-install = { cmd = "npm install", cwd = "frontend" }

@@ -109,6 +109,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -178,6 +189,17 @@
       "suppressor": {
         "design": "UAG-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -247,6 +269,17 @@
       "suppressor": {
         "design": "UAG-E",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -316,6 +349,17 @@
       "suppressor": {
         "design": "UAA-Y",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -385,6 +429,17 @@
       "suppressor": {
         "design": "UAG-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -454,6 +509,17 @@
       "suppressor": {
         "design": "UGA-C",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -523,6 +589,17 @@
       "suppressor": {
         "design": "UAG-Y",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -592,6 +669,17 @@
       "suppressor": {
         "design": "UGA-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -661,6 +749,17 @@
       "suppressor": {
         "design": "UGA-C",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -730,6 +829,17 @@
       "suppressor": {
         "design": "UAG-E",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -799,6 +909,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -868,6 +989,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -937,6 +1069,17 @@
       "suppressor": {
         "design": "UAG-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1006,6 +1149,17 @@
       "suppressor": {
         "design": "UGA-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1075,6 +1229,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1144,6 +1309,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1213,6 +1389,17 @@
       "suppressor": {
         "design": "UAG-Y",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": true,
+          "long_exon": true
+        }
       }
     },
     {
@@ -1282,6 +1469,17 @@
       "suppressor": {
         "design": "UAG-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -1351,6 +1549,17 @@
       "suppressor": {
         "design": "UAG-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -1420,6 +1629,17 @@
       "suppressor": {
         "design": "UAG-K",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -1489,6 +1709,17 @@
       "suppressor": {
         "design": "UAG-K",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -1558,6 +1789,17 @@
       "suppressor": {
         "design": "UAG-Y",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -1627,6 +1869,17 @@
       "suppressor": {
         "design": "UAA-E",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1696,6 +1949,17 @@
       "suppressor": {
         "design": "UGA-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1765,6 +2029,17 @@
       "suppressor": {
         "design": "UAG-K",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1834,6 +2109,17 @@
       "suppressor": {
         "design": "UAG-L",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1903,6 +2189,17 @@
       "suppressor": {
         "design": "UAG-L",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -1972,6 +2269,17 @@
       "suppressor": {
         "design": "UAG-L",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2041,6 +2349,17 @@
       "suppressor": {
         "design": "UAG-L",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": true,
+        "disagree": true,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": true,
+          "long_exon": true
+        }
       }
     },
     {
@@ -2110,6 +2429,17 @@
       "suppressor": {
         "design": "UAG-L",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": true,
+        "disagree": true,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -2179,6 +2509,17 @@
       "suppressor": {
         "design": "UAG-L",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2248,6 +2589,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2313,6 +2665,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -2382,6 +2745,17 @@
       "suppressor": {
         "design": "UAG-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2451,6 +2825,17 @@
       "suppressor": {
         "design": "UAA-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2516,6 +2901,17 @@
       "suppressor": {
         "design": "UAG-Y",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -2585,6 +2981,17 @@
       "suppressor": {
         "design": "UAG-K",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2654,6 +3061,17 @@
       "suppressor": {
         "design": "UAG-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": true,
+        "disagree": true,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": true,
+          "long_exon": true
+        }
       }
     },
     {
@@ -2723,6 +3141,17 @@
       "suppressor": {
         "design": "UGA-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2792,6 +3221,17 @@
       "suppressor": {
         "design": "UGA-W",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2861,6 +3301,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2930,6 +3381,17 @@
       "suppressor": {
         "design": "UGA-R",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -2999,6 +3461,17 @@
       "suppressor": {
         "design": "UAG-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": true,
+          "start_proximal": false,
+          "long_exon": true
+        }
       }
     },
     {
@@ -3068,6 +3541,17 @@
       "suppressor": {
         "design": "UAG-Y",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -3137,6 +3621,17 @@
       "suppressor": {
         "design": "UAA-E",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -3206,6 +3701,17 @@
       "suppressor": {
         "design": "UAA-E",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -3275,6 +3781,17 @@
       "suppressor": {
         "design": "UAA-K",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": false,
+        "escape_full_rules": false,
+        "disagree": false,
+        "rules": {
+          "last_exon": false,
+          "within_last_junction": false,
+          "start_proximal": false,
+          "long_exon": false
+        }
       }
     },
     {
@@ -3344,6 +3861,17 @@
       "suppressor": {
         "design": "UAA-Q",
         "restores_exactly": true
+      },
+      "nmd": {
+        "escape_guideline": true,
+        "escape_full_rules": true,
+        "disagree": false,
+        "rules": {
+          "last_exon": true,
+          "within_last_junction": false,
+          "start_proximal": true,
+          "long_exon": true
+        }
       }
     }
   ]

@@ -81,10 +81,12 @@ def safety_summary(predicted: pd.DataFrame, therapies: list[str], measured: str 
         ),
         "concordance": {"rho": stats["rho"], "low": stats["low"], "high": stats["high"]},
         "concordance_label": "modest rank concordance, with substantial disagreement",
-        "quadrants": {g: int(groups.get(g, 0)) for g in
-                      ("both", "predicted only", "measured only", "neither")},
+        "quadrants": {
+            g: int(groups.get(g, 0)) for g in ("both", "predicted only", "measured only", "neither")
+        },
         "per_therapy": {
-            t: "native-stop occupancy measured in HEK293T" if t == measured
+            t: "native-stop occupancy measured in HEK293T"
+            if t == measured
             else "no matched empirical safety atlas"
             for t in therapies
         },
@@ -132,17 +134,40 @@ def _suppressor(stop_type: str, residue: str) -> dict | None:
     return {"design": f"{rna}-{residue}", "restores_exactly": True}
 
 
+def _nmd_by_variant(nmd: pd.DataFrame | None) -> dict[object, dict]:
+    """Each variant's two NMD verdicts and the rules behind them, keyed for the per-variant join."""
+
+    if nmd is None:
+        return {}
+    return {
+        row.variant_id: {
+            "escape_guideline": bool(row.escape_guideline),
+            "escape_full_rules": bool(row.escape_full_rules),
+            "disagree": bool(row.predictors_disagree),
+            "rules": {
+                "last_exon": bool(row.rule_last_exon),
+                "within_last_junction": bool(row.rule_within_last_junction),
+                "start_proximal": bool(row.rule_start_proximal),
+                "long_exon": bool(row.rule_long_exon),
+            },
+        }
+        for row in nmd.itertuples()
+    }
+
+
 def build_web_table(
     landscape: pd.DataFrame,
     amenability: pd.DataFrame,
     status: GateStatus | None = None,
     variant_ids: list[str] | None = None,
     safety: dict | None = None,
+    nmd: pd.DataFrame | None = None,
 ) -> WebTable:
     """Join the per-variant landscape to the per-therapy intervals into the app's table.
 
     `variant_ids` narrows the output to a chosen set — the example artifact is a diverse handful,
-    the full export is every scoreable variant.
+    the full export is every scoreable variant. `nmd`, when given, adds each variant's two NMD
+    predictors and their rules so the patient view can show where they disagree.
     """
 
     if variant_ids is not None:
@@ -152,6 +177,7 @@ def build_web_table(
     by_variant: dict[object, list[dict]] = {
         vid: rows.to_dict("records") for vid, rows in therapy.groupby("variant_id")
     }
+    nmd_by_variant = _nmd_by_variant(nmd)
     therapies = sorted(amenability["therapy_id"].unique())
 
     variants = []
@@ -198,6 +224,7 @@ def build_web_table(
                 "best": best,
                 "therapies": offered,
                 "suppressor": _suppressor(str(row["stop_type"]), str(row["original_aa"])),
+                "nmd": nmd_by_variant.get(row["variant_id"]),
             }
         )
 

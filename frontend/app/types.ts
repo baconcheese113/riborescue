@@ -27,6 +27,19 @@ export interface Variant {
   best: { therapy: string; readthrough: number; low: number } | null;
   therapies: Therapy[];
   suppressor: Suppressor | null;
+  nmd: NmdVerdict | null;
+}
+
+export interface NmdVerdict {
+  escape_guideline: boolean;
+  escape_full_rules: boolean;
+  disagree: boolean;
+  rules: {
+    last_exon: boolean;
+    within_last_junction: boolean;
+    start_proximal: boolean;
+    long_exon: boolean;
+  };
 }
 
 export interface SafetyAtlas {

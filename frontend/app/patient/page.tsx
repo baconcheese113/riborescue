@@ -53,10 +53,33 @@ function Evidence({ variant }: { variant: Variant }) {
       <div className="slot">
         <dt>Escapes NMD</dt>
         <dd>
-          <span className={`pill ${variant.escapes_decay ? "good" : "bad"}`}>
-            {variant.escapes_decay ? "predicted yes" : "predicted no"}
-          </span>{" "}
-          <span className="slot-note">rule-based (50-nt last-junction rule), not an ensemble yet</span>
+          {variant.nmd ? (
+            <>
+              <span className={`pill ${variant.nmd.escape_guideline ? "good" : "bad"}`}>
+                guideline: {variant.nmd.escape_guideline ? "escape" : "decay"}
+              </span>{" "}
+              <span className={`pill ${variant.nmd.escape_full_rules ? "good" : "bad"}`}>
+                full rules: {variant.nmd.escape_full_rules ? "escape" : "decay"}
+              </span>{" "}
+              {variant.nmd.disagree ? (
+                <span className="slot-note">
+                  the two rule sets <b>disagree</b> here — the fuller rules escape a stop the 50-nt
+                  guideline calls decay
+                  {variant.nmd.rules.long_exon ? ", via the long-exon rule" : ""}
+                  {variant.nmd.rules.start_proximal ? ", via the start-proximal rule" : ""}
+                </span>
+              ) : (
+                <span className="slot-note">both rule sets agree; the ML predictors are not yet in</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className={`pill ${variant.escapes_decay ? "good" : "bad"}`}>
+                {variant.escapes_decay ? "predicted escape" : "predicted decay"}
+              </span>{" "}
+              <span className="slot-note">rule-based (50-nt last-junction rule)</span>
+            </>
+          )}
         </dd>
       </div>
       <div className="slot">
