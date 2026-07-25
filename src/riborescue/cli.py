@@ -61,6 +61,7 @@ from riborescue.variants.evaluation import (
 )
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
 from riborescue.variants.native_stops import concordance, four_quadrants, native_stop_features
+from riborescue.variants.nmd import disagreement_atlas, nmd_predictors
 from riborescue.variants.panels import coverage_frontier
 from riborescue.variants.researchexport import build_research_aggregate
 from riborescue.variants.residue import coverage_by_design
@@ -914,6 +915,41 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
         out,
     )
     click.echo(f"wrote {len(table)} variant by therapy rows to {out}")
+
+
+@main.command("nmd")
+@_IN
+@_OUT
+def nmd(table: Path, out: Path) -> None:
+    """Two rule-based NMD escape predictors per variant, and where they disagree.
+
+    The guideline predictor is the 50-nt rule ACMG applies; the full rule set adds the
+    start-proximal and long-exon escapes. Disagreement is where the fuller rules escape a stop the
+    guideline calls decay — the 50-nt rule's blind spot, made visible (ADR-0016).
+    """
+
+    predictors = nmd_predictors(read_table(table))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(predictors, out)
+
+    atlas = disagreement_atlas(predictors)
+    click.echo(f"{atlas['scoreable']} scoreable stops")
+    click.echo(
+        f"  guideline (50-nt) escape: {atlas['escape_guideline']:>6} "
+        f"({atlas['guideline_fraction'] * 100:>4.1f}%)"
+    )
+    click.echo(
+        f"  full rule set escape:     {atlas['escape_full_rules']:>6} "
+        f"({atlas['full_rules_fraction'] * 100:>4.1f}%)"
+    )
+    click.echo(
+        f"  predictors disagree:      {atlas['disagree']:>6} "
+        f"({atlas['disagree_fraction'] * 100:>4.1f}%)"
+    )
+    click.echo(
+        f"    driven by start-proximal {atlas['driven_by_start_proximal']}, "
+        f"long-exon {atlas['driven_by_long_exon']}, both {atlas['driven_by_both']}"
+    )
 
 
 @main.command("trna-coverage")

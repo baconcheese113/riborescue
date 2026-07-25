@@ -10,6 +10,7 @@ ClinVar variant and a measured one are described identically.
 
 from dataclasses import dataclass
 from enum import StrEnum
+from itertools import pairwise
 from typing import cast
 
 import pandas as pd
@@ -76,6 +77,8 @@ class PtcContext:
     exon_count: int
     in_last_exon: bool
     nt_to_last_junction: int | None
+    nt_from_start: int
+    ptc_exon_length: int
 
 
 def _transcribe(sequence: str) -> str:
@@ -121,6 +124,12 @@ def context_for(
     assert coding is not None
     junctions = model.junction_offsets
     last_junction = junctions[-1] if junctions else None
+    # The exon boundaries in transcript coordinates bracket the stop; the exon it lands in is the
+    # one interval that contains its codon start, and its length drives the long-exon NMD rule.
+    boundaries = (0, *junctions, len(model.sequence))
+    ptc_exon_length = next(
+        high - low for low, high in pairwise(boundaries) if low <= codon_start < high
+    )
     return PtcContext(
         transcript_id=model.transcript_id,
         protein_position=(codon_start - coding) // 3 + 1,
@@ -134,6 +143,8 @@ def context_for(
         exon_count=len(model.exons),
         in_last_exon=last_junction is None or codon_start >= last_junction,
         nt_to_last_junction=None if last_junction is None else last_junction - codon_start,
+        nt_from_start=codon_start - coding,
+        ptc_exon_length=ptc_exon_length,
     )
 
 
@@ -173,6 +184,8 @@ def contexts_for(variants: pd.DataFrame, models: dict[int, TranscriptModel]) -> 
                 "exon_count": found.exon_count,
                 "in_last_exon": found.in_last_exon,
                 "nt_to_last_junction": found.nt_to_last_junction,
+                "nt_from_start": found.nt_from_start,
+                "ptc_exon_length": found.ptc_exon_length,
             }
         )
     return pd.DataFrame(rows)
