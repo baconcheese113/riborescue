@@ -13,6 +13,7 @@ the kinetics comparison itself exists.
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -23,6 +24,9 @@ from riborescue.core.contracts import EvalConfig
 from riborescue.variants.readthrough_model import cross_validate
 
 __all__ = [
+    "CODON_TABLE",
+    "CONTROLLED",
+    "ORACLE",
     "ROUNDS",
     "SEED",
     "TRAIN_FRACTION",
@@ -140,21 +144,91 @@ def bootstrap_ci(values: pd.Series, *, confidence: float = 0.95, seed: int = SEE
     )
 
 
+ORACLE = Path("tests/fixtures/oracle")
+"""The reproduction fixtures: per-drug features, the authors' rounds, the reliability ceilings."""
+
+CODON_TABLE = Path("tests/fixtures/kinetics/codon_occupancy.tsv")
+"""The committed codon table the controls run against.
+
+Committed for the reason the oracle fixtures are: a control that reads a regenerable results tree
+passes or fails according to what was last run there, which is the opposite of what a control is
+for. It is 61 rows.
+"""
+
+CONTROLLED = "K1"
+"""The model the controls stand over — the one whose gain is the claim."""
+
+
+def _control_inputs():
+    """Load what every control needs, deferring the imports that would close a cycle."""
+
+    from riborescue.core.tables import read_table
+    from riborescue.variants.kinetics import codon_scores
+
+    if not CODON_TABLE.exists():
+        raise FileNotFoundError(
+            f"{CODON_TABLE} is absent; the controls run against a committed codon table, "
+            "which `pixi run codon-occupancy` produces"
+        )
+    scores = codon_scores(read_table(CODON_TABLE))
+    drugs = sorted(
+        path.name.removeprefix("features_").removesuffix(".tsv.gz")
+        for path in ORACLE.glob("features_*.tsv.gz")
+    )
+    return read_table, scores, drugs
+
+
+def _gains(config: EvalConfig, kind: "ShuffleKind | None") -> dict[str, pd.Series]:
+    """Each drug's per-round gain of the controlled model over the baseline, under one split."""
+
+    from riborescue.variants.kinetics import MODELS, head_to_head, improvement
+
+    read_table, scores, drugs = _control_inputs()
+    models = {name: MODELS[name] for name in ("B", CONTROLLED)}
+    found: dict[str, pd.Series] = {}
+    for drug in drugs:
+        features = read_table(ORACLE / f"features_{drug}.tsv.gz")
+        rounds = (
+            read_table(ORACLE / f"rounds_{drug}.tsv.gz")
+            if config is EvalConfig.published_random_cv
+            else split(features, config)
+        )
+        scored = head_to_head(features, rounds, scores, models=models, kind=kind)
+        found[drug] = improvement(scored).sort_values("round")["gain"].reset_index(drop=True)
+    return found
+
+
 def run_shuffle_control(kind: ShuffleKind) -> BootstrapCI:
     """Return the bootstrap CI of the kinetics improvement after shuffling.
 
     A genuine kinetic signal collapses under every shuffle, so a passing control has a CI that
     includes zero.
+
+    Run under the grouped-by-gene split, which is the one the claim is made on, and reported for the
+    drug whose shuffled gain is largest. Taking the worst case rather than pooling across drugs is
+    what stops one leaking drug from being averaged away by five clean ones.
     """
 
-    raise NotImplementedError("shuffle controls are implemented with the head-to-head comparison")
+    gains = _gains(EvalConfig.grouped_by_gene, kind)
+    worst = max(gains, key=lambda drug: gains[drug].mean())
+    return bootstrap_ci(gains[worst])
 
 
 def grouped_split_leakage(config: str) -> BootstrapCI:
-    """Return the improvement retained under a gene- or cluster-grouped split.
+    """Return the improvement the published random split adds over a grouped one.
 
-    Near-identical local contexts leaking across a random split would inflate this; grouping removes
-    the leak.
+    Near-identical local contexts sit on both sides of a random split, where a model with enough
+    capacity is rewarded for memorising them. The quantity is therefore the *excess* of the random
+    split's gain over the grouped split's, round by round — what a gain would lose if the leak were
+    closed. A pipeline that is not leaking has an interval including zero, and ADR-0020's rule that
+    a gain appearing only under the published split is capacity rather than signal is this
+    measurement.
+
+    Reported for the drug whose excess is largest, for the same reason the shuffles are.
     """
 
-    raise NotImplementedError("grouped-split evaluation lands with the head-to-head comparison")
+    grouped = _gains(EvalConfig(config), None)
+    random = _gains(EvalConfig.published_random_cv, None)
+    excess = {drug: random[drug] - grouped[drug] for drug in grouped}
+    worst = max(excess, key=lambda drug: excess[drug].mean())
+    return bootstrap_ci(excess[worst])
