@@ -84,11 +84,13 @@ from riborescue.variants.disease_coverage import disease_coverage, disease_reach
 from riborescue.variants.diseases import normalize_conditions
 from riborescue.variants.evaluation import (
     SEED,
+    ShuffleKind,
     UnsupportedEvalConfigError,
     bootstrap_ci,
     evaluate,
     split,
 )
+from riborescue.variants.kinetics import MODELS, codon_scores, head_to_head, improvement
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
 from riborescue.variants.native_stop_predictions import (
     concordance,
@@ -1395,6 +1397,104 @@ def readthrough_assay(
     click.echo(f"  {'signature':>22}: {'complete' if all(met.values()) else 'incomplete'}")
     if stalling(effects):
         click.echo(f"  {'stalling':>22}: yes — raised at the stop, not beyond it")
+
+
+@main.command("head-to-head")
+@click.option(
+    "--codon-table",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The codon occupancy table the kinetic features are looked up in.",
+)
+@click.option(
+    "--oracle",
+    default=Path("tests/fixtures/oracle"),
+    show_default=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="The reproduction fixtures: per-drug features and the authors' own round assignments.",
+)
+@click.option(
+    "--site",
+    type=click.Choice(sorted(SITE_SHIFT)),
+    default="a",
+    show_default=True,
+    help="Which site's occupancy the features are built from.",
+)
+@click.option(
+    "--config",
+    type=click.Choice([c.value for c in EvalConfig]),
+    default=EvalConfig.published_random_cv.value,
+    show_default=True,
+    help="Which split. The published rounds come from the oracle; the rest are generated.",
+)
+@click.option("--drug", "drugs", multiple=True, help="Restrict to these drugs. Default all six.")
+@_OUT
+def head_to_head_command(
+    codon_table: Path, oracle: Path, site: str, config: str, drugs: tuple[str, ...], out: Path
+) -> None:
+    """Fit the four models of ADR-0020 over one split, plain and under each shuffle.
+
+    The saturated comparator is fitted plain only. It reads no kinetic column, so its score under a
+    shuffle is identical by construction and refitting it three more times would buy nothing.
+    """
+
+    scores = codon_scores(read_table(codon_table), site=site)
+    evaluation = EvalConfig(config)
+    names = drugs or tuple(
+        sorted(
+            path.name.removeprefix("features_").removesuffix(".tsv.gz")
+            for path in oracle.glob("features_*.tsv.gz")
+        )
+    )
+    controlled = {name: MODELS[name] for name in MODELS if name != "S"}
+
+    collected: list[pd.DataFrame] = []
+    for drug in names:
+        features = read_table(oracle / f"features_{drug}.tsv.gz")
+        rounds = (
+            read_table(oracle / f"rounds_{drug}.tsv.gz")
+            if evaluation is EvalConfig.published_random_cv
+            else split(features, evaluation)
+        )
+        for label, kind, models in (
+            ("none", None, MODELS),
+            *((k.value, k, controlled) for k in ShuffleKind),
+        ):
+            scored = head_to_head(features, rounds, scores, models=models, kind=kind)
+            collected.append(scored.assign(drug=drug, config=config, shuffle=label))
+        click.echo(f"{drug}: {len(features):,} variants, {rounds['round'].nunique()} rounds")
+
+    rows = pd.concat(collected, ignore_index=True)
+    write_table(rows[["drug", "config", "shuffle", "model", "round", "r2", "held_out"]], out)
+
+    summary = []
+    for (drug, label), block in rows.groupby(["drug", "shuffle"], sort=True):
+        for model, gains in improvement(block.drop(columns=["drug", "config", "shuffle"])).groupby(
+            "model"
+        ):
+            interval = bootstrap_ci(gains["gain"])
+            summary.append(
+                {
+                    "drug": drug,
+                    "config": config,
+                    "shuffle": label,
+                    "model": model,
+                    "gain": interval.point,
+                    "ci_low": interval.low,
+                    "ci_high": interval.high,
+                    "excludes_zero": not interval.includes_zero(),
+                }
+            )
+    intervals = pd.DataFrame(summary)
+    write_table(intervals, out.with_name(f"{out.stem}_intervals{out.suffix}"))
+
+    click.echo(f"\n{config}, {site} site — gain over the baseline, 95% bootstrap")
+    for row in intervals.itertuples():
+        mark = "excludes zero" if row.excludes_zero else "includes zero"
+        click.echo(
+            f"  {row.drug:>10} {row.model:>3} {row.shuffle:>15}: "
+            f"{row.gain:+.4f} [{row.ci_low:+.4f}, {row.ci_high:+.4f}] {mark}"
+        )
 
 
 @main.command("codon-occupancy")

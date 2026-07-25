@@ -260,6 +260,10 @@ detectability-fibroblast = "bash scripts/run_detectability.sh gse179274_fibrobla
 # The kinetic layer's input (ADR-0020). Vehicle libraries only, both sites and both length windows,
 # and the command refuses a treated library rather than skipping it.
 codon-occupancy = "bash scripts/run_codon_occupancy.sh gse144140 dmso"
+# The kinetics comparison itself: four models over three splits, each kinetic model also under the
+# three shuffles. Grouped by gene is where the claim lives; the other two say whether a gain is
+# capacity rather than signal, so all three run.
+head-to-head = "bash scripts/run_head_to_head.sh"
 disk = "bash scripts/require_disk.sh 200"
 prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv", depends-on = ["disk"] }
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }
