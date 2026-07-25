@@ -41,7 +41,7 @@ Two places remain where a kinetic quantity is not already spanned:
 - **Across the up/down boundary.** The baseline interacts stop type with the downstream triplet and
   nothing else. `k(up) · k(down)` is one column that no combination of the baseline's columns
   reproduces. It is the low-rank version of the saturated 4,096-level `up × down` term that ADR-0006
-  records as untestable naively — seven degrees of freedom in place of four thousand, with a
+  records as untestable naively — five degrees of freedom in place of four thousand, with a
   biological reason for that particular shape rather than a regularisation constant.
 - **As a replacement rather than an addition.** A 64-level factor estimates every codon separately
   and knows nothing about a level it did not see; a decoding rate shares strength across codons and
@@ -147,7 +147,11 @@ Four fits per drug, all named before any is run, all reported whatever they show
 | K2 | B with `up_123nt` replaced by `k_up` | Whether a rate generalises where a 64-level factor has nothing to say |
 | S | B + the saturated `up_123nt:down_123nt` term | The capacity comparator: the information K1 uses, without its structure |
 
-K1 is the primary claim and adds at most seven columns. S is what ADR-0006 records as failing
+K1 is the primary claim and adds six design columns, **five** of which are identifiable beyond the
+baseline: the three stop-type-specific `k_up` slopes sum to the marginal `k_up` effect, which the
+baseline already spans, so they carry two new dimensions and not three. Only how decoding demand
+varies with stop type is new, never its overall level — which is the span argument again, one level
+down, and is why the term is written as an interaction rather than as a main effect. S is what ADR-0006 records as failing
 naively at 4,096 levels; it is fitted here not to be believed but so that K1's gain can be read
 against the gain available to something with all the information and no structure. Model B is refit
 unchanged in every round so that Toledano parity holds throughout, and no selection touches an

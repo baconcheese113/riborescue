@@ -129,14 +129,25 @@ def fit(features: pd.DataFrame) -> FittedModel:
     )
 
 
-def fit_round(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> RoundPrediction:
-    """Fit on the given training rows and predict the rows left out of them."""
+def fit_round(
+    features: pd.DataFrame, train_rows: pd.Series, round_: int, formula: str = FORMULA
+) -> RoundPrediction:
+    """Fit on the given training rows and predict the rows left out of them.
+
+    A grouped split can leave a whole triplet level out of training, and patsy cannot code a level
+    it never saw. Such rows are dropped from the held-out set and counted, rather than crashing the
+    round or being scored against a coefficient that does not exist. Under the published random
+    rounds nothing is ever dropped, which is why parity is unaffected.
+    """
 
     held_in = features.index.isin(train_rows)
     train, test = features[held_in], features[~held_in]
+    for column in ("stop_type", "up_123nt", "down_123nt"):
+        if column in features.columns:
+            test = test[test[column].isin(set(train[column]))]
 
     # patsy ships no type information.
-    response, built = dmatrices(FORMULA, train, return_type="dataframe")
+    response, built = dmatrices(formula, train, return_type="dataframe")
     design = cast(pd.DataFrame, built)
     identifiable = identifiable_columns(design)
     fitted = sm.GLM(response, design[identifiable], family=sm.families.Binomial()).fit()
@@ -155,11 +166,13 @@ def fit_round(features: pd.DataFrame, train_rows: pd.Series, round_: int) -> Rou
     )
 
 
-def cross_validate(features: pd.DataFrame, rounds: pd.DataFrame) -> list[RoundPrediction]:
+def cross_validate(
+    features: pd.DataFrame, rounds: pd.DataFrame, formula: str = FORMULA
+) -> list[RoundPrediction]:
     """Fit every round the oracle defined, in its order."""
 
     numbered = sorted(int(r) for r in rounds["round"].unique())
     return [
-        fit_round(features, rounds.loc[rounds["round"] == round_, "row"], round_)
+        fit_round(features, rounds.loc[rounds["round"] == round_, "row"], round_, formula)
         for round_ in numbered
     ]

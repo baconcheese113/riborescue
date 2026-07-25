@@ -61,7 +61,7 @@ def test_the_same_seed_gives_the_same_split(features: pd.DataFrame):
 
 def test_a_config_without_a_splitter_says_which_ones_exist(features: pd.DataFrame):
     with pytest.raises(UnsupportedEvalConfigError, match="grouped_by_gene"):
-        split(features, EvalConfig.grouped_by_sequence_cluster)
+        split(features, EvalConfig.external_transfer_test)
 
 
 def test_a_bootstrap_interval_brackets_the_mean():

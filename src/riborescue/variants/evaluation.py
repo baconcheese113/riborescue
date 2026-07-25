@@ -71,9 +71,26 @@ def _gene_grouped_rounds(features: pd.DataFrame, rounds: int, train_fraction: fl
     return splitter.split(features, groups=features["gene"])
 
 
+def _cluster_grouped_rounds(features: pd.DataFrame, rounds: int, train_fraction: float, seed: int):
+    """Hold out whole sequence contexts, so the same triplet pair cannot sit on both sides.
+
+    A scored variant carries nine nucleotides and no more, so its context *is* the pair of triplets
+    either side of the stop. Grouping on that exact pair is what the cluster split can mean here:
+    58% of variants share their pair with another, and a random draw puts those across the boundary,
+    where a model with enough capacity is rewarded for memorising rather than for generalising. Stop
+    type is deliberately not part of the group — it has three levels, and grouping on it would hold
+    out a third of the library at a time.
+    """
+
+    groups = features["up_123nt"].astype(str) + "|" + features["down_123nt"].astype(str)
+    splitter = GroupShuffleSplit(n_splits=rounds, train_size=train_fraction, random_state=seed)
+    return splitter.split(features, groups=groups)
+
+
 _SPLITTERS: dict[EvalConfig, Callable] = {
     EvalConfig.published_random_cv: _random_rounds,
     EvalConfig.grouped_by_gene: _gene_grouped_rounds,
+    EvalConfig.grouped_by_sequence_cluster: _cluster_grouped_rounds,
 }
 
 
