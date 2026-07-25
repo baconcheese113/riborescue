@@ -130,6 +130,7 @@ export default function ResearcherPage() {
 
   const p = data.provenance;
   const r = data.reach_denominator;
+  const n = data.nmd;
   return (
     <div className="wrap">
       <h1>Researcher</h1>
@@ -161,6 +162,52 @@ export default function ResearcherPage() {
           reached by the full panel is partly a closure property of the design universe, not a result.
         </p>
         <FrontierChart frontiers={data.frontiers} />
+      </section>
+
+      <section className="panel">
+        <h2>NMD escape: two rules, and where they disagree</h2>
+        <p className="panel-note">
+          Whether a premature stop escapes nonsense-mediated decay decides how much transcript
+          survives to rescue. The 50-nt guideline rule ACMG applies, against the fuller Lindeboom rule
+          set that adds start-proximal and long-exon escape. These are <b>rule-based predictors, not
+          the ML models</b> — a disagreement is the guideline&apos;s blind spot, not model uncertainty.
+        </p>
+        <div className="bars">
+          <div className="bar-row">
+            <span className="bar-label">guideline escape</span>
+            <span className="bar-track">
+              <span className="bar-fill" style={{ width: `${n.guideline_fraction * 100}%` }} />
+            </span>
+            <span className="bar-num">
+              {n.escape_guideline.toLocaleString()} ({(n.guideline_fraction * 100).toFixed(1)}%)
+            </span>
+          </div>
+          <div className="bar-row">
+            <span className="bar-label">full-rules escape</span>
+            <span className="bar-track">
+              <span className="bar-fill alt" style={{ width: `${n.full_rules_fraction * 100}%` }} />
+            </span>
+            <span className="bar-num">
+              {n.escape_full_rules.toLocaleString()} ({(n.full_rules_fraction * 100).toFixed(1)}%)
+            </span>
+          </div>
+          <div className="bar-row">
+            <span className="bar-label">disagree</span>
+            <span className="bar-track">
+              <span className="bar-fill warn" style={{ width: `${n.disagree_fraction * 100}%` }} />
+            </span>
+            <span className="bar-num">
+              {n.disagree.toLocaleString()} ({(n.disagree_fraction * 100).toFixed(1)}%)
+            </span>
+          </div>
+        </div>
+        <p className="panel-note">
+          Of {n.scoreable.toLocaleString()} scoreable stops the two rules split on{" "}
+          {n.disagree.toLocaleString()} — driven by the long-exon rule (
+          {n.driven_by_long_exon.toLocaleString()}), the start-proximal rule (
+          {n.driven_by_start_proximal.toLocaleString()}), or both ({n.driven_by_both.toLocaleString()}
+          ). Every split is the fuller rules escaping a stop the guideline calls decay.
+        </p>
       </section>
 
       <section className="panel">

@@ -19,6 +19,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
+from riborescue.variants.nmd import disagreement_atlas, nmd_predictors
 from riborescue.variants.panels import coverage_frontier
 
 __all__ = [
@@ -52,6 +53,7 @@ class ResearchAggregate:
     provenance: dict
     mapping_completeness: dict
     reach_denominator: dict
+    nmd: dict
     frontiers: dict
     condition_coverage_top: list[dict]
     caveats: dict
@@ -63,6 +65,7 @@ class ResearchAggregate:
                 "provenance": self.provenance,
                 "mapping_completeness": self.mapping_completeness,
                 "reach_denominator": self.reach_denominator,
+                "nmd": self.nmd,
                 "frontiers": self.frontiers,
                 "condition_coverage_top": self.condition_coverage_top,
                 "caveats": self.caveats,
@@ -127,6 +130,7 @@ def build_research_aggregate(
             "condition_entities": len(coverage),
         },
         mapping_completeness=completeness,
+        nmd=disagreement_atlas(nmd_predictors(contexts)),
         reach_denominator={
             "eligible_condition_entities": int(eligible["medgen"].nunique()),
             "unique_variant_condition_pairs": len(eligible),
@@ -164,6 +168,11 @@ def build_research_aggregate(
             ),
             "unmet_need": (
                 "No unmet-need claim is made; that needs a treatment-status source not used here."
+            ),
+            "nmd": (
+                "NMD escape is two rule-based predictors — the 50-nt guideline and the fuller "
+                "Lindeboom rule set — not yet the ML models (NMDetective-AI, predNMD). A "
+                "disagreement is the guideline's blind spot, not model uncertainty."
             ),
         },
     )

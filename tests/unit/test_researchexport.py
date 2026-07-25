@@ -30,29 +30,20 @@ def _diseases() -> pd.DataFrame:
 
 
 def _contexts() -> pd.DataFrame:
+    geometry = {
+        "in_last_exon": False,
+        "nt_to_last_junction": 800.0,
+        "nt_from_start": 500,
+        "ptc_exon_length": 100,
+    }
     return pd.DataFrame(
         [
-            {
-                "variant_id": "V1",
-                "gene_symbol": "A",
-                "scoreable": True,
-                "stop_type": "uga",
-                "original_aa": "R",
-            },
-            {
-                "variant_id": "V2",
-                "gene_symbol": "A",
-                "scoreable": True,
-                "stop_type": "uga",
-                "original_aa": "R",
-            },
-            {
-                "variant_id": "V3",
-                "gene_symbol": "B",
-                "scoreable": False,
-                "stop_type": "",
-                "original_aa": "",
-            },
+            {"variant_id": "V1", "gene_symbol": "A", "scoreable": True, "stop_type": "uga",
+             "original_aa": "R", **geometry},
+            {"variant_id": "V2", "gene_symbol": "A", "scoreable": True, "stop_type": "uga",
+             "original_aa": "R", **geometry},
+            {"variant_id": "V3", "gene_symbol": "B", "scoreable": False, "stop_type": "",
+             "original_aa": "", **geometry},
         ]
     )
 
@@ -73,6 +64,12 @@ def test_all_three_frontiers_are_present():
     aggregate = build_research_aggregate(_diseases(), _contexts(), clinvar_release="r")
     assert set(aggregate.frontiers) == {"variants", "genes", "conditions"}
     assert aggregate.frontiers["variants"][0]["design_id"] == "UGA-R"
+
+
+def test_the_nmd_disagreement_atlas_rides_along():
+    aggregate = build_research_aggregate(_diseases(), _contexts(), clinvar_release="r")
+    assert aggregate.nmd["scoreable"] == 2
+    assert {"escape_guideline", "escape_full_rules", "disagree"} <= set(aggregate.nmd)
 
 
 def test_the_reach_denominator_is_spelled_out():

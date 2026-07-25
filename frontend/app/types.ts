@@ -96,6 +96,18 @@ export interface ResearchAggregate {
     reachable_entities: number;
     note: string;
   };
+  nmd: {
+    scoreable: number;
+    escape_guideline: number;
+    escape_full_rules: number;
+    guideline_fraction: number;
+    full_rules_fraction: number;
+    disagree: number;
+    disagree_fraction: number;
+    driven_by_start_proximal: number;
+    driven_by_long_exon: number;
+    driven_by_both: number;
+  };
   frontiers: {
     variants: FrontierStep[];
     genes: FrontierStep[];

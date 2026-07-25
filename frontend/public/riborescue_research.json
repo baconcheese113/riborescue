@@ -1,7 +1,7 @@
 {
   "provenance": {
     "clinvar_release": "20260715",
-    "commit": "1ed7aea",
+    "commit": "e330e00",
     "qualifying_variants": 71378,
     "scoreable_variants": 70386,
     "condition_entities": 6058
@@ -18,6 +18,18 @@
     "excluded_placeholder_or_unmapped_rows": 30679,
     "reachable_entities": 5971,
     "note": "Entities are deduplicated to distinct MedGen concepts; reaching every reachable entity is partly a closure property of the design universe, not a therapeutic result."
+  },
+  "nmd": {
+    "scoreable": 70386,
+    "escape_guideline": 7248,
+    "escape_full_rules": 21475,
+    "guideline_fraction": 0.103,
+    "full_rules_fraction": 0.3051,
+    "disagree": 14227,
+    "disagree_fraction": 0.2021,
+    "driven_by_start_proximal": 2930,
+    "driven_by_long_exon": 10592,
+    "driven_by_both": 705
   },
   "frontiers": {
     "variants": [
@@ -1133,6 +1145,7 @@
     "coverage": "Model coverage is exact restoration \u2014 a suppressor design decodes the stop and reinserts the native residue. Not a therapeutic or clinical claim.",
     "three_metrics": "reach = at least one eligible variant covered; covered_fraction = covered over all eligible variants for the entity; complete = every eligible variant covered.",
     "cross_references": "OMIM and Orphanet are ClinVar-provided cross-reference identifiers only \u2014 they add no prevalence, treatment availability, or unmet-need evidence.",
-    "unmet_need": "No unmet-need claim is made; that needs a treatment-status source not used here."
+    "unmet_need": "No unmet-need claim is made; that needs a treatment-status source not used here.",
+    "nmd": "NMD escape is two rule-based predictors \u2014 the 50-nt guideline and the fuller Lindeboom rule set \u2014 not yet the ML models (NMDetective-AI, predNMD). A disagreement is the guideline's blind spot, not model uncertainty."
   }
 }

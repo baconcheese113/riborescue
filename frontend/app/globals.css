@@ -718,6 +718,12 @@ td.num {
   background: var(--accent);
   border-radius: 4px;
 }
+.bar-fill.alt {
+  background: #1baf7a;
+}
+.bar-fill.warn {
+  background: #eb6834;
+}
 .bar-num {
   font-family: ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
