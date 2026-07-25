@@ -13,7 +13,7 @@ const ROLES: { href: string; title: string; blurb: string }[] = [
     href: "/researcher",
     title: "Researcher",
     blurb:
-      "Coverage across the ClinVar nonsense-variant set: which suppressor-tRNA designs reach the most variants, genes and diseases, and how far each disease's variants are covered — every figure with its denominator.",
+      "Coverage across the ClinVar nonsense-variant set: which suppressor-tRNA designs reach the most variants, genes and ClinVar conditions, and how far each condition's variants are covered — every figure with its denominator.",
   },
   {
     href: "/explorer",

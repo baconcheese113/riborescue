@@ -135,10 +135,11 @@ export default function ResearcherPage() {
       <h1>Researcher</h1>
       <p className="lede">
         Where the suppressor-tRNA designs reach across the ClinVar nonsense-variant set, and how far
-        each condition&apos;s variants are covered. Coverage is exact restoration — a design decodes
-        the stop and reinserts the native residue — a prioritisation aid, <b>not a clinical claim</b>.
-        Entities are ClinVar <b>conditions</b> (MedGen concepts): diseases, but also findings and
-        broad labels, so they are counted as condition entities, not verified diseases.
+        each ClinVar condition&apos;s variants are covered. Coverage is exact restoration — a design
+        decodes the stop and reinserts the native residue — a prioritisation aid, <b>not a clinical
+        claim</b>. A <b>ClinVar condition</b> is a disease, syndrome, phenotype, susceptibility or
+        broader clinical label associated with variants in ClinVar — so these are counted as
+        conditions, not verified diseases.
       </p>
 
       <div className="prov">
@@ -146,16 +147,16 @@ export default function ResearcherPage() {
         <span>commit {p.commit || "—"}</span>
         <span>{p.qualifying_variants.toLocaleString()} qualifying variants</span>
         <span>{p.scoreable_variants.toLocaleString()} scoreable</span>
-        <span>{p.condition_entities.toLocaleString()} condition entities</span>
+        <span>{p.condition_entities.toLocaleString()} ClinVar conditions</span>
       </div>
 
       <section className="panel">
         <h2>Coverage frontiers</h2>
         <p className="panel-note">
           The fewest designs covering the most variants, genes, and — as a <b>reach</b> frontier —
-          condition entities. An entity is reached when a design restores at least one of its
+          ClinVar conditions. A condition is reached when a design restores at least one of its
           variants; that is weaker than covering all of it. That {r.reachable_entities.toLocaleString()}{" "}
-          reachable entities (of {r.eligible_condition_entities.toLocaleString()} eligible, over{" "}
+          reachable conditions (of {r.eligible_condition_entities.toLocaleString()} eligible, over{" "}
           {r.unique_variant_condition_pairs.toLocaleString()} unique variant–condition pairs) are all
           reached by the full panel is partly a closure property of the design universe, not a result.
         </p>
@@ -176,7 +177,7 @@ export default function ResearcherPage() {
       <section className="panel">
         <h2>Conditions by eligible variants</h2>
         <p className="panel-note">
-          The largest condition entities by eligible nonsense-variant denominator. Three metrics are
+          The largest ClinVar conditions by eligible nonsense-variant denominator. Three metrics are
           kept apart: <b>reach</b> (any variant covered), the <b>covered fraction</b> (covered over
           eligible), and <b>complete</b> (every eligible variant covered).
         </p>
@@ -184,7 +185,7 @@ export default function ResearcherPage() {
           <table>
             <thead>
               <tr>
-                <th>Condition entity</th>
+                <th>ClinVar condition</th>
                 <th>Covered</th>
                 <th>Fraction</th>
                 <th>Complete</th>
