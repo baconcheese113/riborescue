@@ -51,6 +51,11 @@ def scores(table: pd.DataFrame) -> pd.Series:
 
 
 @pytest.fixture(scope="module")
+def ceilings() -> pd.DataFrame:
+    return pd.read_csv(f"{_ORACLE}/reliability.tsv", sep="\t").set_index("treatment")
+
+
+@pytest.fixture(scope="module")
 def rounds(features: pd.DataFrame) -> pd.DataFrame:
     return split(features, EvalConfig.published_random_cv, rounds=2)
 
@@ -203,3 +208,29 @@ class TestHeadToHead:
         scored = head_to_head(features, rounds, scores, models={"K1": MODELS["K1"]})
         with pytest.raises(ValueError, match="no 'B' rows"):
             improvement(scored)
+
+
+class TestReliability:
+    """The ceiling every score is read against, from scripts/export_reliability.R."""
+
+    def test_every_modelled_drug_has_a_ceiling(self, ceilings):
+        metrics = pd.read_csv(f"{_ORACLE}/metrics.tsv", sep="\t")
+        assert set(metrics["drug"]) <= set(ceilings.index)
+
+    def test_the_ceiling_corrects_for_the_response_being_a_mean_of_two_replicates(self, ceilings):
+        # Spearman-Brown: the reliability of a mean of two measurements exceeds either one's.
+        expected = 2 * ceilings["r"] / (1 + ceilings["r"])
+        assert ceilings["ceiling"].to_numpy() == pytest.approx(expected.to_numpy())
+        assert (ceilings["ceiling"] > ceilings["single_replicate"]).all()
+
+    def test_no_model_beats_its_own_ceiling(self, ceilings):
+        # Against the uncorrected single-replicate figure four of six would, which is the error the
+        # correction exists to prevent rather than a fact about those drugs.
+        scored = pd.read_csv(f"{_ORACLE}/metrics.tsv", sep="\t").groupby("drug")["r2"].mean()
+        assert (scored < ceilings["ceiling"].reindex(scored.index)).all()
+        assert (scored > ceilings["single_replicate"].reindex(scored.index)).sum() == 4
+
+    def test_the_ceiling_is_not_one_number_for_every_drug(self, ceilings):
+        modelled = pd.read_csv(f"{_ORACLE}/metrics.tsv", sep="\t")["drug"].unique()
+        spread = ceilings["ceiling"].reindex(modelled)
+        assert spread.max() - spread.min() > 0.15

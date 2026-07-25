@@ -1467,8 +1467,15 @@ def head_to_head_command(
     rows = pd.concat(collected, ignore_index=True)
     write_table(rows[["drug", "config", "shuffle", "model", "round", "r2", "held_out"]], out)
 
+    # A gain is only readable against how much was left to gain. The ceiling is that drug's own
+    # replicate reliability, and the headroom is what the baseline leaves under it — the same
+    # absolute gain is a large thing where six points remain and a small one where twenty-eight do.
+    ceilings = read_table(oracle / "reliability.tsv").set_index("treatment")["ceiling"]
     summary = []
     for (drug, label), block in rows.groupby(["drug", "shuffle"], sort=True):
+        baseline = block.loc[block["model"] == "B", "r2"].mean()
+        ceiling = float(ceilings.get(drug, float("nan")))
+        headroom = ceiling - baseline
         for model, gains in improvement(block.drop(columns=["drug", "config", "shuffle"])).groupby(
             "model"
         ):
@@ -1483,6 +1490,10 @@ def head_to_head_command(
                     "ci_low": interval.low,
                     "ci_high": interval.high,
                     "excludes_zero": not interval.includes_zero(),
+                    "baseline_r2": baseline,
+                    "ceiling": ceiling,
+                    "headroom": headroom,
+                    "share_of_headroom": interval.point / headroom if headroom else float("nan"),
                 }
             )
     intervals = pd.DataFrame(summary)
@@ -1493,7 +1504,8 @@ def head_to_head_command(
         mark = "excludes zero" if row.excludes_zero else "includes zero"
         click.echo(
             f"  {row.drug:>10} {row.model:>3} {row.shuffle:>15}: "
-            f"{row.gain:+.4f} [{row.ci_low:+.4f}, {row.ci_high:+.4f}] {mark}"
+            f"{row.gain:+.4f} [{row.ci_low:+.4f}, {row.ci_high:+.4f}] {mark}, "
+            f"{row.share_of_headroom:+.1%} of the {row.headroom:.3f} left under the ceiling"
         )
 
 
