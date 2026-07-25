@@ -1,9 +1,9 @@
 {
   "provenance": {
     "clinvar_release": "20260715",
-    "commit": "7689aa1",
+    "commit": "f3fe459",
     "qualifying_variants": 71378,
-    "scoreable_variants": 70386,
+    "scoreable_variants": 70376,
     "condition_entities": 6058
   },
   "mapping_completeness": {
@@ -20,11 +20,11 @@
     "note": "Entities are deduplicated to distinct MedGen concepts; reaching every reachable entity is partly a closure property of the design universe, not a therapeutic result."
   },
   "nmd": {
-    "scoreable": 70386,
-    "escape_guideline": 7130,
-    "escape_full_rules": 21361,
-    "guideline_fraction": 0.1013,
-    "full_rules_fraction": 0.3035,
+    "scoreable": 70376,
+    "escape_guideline": 7120,
+    "escape_full_rules": 21351,
+    "guideline_fraction": 0.1012,
+    "full_rules_fraction": 0.3034,
     "disagree": 14231,
     "disagree_fraction": 0.2022,
     "driven_by_start_proximal": 2933,
@@ -58,113 +58,113 @@
         "rank": 4,
         "design_id": "UAA-E",
         "cumulative": 33450,
-        "cumulative_fraction": 0.4752,
+        "cumulative_fraction": 0.4753,
         "marginal": 4658
       },
       {
         "rank": 5,
         "design_id": "UAG-W",
-        "cumulative": 38006,
+        "cumulative": 38004,
         "cumulative_fraction": 0.54,
-        "marginal": 4556
+        "marginal": 4554
       },
       {
         "rank": 6,
         "design_id": "UGA-W",
-        "cumulative": 42510,
+        "cumulative": 42508,
         "cumulative_fraction": 0.604,
         "marginal": 4504
       },
       {
         "rank": 7,
         "design_id": "UAA-Q",
-        "cumulative": 46867,
+        "cumulative": 46862,
         "cumulative_fraction": 0.6659,
-        "marginal": 4357
+        "marginal": 4354
       },
       {
         "rank": 8,
         "design_id": "UAG-Y",
-        "cumulative": 51030,
+        "cumulative": 51025,
         "cumulative_fraction": 0.725,
         "marginal": 4163
       },
       {
         "rank": 9,
         "design_id": "UAA-Y",
-        "cumulative": 55024,
-        "cumulative_fraction": 0.7817,
+        "cumulative": 55019,
+        "cumulative_fraction": 0.7818,
         "marginal": 3994
       },
       {
         "rank": 10,
         "design_id": "UGA-C",
-        "cumulative": 57686,
+        "cumulative": 57681,
         "cumulative_fraction": 0.8196,
         "marginal": 2662
       },
       {
         "rank": 11,
         "design_id": "UGA-S",
-        "cumulative": 59978,
-        "cumulative_fraction": 0.8521,
-        "marginal": 2292
+        "cumulative": 59972,
+        "cumulative_fraction": 0.8522,
+        "marginal": 2291
       },
       {
         "rank": 12,
         "design_id": "UAG-K",
-        "cumulative": 61915,
-        "cumulative_fraction": 0.8796,
+        "cumulative": 61909,
+        "cumulative_fraction": 0.8797,
         "marginal": 1937
       },
       {
         "rank": 13,
         "design_id": "UAA-K",
-        "cumulative": 63691,
+        "cumulative": 63684,
         "cumulative_fraction": 0.9049,
-        "marginal": 1776
+        "marginal": 1775
       },
       {
         "rank": 14,
         "design_id": "UGA-G",
-        "cumulative": 65437,
+        "cumulative": 65430,
         "cumulative_fraction": 0.9297,
         "marginal": 1746
       },
       {
         "rank": 15,
         "design_id": "UAA-S",
-        "cumulative": 66831,
+        "cumulative": 66823,
         "cumulative_fraction": 0.9495,
-        "marginal": 1394
+        "marginal": 1393
       },
       {
         "rank": 16,
         "design_id": "UGA-L",
-        "cumulative": 67845,
+        "cumulative": 67837,
         "cumulative_fraction": 0.9639,
         "marginal": 1014
       },
       {
         "rank": 17,
         "design_id": "UAG-S",
-        "cumulative": 68777,
-        "cumulative_fraction": 0.9771,
-        "marginal": 932
+        "cumulative": 68768,
+        "cumulative_fraction": 0.9772,
+        "marginal": 931
       },
       {
         "rank": 18,
         "design_id": "UAG-L",
-        "cumulative": 69694,
+        "cumulative": 69685,
         "cumulative_fraction": 0.9902,
         "marginal": 917
       },
       {
         "rank": 19,
         "design_id": "UAA-L",
-        "cumulative": 70386,
+        "cumulative": 70376,
         "cumulative_fraction": 1.0,
-        "marginal": 692
+        "marginal": 691
       }
     ],
     "genes": [
@@ -172,132 +172,132 @@
         "rank": 1,
         "design_id": "UGA-R",
         "cumulative": 2569,
-        "cumulative_fraction": 0.7128,
+        "cumulative_fraction": 0.713,
         "marginal": 2569
       },
       {
         "rank": 2,
         "design_id": "UAG-Q",
         "cumulative": 3059,
-        "cumulative_fraction": 0.8488,
+        "cumulative_fraction": 0.849,
         "marginal": 490
       },
       {
         "rank": 3,
         "design_id": "UGA-W",
         "cumulative": 3165,
-        "cumulative_fraction": 0.8782,
+        "cumulative_fraction": 0.8784,
         "marginal": 106
       },
       {
         "rank": 4,
         "design_id": "UAG-E",
         "cumulative": 3254,
-        "cumulative_fraction": 0.9029,
+        "cumulative_fraction": 0.9031,
         "marginal": 89
       },
       {
         "rank": 5,
         "design_id": "UAG-W",
-        "cumulative": 3319,
+        "cumulative": 3318,
         "cumulative_fraction": 0.9209,
-        "marginal": 65
+        "marginal": 64
       },
       {
         "rank": 6,
         "design_id": "UAG-Y",
-        "cumulative": 3372,
+        "cumulative": 3371,
         "cumulative_fraction": 0.9356,
         "marginal": 53
       },
       {
         "rank": 7,
         "design_id": "UAA-Q",
-        "cumulative": 3416,
+        "cumulative": 3415,
         "cumulative_fraction": 0.9478,
         "marginal": 44
       },
       {
         "rank": 8,
         "design_id": "UAA-Y",
-        "cumulative": 3457,
+        "cumulative": 3456,
         "cumulative_fraction": 0.9592,
         "marginal": 41
       },
       {
         "rank": 9,
         "design_id": "UAA-E",
-        "cumulative": 3491,
+        "cumulative": 3490,
         "cumulative_fraction": 0.9686,
         "marginal": 34
       },
       {
         "rank": 10,
         "design_id": "UGA-C",
-        "cumulative": 3520,
+        "cumulative": 3519,
         "cumulative_fraction": 0.9767,
         "marginal": 29
       },
       {
         "rank": 11,
         "design_id": "UGA-S",
-        "cumulative": 3538,
+        "cumulative": 3537,
         "cumulative_fraction": 0.9817,
         "marginal": 18
       },
       {
         "rank": 12,
         "design_id": "UAG-S",
-        "cumulative": 3554,
+        "cumulative": 3553,
         "cumulative_fraction": 0.9861,
         "marginal": 16
       },
       {
         "rank": 13,
         "design_id": "UGA-G",
-        "cumulative": 3567,
+        "cumulative": 3566,
         "cumulative_fraction": 0.9897,
         "marginal": 13
       },
       {
         "rank": 14,
         "design_id": "UAA-K",
-        "cumulative": 3577,
+        "cumulative": 3576,
         "cumulative_fraction": 0.9925,
         "marginal": 10
       },
       {
         "rank": 15,
         "design_id": "UAG-K",
-        "cumulative": 3587,
+        "cumulative": 3586,
         "cumulative_fraction": 0.9953,
         "marginal": 10
       },
       {
         "rank": 16,
         "design_id": "UAA-S",
-        "cumulative": 3593,
+        "cumulative": 3592,
         "cumulative_fraction": 0.9969,
         "marginal": 6
       },
       {
         "rank": 17,
         "design_id": "UAG-L",
-        "cumulative": 3599,
+        "cumulative": 3598,
         "cumulative_fraction": 0.9986,
         "marginal": 6
       },
       {
         "rank": 18,
         "design_id": "UGA-L",
-        "cumulative": 3602,
+        "cumulative": 3601,
         "cumulative_fraction": 0.9994,
         "marginal": 3
       },
       {
         "rank": 19,
         "design_id": "UAA-L",
-        "cumulative": 3604,
+        "cumulative": 3603,
         "cumulative_fraction": 1.0,
         "marginal": 2
       }
@@ -1089,12 +1089,12 @@
       "omim": "602772",
       "orphanet": "791",
       "eligible_variants": 193,
-      "model_covered": 177,
-      "covered_fraction": 0.9171,
+      "model_covered": 174,
+      "covered_fraction": 0.9016,
       "reach": true,
       "complete": false,
       "genes": 2,
-      "designs_contributing": 19,
+      "designs_contributing": 18,
       "mapping_completeness": "mapped"
     },
     {

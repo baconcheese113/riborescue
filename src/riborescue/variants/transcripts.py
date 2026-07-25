@@ -101,13 +101,27 @@ class TranscriptModel:
 
         return self.offset_of(self.cds_start if self.strand == "+" else self.cds_end)
 
+    @property
+    def coding_end_offset(self) -> int | None:
+        """The 0-based offset of the last coding base — the 3' base of the natural stop codon."""
+
+        return self.offset_of(self.cds_end if self.strand == "+" else self.cds_start)
+
     def codon_covering(self, position: int) -> tuple[int, str] | None:
-        """The codon containing a genomic position: its offset in the transcript, and its bases."""
+        """The codon containing a genomic position: its offset in the transcript, and its bases.
+
+        A position 3' of the natural stop — in the 3' UTR — has no reading-frame codon: translation
+        has already terminated, so a substitution there is not a premature stop however the bases
+        fall. Such positions return None rather than a spurious codon past the coding sequence.
+        """
 
         offset, coding = self.offset_of(position), self.coding_offset
+        coding_end = self.coding_end_offset
         if offset is None or coding is None or offset < coding:
             return None
         start = coding + ((offset - coding) // 3) * 3
+        if coding_end is not None and start + 2 > coding_end:
+            return None
         codon = self.sequence[start : start + 3]
         return (start, codon) if len(codon) == 3 else None
 

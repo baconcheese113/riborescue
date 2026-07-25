@@ -36,7 +36,7 @@ predictors are computed, each deterministic:
 
 The per-rule flags are exposed, not just the verdicts. Because `full_rules` is a strict superset of
 `guideline`, the two disagree in one direction only, and the disagreement set is exactly the
-start-proximal and long-exon escapes the guideline does not call. On the full ClinVar set (70,386
+start-proximal and long-exon escapes the guideline does not call. On the full ClinVar set (70,376
 scoreable stops) the guideline escapes 10.1%, the full rule set 30.3%, and the two split on 20.2%
 (14,231 stops — long-exon 10,593, start-proximal 2,933, both 705). The split is a change of
 classification, not a measured error rate: which rule is right at a split needs an empirical NMD

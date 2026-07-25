@@ -132,3 +132,36 @@ def test_a_single_exon_transcript_has_no_junctions():
         protein_id="NP_single.1",
     )
     assert single.junction_offsets == ()
+
+
+def _utr_model():
+    """ATG · AAA · TAA(stop) · AAAAAA(3' UTR): coding ends at offset 8, six UTR bases follow."""
+
+    from riborescue.variants.transcripts import TranscriptModel
+
+    return TranscriptModel(
+        transcript_id="NM_utr.1",
+        gene_id=2,
+        chrom="chr1",
+        strand="+",
+        exons=((100, 114),),
+        cds_start=100,
+        cds_end=108,
+        sequence="ATGAAATAAAAAAAA",
+        protein_id="NP_utr.1",
+    )
+
+
+def test_coding_end_offset_is_the_last_base_of_the_natural_stop():
+    model = _utr_model()
+    assert model.coding_end_offset == 8
+    assert model.sequence[6:9] == "TAA"  # the natural stop, ending at the coding-end offset
+
+
+def test_a_codon_in_the_three_prime_utr_past_the_natural_stop_has_no_codon():
+    # Genomic 110 is offset 10, inside the 3' UTR: translation has already terminated, so there is
+    # no reading-frame codon there however the bases fall — a substitution is not a premature stop.
+    model = _utr_model()
+    assert model.codon_covering(106) == (6, "TAA")  # the natural stop is still covered
+    assert model.codon_covering(110) is None  # one codon into the 3' UTR
+    assert model.codon_covering(113) is None
