@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any, cast
 
 import pandas as pd
 
@@ -170,10 +171,31 @@ def _aenmd_by_variant(aenmd: pd.DataFrame | None) -> dict[object, dict]:
     }
 
 
-def _with_aenmd(nmd: dict | None, aenmd: dict | None) -> dict | None:
-    """Attach the aenmd verdict to a variant's NMD object, when the variant has a rule-tier one."""
+def _nmdetective_by_variant(nmdetective: pd.DataFrame | None) -> dict[object, dict]:
+    """Each variant's NMDetective-AI efficiency score, or the reason the model did not place it."""
 
-    return None if nmd is None else {**nmd, "aenmd": aenmd}
+    if nmdetective is None:
+        return {}
+    verdicts = {}
+    for row in nmdetective.itertuples():
+        available = bool(row.nmd_available)
+        # itertuples types a scalar as pandas' own union (which includes complex); the score is a
+        # plain float, so cast before rounding.
+        efficiency = cast(Any, row.nmd_efficiency)
+        verdicts[row.variant_id] = {
+            "available": available,
+            "efficiency": round(float(efficiency), 4)
+            if available and pd.notna(efficiency)
+            else None,
+            "reason": str(row.reason) if not available else "",
+        }
+    return verdicts
+
+
+def _with_models(nmd: dict | None, aenmd: dict | None, nmdetective: dict | None) -> dict | None:
+    """Attach the model-tier verdicts to a variant's rule-tier NMD object, when it has one."""
+
+    return None if nmd is None else {**nmd, "aenmd": aenmd, "nmdetective": nmdetective}
 
 
 def build_web_table(
@@ -184,6 +206,7 @@ def build_web_table(
     safety: dict | None = None,
     nmd: pd.DataFrame | None = None,
     aenmd: pd.DataFrame | None = None,
+    nmdetective: pd.DataFrame | None = None,
 ) -> WebTable:
     """Join the per-variant landscape to the per-therapy intervals into the app's table.
 
@@ -202,6 +225,7 @@ def build_web_table(
     }
     nmd_by_variant = _nmd_by_variant(nmd)
     aenmd_by_variant = _aenmd_by_variant(aenmd)
+    nmdetective_by_variant = _nmdetective_by_variant(nmdetective)
     therapies = sorted(amenability["therapy_id"].unique())
 
     variants = []
@@ -248,8 +272,10 @@ def build_web_table(
                 "best": best,
                 "therapies": offered,
                 "suppressor": _suppressor(str(row["stop_type"]), str(row["original_aa"])),
-                "nmd": _with_aenmd(
-                    nmd_by_variant.get(row["variant_id"]), aenmd_by_variant.get(row["variant_id"])
+                "nmd": _with_models(
+                    nmd_by_variant.get(row["variant_id"]),
+                    aenmd_by_variant.get(row["variant_id"]),
+                    nmdetective_by_variant.get(row["variant_id"]),
                 ),
             }
         )

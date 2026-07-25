@@ -48,3 +48,6 @@ results/
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# External tool checkouts (cloned at pinned commits by scripts)
+vendor/

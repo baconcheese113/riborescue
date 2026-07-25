@@ -21,6 +21,7 @@ import pandas as pd
 from riborescue.variants.aenmd import model_agreement
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
 from riborescue.variants.nmd import disagreement_atlas, nmd_predictors
+from riborescue.variants.nmdetective import nmdetective_summary
 from riborescue.variants.panels import coverage_frontier
 
 __all__ = [
@@ -84,19 +85,22 @@ def build_research_aggregate(
     commit: str = "",
     top: int = 50,
     aenmd: pd.DataFrame | None = None,
+    nmdetective: pd.DataFrame | None = None,
 ) -> ResearchAggregate:
     """Assemble the researcher aggregate from the disease and context tables.
 
     `top` bounds the per-entity list to the largest by eligible denominator, so the payload stays
     small; the frontiers and completeness counts are whole-set. `clinvar_release` and `commit` are
-    the provenance the whole page rests on. `aenmd`, when given, adds the model tier's agreement
-    with the rule tier to the NMD atlas.
+    the provenance the whole page rests on. `aenmd` and `nmdetective`, when given, add the model
+    tier — the rule tool's agreement and the deep model's efficiency separation — to the NMD atlas.
     """
 
     predictors = nmd_predictors(contexts)
     nmd_atlas = disagreement_atlas(predictors)
     if aenmd is not None:
         nmd_atlas = nmd_atlas | {"aenmd": model_agreement(predictors, aenmd)}
+    if nmdetective is not None:
+        nmd_atlas = nmd_atlas | {"nmdetective": nmdetective_summary(predictors, nmdetective)}
 
     coverage = disease_coverage(diseases, contexts)
     completeness = {
@@ -179,10 +183,10 @@ def build_research_aggregate(
             ),
             "nmd": (
                 "NMD escape is two hand-rolled rule predictors — the 50-nt guideline and the "
-                "fuller Lindeboom rule set — checked against aenmd, the published rule tool, on "
-                "the variants aenmd scores. The ML models (NMDetective-AI, predNMD) are not yet "
-                "in. A rule disagreement is where the fuller rules turn the classification, not "
-                "evidence of which rule is correct and not model uncertainty."
+                "fuller Lindeboom rule set — checked against aenmd (the published rule tool) and "
+                "NMDetective-AI (a deep model whose continuous efficiency is not thresholded into "
+                "a verdict here); predNMD is not in. A rule disagreement is where the fuller rules "
+                "turn the classification, not evidence of which rule is correct."
             ),
         },
     )

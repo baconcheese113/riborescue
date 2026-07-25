@@ -133,6 +133,48 @@ bioconductor-biocfilecache = "*"
 aenmd-install = "Rscript scripts/install_aenmd.R"
 aenmd = { cmd = "Rscript scripts/aenmd_nmd.R --variants results/clinvar_nonsense.tsv --out results/aenmd.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
 
+# NMDetective-AI (Veiner et al. 2026; Vejni/NMDetectiveAI, MIT) is the model tier's deep member — a
+# fine-tuned Orthrus/Mamba encoder that runs on the local GPU. Its CUDA stack (PyTorch, GenomeKit,
+# mamba-ssm/causal-conv1d from conda-forge) lives in its own environment; the package and its LFS
+# weights are cloned from a pinned commit by scripts/install_nmdetective.sh.
+# WSL2 GPU passthrough does not always expose the CUDA driver to the solver's virtual-package
+# detection, so the CUDA version the RTX 4070 Ti's driver supports is declared explicitly.
+[tool.pixi.feature.nmdetective.system-requirements]
+cuda = "12"
+
+[tool.pixi.feature.nmdetective.dependencies]
+python = "3.10.*"
+pytorch-gpu = ">=2.4"
+genomekit = "*"
+mamba-ssm = "*"
+causal-conv1d = "*"
+git = "*"
+git-lfs = "*"
+biopython = "*"
+typer = "*"
+loguru = "*"
+tqdm = "*"
+pandas = "*"
+numpy = "*"
+scipy = "*"
+scikit-learn = "*"
+statsmodels = "*"
+matplotlib = "*"
+seaborn = "*"
+openpyxl = "*"
+wandb = "*"
+einops = "*"
+safetensors = "*"
+pybigwig = "*"
+pip = "*"
+# transformers / tokenizers / huggingface-hub are pinned for the Orthrus remote code, but the conda
+# solve pins a newer huggingface-hub; matching the upstream recipe, scripts/install_nmdetective.sh
+# pip-installs the pinned trio after the env is built rather than letting the solver reconcile them.
+
+[tool.pixi.feature.nmdetective.tasks]
+nmdetective-install = "bash scripts/install_nmdetective.sh"
+nmdetective = { cmd = "python scripts/nmdetective_predict.py --nonsense results/clinvar_nonsense.tsv --mane-summary data/mane/MANE.GRCh38.v1.5.summary.txt.gz --model vendor/NMDetectiveAI/models/NMDetectiveAI.pt --out results/nmdetective.tsv" }
+
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
 [tool.pixi.environments]
@@ -140,6 +182,7 @@ default = { features = ["dev", "pipeline", "oracle", "riboseq"], solve-group = "
 runtime = { features = [], solve-group = "riborescue" }
 psite = { features = ["psite"], no-default-feature = true }
 aenmd = { features = ["aenmd"], no-default-feature = true }
+nmdetective = { features = ["nmdetective"], no-default-feature = true }
 
 [tool.pixi.tasks]
 lint = "ruff check ."
@@ -207,7 +250,7 @@ aenmd-verdicts = { cmd = "riborescue aenmd-verdicts --aenmd results/aenmd.tsv --
 # added by export-web-safety where the Ribo-seq atlas and aenmd env have run, so the app builds on a
 # laptop that never ran the sequencing arm.
 export-web = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
-export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
+export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 export-web-example = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }

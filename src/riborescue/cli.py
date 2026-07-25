@@ -494,6 +494,12 @@ def atlas_predict(
     help="The aenmd verdicts table, to show the published tool's call beside the rule tier.",
 )
 @click.option(
+    "--nmdetective",
+    "nmdetective_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The NMDetective-AI table, to show the deep model's efficiency score per variant.",
+)
+@click.option(
     "--sample",
     type=int,
     help="Write a diverse sample of this many variants — the example artifact — instead of all.",
@@ -505,6 +511,7 @@ def export_web(
     predicted: Path | None,
     nmd_table: Path | None,
     aenmd_table: Path | None,
+    nmdetective_table: Path | None,
     sample: int | None,
     out: Path,
 ) -> None:
@@ -516,8 +523,15 @@ def export_web(
     safety = safety_summary(read_table(predicted), therapies) if predicted is not None else None
     nmd = read_table(nmd_table) if nmd_table is not None else None
     aenmd = read_table(aenmd_table) if aenmd_table is not None else None
+    nmdetective = read_table(nmdetective_table) if nmdetective_table is not None else None
     table = build_web_table(
-        land, amen, variant_ids=variant_ids, safety=safety, nmd=nmd, aenmd=aenmd
+        land,
+        amen,
+        variant_ids=variant_ids,
+        safety=safety,
+        nmd=nmd,
+        aenmd=aenmd,
+        nmdetective=nmdetective,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(table.to_json())
@@ -810,6 +824,12 @@ def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help="The aenmd verdicts table, to add the model tier's agreement with the rule tier.",
 )
+@click.option(
+    "--nmdetective",
+    "nmdetective_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The NMDetective-AI table, to add the deep model's efficiency separation to the atlas.",
+)
 @_OUT
 def export_research(
     table: Path,
@@ -817,6 +837,7 @@ def export_research(
     clinvar_release: str,
     commit: str,
     aenmd_table: Path | None,
+    nmdetective_table: Path | None,
     out: Path,
 ) -> None:
     """Build the researcher dashboard aggregate: coverage frontiers and per-disease coverage.
@@ -842,6 +863,7 @@ def export_research(
         clinvar_release=clinvar_release,
         commit=commit,
         aenmd=read_table(aenmd_table) if aenmd_table is not None else None,
+        nmdetective=read_table(nmdetective_table) if nmdetective_table is not None else None,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(aggregate.to_json())

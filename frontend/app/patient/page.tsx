@@ -68,6 +68,13 @@ function Evidence({ variant }: { variant: Variant }) {
                   </span>{" "}
                 </>
               )}
+              {variant.nmd.nmdetective?.available && variant.nmd.nmdetective.efficiency !== null && (
+                <>
+                  <span className={`pill ${variant.nmd.nmdetective.efficiency <= 0 ? "good" : "bad"}`}>
+                    NMDetective-AI: {variant.nmd.nmdetective.efficiency.toFixed(2)}
+                  </span>{" "}
+                </>
+              )}
               {variant.nmd.disagree ? (
                 <span className="slot-note">
                   the two rule sets <b>disagree</b> here — the fuller rules escape a stop the 50-nt
@@ -81,17 +88,24 @@ function Evidence({ variant }: { variant: Variant }) {
               {variant.nmd.aenmd &&
                 (variant.nmd.aenmd.available ? (
                   <span className="slot-note">
-                    aenmd, the published tool,{" "}
+                    aenmd, the published rule tool,{" "}
                     {variant.nmd.aenmd.escape === variant.nmd.escape_full_rules
                       ? "agrees with the full rule set"
                       : "differs from the full rule set"}
-                    ; the ML predictors are not yet in
                   </span>
                 ) : (
                   <span className="slot-note">
                     aenmd did not score this variant ({variant.nmd.aenmd.reason.replace(/_/g, " ")})
                   </span>
                 ))}
+              {variant.nmd.nmdetective?.available && variant.nmd.nmdetective.efficiency !== null && (
+                <span className="slot-note">
+                  NMDetective-AI, the deep model, scores NMD efficiency{" "}
+                  {variant.nmd.nmdetective.efficiency.toFixed(2)} — higher means more decay, so this
+                  variant leans {variant.nmd.nmdetective.efficiency <= 0 ? "escape" : "decay"} (a
+                  continuous score, not a yes/no call)
+                </span>
+              )}
             </>
           ) : (
             <>

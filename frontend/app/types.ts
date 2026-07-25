@@ -36,6 +36,12 @@ export interface AenmdVerdict {
   reason: string;
 }
 
+export interface NmdetectiveVerdict {
+  available: boolean;
+  efficiency: number | null;
+  reason: string;
+}
+
 export interface NmdVerdict {
   escape_guideline: boolean;
   escape_full_rules: boolean;
@@ -47,6 +53,7 @@ export interface NmdVerdict {
     long_exon: boolean;
   };
   aenmd?: AenmdVerdict | null;
+  nmdetective?: NmdetectiveVerdict | null;
 }
 
 export interface SafetyAtlas {
@@ -139,6 +146,15 @@ export interface ResearchAggregate {
       full_escape_aenmd_decay: number;
       full_decay_aenmd_escape: number;
       guideline_vs_aenmd_agree_fraction: number;
+    };
+    nmdetective?: {
+      scoreable: number;
+      available: number;
+      both_available: number;
+      available_fraction: number;
+      efficiency_median?: number;
+      guideline?: { escape_mean_efficiency: number | null; decay_mean_efficiency: number | null; separation: number | null };
+      full_rules?: { escape_mean_efficiency: number | null; decay_mean_efficiency: number | null; separation: number | null };
     };
   };
   frontiers: {

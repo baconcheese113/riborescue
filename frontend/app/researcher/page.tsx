@@ -219,7 +219,22 @@ export default function ResearcherPage() {
             {(n.aenmd.full_escape_aenmd_decay + n.aenmd.full_decay_aenmd_escape).toLocaleString()}{" "}
             disagreements ({n.aenmd.full_decay_aenmd_escape} aenmd-only escapes,{" "}
             {n.aenmd.full_escape_aenmd_decay} rule-only) are aenmd&apos;s own edge cases, not a different
-            idea of NMD. This is the rule tier checked, not the ML tier — that is still to come.
+            idea of NMD.
+          </p>
+        )}
+        {n.nmdetective && n.nmdetective.full_rules?.separation != null && (
+          <p className="panel-note" style={{ borderTop: "1px solid var(--edge)", paddingTop: "0.75rem" }}>
+            <b>And against NMDetective-AI</b> (Veiner et al. 2026), the deep model — a fine-tuned
+            Orthrus/Mamba encoder run here on a local GPU. It gives a continuous NMD-efficiency score,
+            not a verdict, so nothing thresholds it. Over the{" "}
+            {n.nmdetective.both_available.toLocaleString()} stops it scored (
+            {(n.nmdetective.available_fraction * 100).toFixed(0)}% — its GENCODE v26 reference predates
+            more MANE transcripts than aenmd&apos;s), the stops the full rule set calls escape carry a
+            markedly lower mean efficiency than those it calls decay (
+            {n.nmdetective.full_rules.escape_mean_efficiency?.toFixed(2)} vs{" "}
+            {n.nmdetective.full_rules.decay_mean_efficiency?.toFixed(2)}, a separation of{" "}
+            <b>{n.nmdetective.full_rules.separation.toFixed(2)}</b>). Lower efficiency means more
+            escape, so the deep model moves in the same direction as the rules without being told them.
           </p>
         )}
       </section>

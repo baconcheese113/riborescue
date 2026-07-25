@@ -63,11 +63,30 @@ the block is not spent retrying one model.
 Order, by tractability:
 
 1. **aenmd** — pinned, CPU-only, license-clean; a real independent implementation of the same rules.
-2. **predNMD** — prefer the precomputed-table lookup (no inference) if the host or a mirror can be
-   reached and pinned by checksum; otherwise run the MIT code, which needs a heavy reference bundle
-   (gnomAD constraint, phyloP bigWig, Ensembl 104 genome/GTF/CDS + VEP) fetched and pinned first.
-3. **NMDetective-AI** — a fine-tuned Orthrus/Mamba model on PyTorch; attempted last because the Mamba
-   inference stack is the least certain to run without a GPU. Blocked → documented, not stubbed.
+   **Done.** Over the 48,148 stops aenmd scores, the hand-rolled `full_rules` agrees with it on
+   99.36%; the 32% aenmd does not score is reported by cause (a build-version gap for most, its own
+   splice filtering for the rest). See `variants/aenmd.py`, `scripts/aenmd_nmd.R`, `feature.aenmd`.
+
+2. **predNMD** — **blocked on the tractable path.** The precomputed prediction tables (all
+   13,968,776 GRCh38 stop-gain SNVs) are the ideal — a keyed lookup, no inference — but they are
+   distributed "available upon request" from `compbio.berkeley.edu/proj/prednmd` (the host serves an
+   untrusted TLS certificate; the page's own download tab lists both the GRCh37 and GRCh38 tables as
+   *available upon request*, not as files). The GitHub code is MIT and runnable, but its random forest
+   needs a heavy feature bundle first — Ensembl-104 genome/GTF/CDS + VEP, gnomAD LOEUF, a phyloP
+   bigWig (~10 GB), plus m6A density and TranslationAI features — a pipeline disproportionate to this
+   pass and with real feature-parity risk against the authors' exact computation. Recorded as blocked;
+   the follow-up is an email for the tables or a scoped build of the feature pipeline.
+
+3. **NMDetective-AI** — **integrated, running on the local RTX 4070 Ti.** Its CUDA stack lives in the
+   `nmdetective` Pixi feature (PyTorch-GPU, GenomeKit, `mamba-ssm`/`causal-conv1d` from conda-forge —
+   no local compilation), with the Orthrus HuggingFace pins and the Git-LFS weights installed from a
+   pinned commit by `scripts/install_nmdetective.sh`. `scripts/nmdetective_predict.py` encodes each
+   ClinVar variant on its MANE transcript into the model's six-track input and scores it; the full pass
+   is a resumable background job (GenomeKit-encoding-bound, GPU near-idle). Unlike the rules and aenmd,
+   NMDetective-AI emits a continuous NMD-*efficiency* score, not a verdict, so nothing thresholds it:
+   the atlas reports the separation between the mean efficiency of rule-escape and rule-decay stops,
+   which is positive (escaping stops score lower), so the deep model tracks the rules' direction
+   without sharing their labels. See `variants/nmdetective.py`.
 
 **Provenance and honesty.** Every fetched artifact is pinned by URL + checksum with a fetch script;
 long inference is resumable and atomic per batch, verifies its output count, and refuses stale or mixed
