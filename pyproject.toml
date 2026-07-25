@@ -253,6 +253,10 @@ readthrough-gse144140 = { cmd = "bash scripts/run_readthrough.sh gse144140 dmso 
 select-lengths-fibroblast = "riborescue select-lengths gse179274_fibroblast --frames results/psite/gse179274_fibroblast/frame_by_length.tsv --offsets results/psite/gse179274_fibroblast/psite_offsets.tsv --script-md5 results/psite/gse179274_fibroblast/script.md5 --out results/psite/gse179274_fibroblast/calibration.json"
 readthrough-fibroblast = { cmd = "bash scripts/run_readthrough.sh gse179274_fibroblast untreated unpaired g418_0.1 g418_0.5", depends-on = ["readthrough-suptrna"] }
 readthrough-suptrna = "bash scripts/run_readthrough.sh gse179274_fibroblast egfp unpaired suptrna_tyr"
+# What that refused dataset can still say: not whether the suppressor tRNA works, but how large an
+# effect its design could have resolved, and what would have to change to resolve a smaller one
+# (ADR-0019). Exploratory, written where no production task reads.
+detectability-fibroblast = "bash scripts/run_detectability.sh gse179274_fibroblast suptrna_tyr egfp g418_0.1:untreated g418_0.5:untreated"
 disk = "bash scripts/require_disk.sh 200"
 prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv", depends-on = ["disk"] }
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }

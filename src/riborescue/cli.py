@@ -1,5 +1,6 @@
 """The riborescue command line — every scientific step the pipeline runs enters through here."""
 
+import math
 import subprocess
 from pathlib import Path
 
@@ -22,8 +23,17 @@ from riborescue.core.tables import (
     read_table,
     write_table,
 )
-from riborescue.riboseq.calibration import read_manifest, select_lengths
+from riborescue.riboseq.calibration import load_manifest, read_manifest, select_lengths
 from riborescue.riboseq.contaminants import write_contaminants
+from riborescue.riboseq.detectability import (
+    CONFIDENCE,
+    POWER,
+    QUANTITIES,
+    bootstrap_intervals,
+    counting_error,
+    detectability,
+    failure_kind,
+)
 from riborescue.riboseq.expression import (
     composition,
     gene_symbols,
@@ -1378,6 +1388,180 @@ def readthrough_assay(
     click.echo(f"  {'signature':>22}: {'complete' if all(met.values()) else 'incomplete'}")
     if stalling(effects):
         click.echo(f"  {'stalling':>22}: yes — raised at the stop, not beyond it")
+
+
+@main.command("detectability")
+@click.argument("counts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--gtf", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--samplesheet",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The staged runs, naming each library's treatment and replicate.",
+)
+@click.option("--treated", required=True, help="The treatment arm being sized.")
+@click.option("--control", required=True, help="The arm it would be compared against.")
+@click.option("--dataset", required=True, help="The experiment whose libraries form the contrast.")
+@click.option(
+    "--manifest",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The calibration manifest. Read without its pass check, and refused for any library "
+    "whose failure is validity rather than depth.",
+)
+@click.option(
+    "--reference",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The contrast summary of a dataset that passed and completed, whose effect sizes are "
+    "what this design is asked whether it could have resolved.",
+)
+@click.option(
+    "--published-lengths",
+    type=(int, int),
+    help="Size the arm on this inclusive length range instead of the manifest's selected set.",
+)
+@click.option("--draws", default=2000, show_default=True, help="Transcript bootstrap resamples.")
+@click.option("--seed", default=0, show_default=True, help="Bootstrap seed.")
+@_OUT
+def detectability_arm(
+    counts: Path,
+    gtf: Path,
+    samplesheet: Path,
+    treated: str,
+    control: str,
+    dataset: str,
+    manifest: Path,
+    reference: Path,
+    published_lengths: tuple[int, int] | None,
+    draws: int,
+    seed: int,
+    out: Path,
+) -> None:
+    """Say how large an effect COUNTS could have resolved, not whether it shows one.
+
+    ADR-0019. For a dataset whose libraries fail calibration on depth alone. This is not a contrast
+    and never becomes one: it reports the smallest effect the design could detect, how much deeper
+    it would have to be sequenced, and how many libraries per arm it would take.
+    """
+
+    if "exploratory" not in out.parts:
+        raise click.ClickException(
+            f"{out} is not under an exploratory directory — this arm's output is not a result and "
+            "nothing that reads production tables may be able to reach it"
+        )
+
+    calibration = load_manifest(manifest)
+    if calibration.dataset != dataset:
+        raise click.ClickException(f"{manifest} calibrates {calibration.dataset}, not {dataset}")
+    kinds = {library.sample: failure_kind(library) for library in calibration.libraries}
+    click.echo(f"{dataset} calibration, every library and why it stands where it does:")
+    for library in calibration.libraries:
+        reason = "; ".join(library.failures) or "passes"
+        click.echo(f"  {kinds[library.sample]:>9}  {library.sample}: {reason}")
+
+    runs = _validated(StagedRuns, read_table(samplesheet), samplesheet)
+    arms = runs.loc[
+        (runs["assay"] == "riboseq")
+        & (runs["dataset"] == dataset)
+        & (runs["treatment"].isin([treated, control])),
+        ["sample", "treatment", "replicate"],
+    ]
+    if arms.empty:
+        raise click.ClickException(f"{samplesheet} names no {dataset} libraries for that contrast")
+
+    # A displaced P-site offset assigns reads to the wrong codon, which moves an estimate rather
+    # than widening it. No interval represents that and no depth repairs it, so the contrast is
+    # refused here exactly as it is in production.
+    invalid = sorted(s for s in arms["sample"] if kinds.get(s, "validity") == "validity")
+    if invalid:
+        detail = "; ".join(f"{s}: {', '.join(calibration.failures.get(s, ()))}" for s in invalid)
+        raise click.ClickException(
+            f"{treated} against {control} rests on libraries that failed on validity, not "
+            f"depth — {detail}. This contrast is not analysable under any window."
+        )
+
+    lengths_used = (
+        tuple(range(published_lengths[0], published_lengths[1] + 1))
+        if published_lengths is not None
+        else calibration.lengths
+    )
+    measured = read_table(counts)
+    if "length" in measured.columns:
+        measured = collapse_lengths(measured, lengths_used)
+    if absent := sorted(set(arms["sample"]) - set(measured["sample"])):
+        raise click.ClickException(f"{counts} has no rows for: {', '.join(absent)}")
+
+    published = read_table(reference).set_index("quantity")["mean_difference"]
+    targets = {quantity: float(published[quantity]) for quantity in QUANTITIES}
+
+    kept = qualifying(
+        measured,
+        transcript_genes(gtf),
+        overlapping_downstream_cds(gtf),
+        samples=set(arms["sample"]),
+    )
+    arm_label = "published window" if published_lengths is not None else "selected set"
+    lengths = ", ".join(str(length) for length in lengths_used)
+    qualified = kept["transcript"].nunique()
+    click.echo(f"{arm_label}: {lengths} nt — {qualified:,} transcripts qualifying")
+
+    ratios = library_ratios(kept)
+    counting = counting_error(kept)
+    try:
+        sized = detectability(ratios, counting, arms, treated, control, targets)
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
+
+    summary = pd.DataFrame(
+        {
+            "quantity": list(sized),
+            "reference_effect": [e.target for e in sized.values()],
+            "observed_difference": [e.mean_difference for e in sized.values()],
+            "minimum_detectable_effect": [e.minimum_detectable_effect for e in sized.values()],
+            "irreducible_effect": [e.irreducible_effect for e in sized.values()],
+            "between_library_share": [e.between_library_share for e in sized.values()],
+            "depth_multiplier_at_least": [e.depth_multiplier for e in sized.values()],
+            "replicates_required": [e.replicates_required for e in sized.values()],
+            "variance_degrees_of_freedom": [e.degrees_of_freedom for e in sized.values()],
+        }
+    )
+    write_table(summary, out)
+
+    per_library = ratios.merge(arms, on="sample").merge(
+        bootstrap_intervals(kept, draws=draws, seed=seed).merge(
+            counting.reset_index().melt(
+                id_vars="sample", var_name="quantity", value_name="counting_se"
+            ),
+            on=["sample", "quantity"],
+        ),
+        on="sample",
+    )
+    per_library["calibration"] = per_library["sample"].map(kinds)
+    write_table(per_library, out.with_name(f"{out.stem}_by_library{out.suffix}"))
+
+    click.echo(
+        f"{treated} against {control}, {len(sized['frame_gap'].treated)} against "
+        f"{len(sized['frame_gap'].control)} libraries, unpaired — detectability at "
+        f"{CONFIDENCE:.0%} significance and {POWER:.0%} power"
+    )
+    for quantity, effect in sized.items():
+        needed = effect.depth_multiplier
+        depth = "unreachable" if math.isinf(needed) else f"{needed:,.1f}x"
+        wanted = effect.replicates_required
+        replicates = "beyond reach" if wanted is None else f"n >= {wanted}"
+        click.echo(
+            f"  {quantity:>22}: could resolve {effect.minimum_detectable_effect:.4g}, "
+            f"reference effect {effect.target:+.4g}"
+        )
+        click.echo(
+            f"  {'':>22}  floor at unlimited depth {effect.irreducible_effect:.4g}; "
+            f"depth at least {depth}; replicates {replicates}"
+        )
+    click.echo(
+        "  exploratory — a detectability estimate, not a measurement of readthrough, and neither "
+        "a pass nor a negative"
+    )
 
 
 @main.command("landscape")

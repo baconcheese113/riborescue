@@ -22,6 +22,7 @@ __all__ = [
     "SURVEY_LENGTHS",
     "CalibrationManifest",
     "LibraryVerdict",
+    "load_manifest",
     "read_manifest",
     "select_lengths",
 ]
@@ -177,16 +178,15 @@ def select_lengths(
     )
 
 
-def read_manifest(path: Path) -> CalibrationManifest:
-    """Load a manifest, refusing one that records a failure.
+def load_manifest(path: Path) -> CalibrationManifest:
+    """Parse a manifest and say nothing about whether it passed.
 
-    The assay calls this rather than checking the file exists. A dataset whose libraries did not
-    pass their predeclared calibration has no result to report, and the way that goes wrong is a
-    contrast quietly computed on libraries nobody looked at.
+    Only the detectability arm of ADR-0019 reads a manifest this way, because its subject is a
+    dataset that failed. Every analysis that reports a contrast calls `read_manifest` instead.
     """
 
     record = json.loads(path.read_text())
-    manifest = CalibrationManifest(
+    return CalibrationManifest(
         dataset=record["dataset"],
         lengths=tuple(record["lengths"]),
         surveyed=tuple(record["surveyed"]),
@@ -203,6 +203,17 @@ def read_manifest(path: Path) -> CalibrationManifest:
         ),
         script_md5=record.get("script_md5"),
     )
+
+
+def read_manifest(path: Path) -> CalibrationManifest:
+    """Load a manifest, refusing one that records a failure.
+
+    The assay calls this rather than checking the file exists. A dataset whose libraries did not
+    pass their predeclared calibration has no result to report, and the way that goes wrong is a
+    contrast quietly computed on libraries nobody looked at.
+    """
+
+    manifest = load_manifest(path)
     if not manifest.passes:
         detail = "; ".join(f"{s}: {', '.join(f)}" for s, f in manifest.failures.items())
         raise ValueError(
