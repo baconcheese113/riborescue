@@ -44,20 +44,30 @@ packages = ["src/riborescue"]
 
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
-platforms = ["linux-64"]
+# One target, in two flavours: the plain subdir, and the same subdir carrying a declared CUDA
+# driver. Only NMDetective-AI builds against the second, and every feature names which it wants, so
+# nothing else resolves against a GPU that may not be there.
+platforms = ["linux-64", { name = "linux-64-cuda", platform = "linux-64", cuda = "12" }]
 
 # Only what the package needs to run. Everything else belongs to a feature, so the environment that
 # ships in the container is the one the tests ran against, minus the tools that exist to develop it.
-[tool.pixi.dependencies]
+[tool.pixi.feature.base]
+platforms = ["linux-64"]
+
+[tool.pixi.feature.base.dependencies]
 python = "3.12.*"
 cyvcf2 = ">=0.34.0,<0.35"
 
-[tool.pixi.pypi-dependencies]
+[tool.pixi.feature.base.pypi-dependencies]
 riborescue = { path = "." }
 
 [tool.pixi.feature.dev.dependencies]
 pyright = "*"
 r-languageserver = ">=0.3.18,<0.4"
+# The web app's toolchain. pyright pulls Node in regardless, being a Node program behind a Python
+# wrapper, but a type checker's transitive dependency is not a build tool: named here, the floor the
+# app needs is declared rather than inherited.
+nodejs = ">=22"
 
 [tool.pixi.feature.dev.pypi-dependencies]
 riborescue = { path = ".", editable = true, extras = ["dev"] }
@@ -87,6 +97,9 @@ r-optparse = ">=1.8.2,<2"
 
 # riboWaltz calibrates P-site offsets and periodicity, the published tool the PRD names. Its build
 # pins R 4.4, one minor version behind the caret oracle, so it resolves in its own environment.
+[tool.pixi.feature.psite]
+platforms = ["linux-64"]
+
 [tool.pixi.feature.psite.dependencies]
 ribowaltz = "2.0.*"
 # riboWaltz builds its annotation through GenomicFeatures. txdbmaker its recipe genuinely omits;
@@ -113,6 +126,9 @@ psite-fibroblast = { cmd = "bash scripts/run_psite_all.sh gse179274_fibroblast r
 # The package and its Ensembl-v105 data package are GitHub-only (not Bioconductor), installed from
 # pinned commits by scripts/install_aenmd.R; the heavy dependencies below come from bioconda so they
 # are captured in pixi.lock.
+[tool.pixi.feature.aenmd]
+platforms = ["linux-64"]
+
 [tool.pixi.feature.aenmd.dependencies]
 r-base = "4.5.*"
 r-remotes = "*"
@@ -138,9 +154,9 @@ aenmd = { cmd = "Rscript scripts/aenmd_nmd.R --variants results/clinvar_nonsense
 # mamba-ssm/causal-conv1d from conda-forge) lives in its own environment; the package and its LFS
 # weights are cloned from a pinned commit by scripts/install_nmdetective.sh.
 # WSL2 GPU passthrough does not always expose the CUDA driver to the solver's virtual-package
-# detection, so the CUDA version the RTX 4070 Ti's driver supports is declared explicitly.
-[tool.pixi.feature.nmdetective.system-requirements]
-cuda = "12"
+# detection, so this environment builds against the platform that declares one.
+[tool.pixi.feature.nmdetective]
+platforms = ["linux-64-cuda"]
 
 [tool.pixi.feature.nmdetective.dependencies]
 python = "3.10.*"
@@ -178,13 +194,13 @@ nmdetective = { cmd = "python scripts/nmdetective_predict.py --nonsense results/
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
 [tool.pixi.environments]
-default = { features = ["dev", "pipeline", "oracle", "riboseq"], solve-group = "riborescue" }
-runtime = { features = [], solve-group = "riborescue" }
+default = { features = ["base", "dev", "pipeline", "oracle", "riboseq"], no-default-feature = true, solve-group = "riborescue" }
+runtime = { features = ["base"], no-default-feature = true, solve-group = "riborescue" }
 psite = { features = ["psite"], no-default-feature = true }
 aenmd = { features = ["aenmd"], no-default-feature = true }
 nmdetective = { features = ["nmdetective"], no-default-feature = true }
 
-[tool.pixi.tasks]
+[tool.pixi.feature.base.tasks]
 lint = "ruff check ."
 format = "ruff check --select I --fix . && ruff format ."
 types = "pyright"
@@ -246,14 +262,18 @@ nmd = { cmd = "riborescue nmd results/clinvar_contexts.tsv --out results/nmd.tsv
 # aenmd's raw per-transcript run is the heavy `aenmd` env task (scripts/aenmd_nmd.R); this reads it
 # down to one MANE-transcript verdict per variant, in the default env, so the export can join it.
 aenmd-verdicts = { cmd = "riborescue aenmd-verdicts --aenmd results/aenmd.tsv --nonsense results/clinvar_nonsense.tsv --mane-summary data/mane/MANE.GRCh38.v1.5.summary.txt.gz --contexts results/clinvar_contexts.tsv --out results/aenmd_verdicts.tsv" }
-# The dry-lab chain alone builds the viewer's data; the safety panel and the aenmd model tier are
-# added by export-web-safety where the Ribo-seq atlas and aenmd env have run, so the app builds on a
-# laptop that never ran the sequencing arm.
+# The dry-lab chain alone builds the viewer's data; the safety panel and the two model tiers are
+# added by export-web-safety where the Ribo-seq atlas, the aenmd env and the nmdetective env have
+# run, so the app builds on a laptop that never ran the sequencing arm. Both it and the plain
+# example write the same slice the app ships — export-web, without `--sample`, writes all 70k rows
+# and is for pointing the viewer at a dataset of your own.
 export-web = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
-export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
+export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --sample 48 --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --out frontend/public/riborescue.json", depends-on = ["nmd", "export-research-tiers"] }
 export-web-example = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
+# The tiers variant adds the two independent NMD models' agreement, which needs their environments.
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
+export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }

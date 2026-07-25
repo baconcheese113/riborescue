@@ -63,8 +63,9 @@ and `riborescue_research.json` (the coverage aggregate the researcher dashboard 
 the static bundle. The app has three views over that data: **/patient** searches an example subset
 and lays out each therapy as a card with evidence slots; **/researcher** draws the suppressor-tRNA
 coverage frontiers and per-disease coverage with their denominators; **/explorer** is the full
-per-variant table. The native-stop safety panel is the one part that needs the Ribo-seq atlas; add it
-with `pixi run export-web-safety` where `results/atlas/` exists, otherwise the app simply omits it.
+per-variant table. The native-stop safety panel and the two independent NMD models are the parts that
+need the Ribo-seq atlas and their own environments; add them with `pixi run export-web-safety` where
+`results/atlas/` exists, otherwise the app simply omits them.
 
 **Reproduce the published model** — refit it and check parity to the R oracle:
 
@@ -79,8 +80,8 @@ pixi run test-slow
 cd pipeline && nextflow run . --step amenability -profile local \
     --clinvar ../data/clinvar/*.vcf.gz \
     --mane_annotation ../data/mane/*.gff.gz \
-    --mane_transcripts ../data/mane/*.rna.fna.gz \
-    --mane_proteins ../data/mane/*.protein.faa.gz \
+    --mane_transcripts ../data/mane/*_rna.fna.gz \
+    --mane_proteins ../data/mane/*_protein.faa.gz \
     --training '../tests/fixtures/oracle/features_*.tsv.gz' \
     --held_out '../tests/fixtures/oracle/predictions_*.tsv.gz'
 ```
@@ -93,7 +94,7 @@ pixi run reads              # FastQC → cutadapt → deplete → STAR → metri
 pixi run -e psite psite     # riboWaltz P-site offsets and periodicity
 ```
 
-A single `riborescue` command backs every pipeline step; `pixi run triage --help` lists them.
+A single `riborescue` command backs every pipeline step; `pixi run riborescue --help` lists them.
 
 ## How it fits together
 

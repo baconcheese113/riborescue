@@ -15,7 +15,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).parents[2]
-TASKS = tomllib.loads((ROOT / "pyproject.toml").read_text())["tool"]["pixi"]["tasks"]
+TASKS = tomllib.loads((ROOT / "pyproject.toml").read_text())["tool"]["pixi"]["feature"]["base"][
+    "tasks"
+]
 SAMPLESHEET = ROOT / "pipeline/assets/riboseq_samples.tsv"
 
 

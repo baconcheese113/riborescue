@@ -5,6 +5,13 @@ builds to plain files and deploys to Cloudflare Pages without a server. It reads
 `public/riborescue.json`, written by `riborescue export-web` — the app never touches a BAM or a
 results table directly, only that compact JSON.
 
+Pages builds it from this directory: root `frontend`, build command `npm run build`, output
+directory `out`. Both viewer JSONs are committed, so the build needs neither Pixi nor the pipeline.
+
+The `overrides` in `package.json` are not optional. Next pins `postcss` at exactly 8.4.31 and
+`sharp` at `^0.34.5`, and both carry advisories in every published Next release, so the versions
+have to be forced from here.
+
 The table (sort, filter, search) is TanStack Table; the app owns only the rendering and the two
 status banners, so there is little here to maintain and it can be replaced wholesale.
 
