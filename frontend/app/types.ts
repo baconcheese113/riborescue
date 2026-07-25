@@ -3,6 +3,9 @@
 
 export interface Therapy {
   id: string;
+  // The compound the id names. "SRI" is SRI-41315, which is not the SRI-37240 of the safety
+  // control's Ribo-seq dataset, so the fuller name is what the interface shows.
+  name: string;
   available: boolean;
   readthrough: number | null;
   low: number | null;
@@ -77,6 +80,7 @@ export interface WebTable {
     safety_detail: string;
   };
   therapies: string[];
+  therapy_names: Record<string, string>;
   safety: SafetyAtlas | null;
   variants: Variant[];
 }

@@ -120,7 +120,7 @@ function TherapyBars({ variant }: { variant: Variant }) {
       {variant.therapies.map((t) =>
         t.available ? (
           <div className="therapy" key={t.id}>
-            <span className="name">{t.id}</span>
+            <span className="name">{t.name ?? t.id}</span>
             <span className="num">{percent(t.readthrough)}</span>
             <span className="track">
               <span
@@ -138,7 +138,7 @@ function TherapyBars({ variant }: { variant: Variant }) {
           </div>
         ) : (
           <div className="therapy" key={t.id}>
-            <span className="name">{t.id}</span>
+            <span className="name">{t.name ?? t.id}</span>
             <span className="unavailable-therapy" style={{ gridColumn: "2 / 4" }}>
               no prediction — {t.reason ?? "unavailable"}
             </span>

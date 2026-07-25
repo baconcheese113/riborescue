@@ -15,7 +15,7 @@ function TherapyCards({ variant }: { variant: Variant }) {
       {variant.therapies.map((t) => (
         <div className={t.available ? "card" : "card muted"} key={t.id}>
           <div className="card-head">
-            <span className="card-name">{t.id}</span>
+            <span className="card-name">{t.name ?? t.id}</span>
             {t.available ? (
               <span className="card-num">{percent(t.readthrough)}</span>
             ) : (

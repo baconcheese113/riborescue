@@ -1,7 +1,7 @@
 {
   "status": {
     "readthrough_control": "passed for G418, within one laboratory",
-    "readthrough_detail": "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it in the stalling direction \u2014 so the assay detects canonical G418 readthrough. This is confirmation within one laboratory and protocol family, not independent replication, and it does not license a null about a therapy of different data quality, modality or context.",
+    "readthrough_detail": "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it in the stalling direction \u2014 so the assay detects canonical G418 readthrough. SRI-37240 is the control compound in that Ribo-seq dataset and is not the SRI-41315 scored here; they are different molecules. This is confirmation within one laboratory and protocol family, not independent replication, and it does not license a null about a therapy of different data quality, modality or context.",
     "safety_atlas": "G418 only, in HEK293T",
     "safety_detail": "Native-stop occupancy is measured for G418 in HEK293T cells only; the other therapies have no matched empirical safety atlas. It is downstream occupancy past normal stops, not protein production, toxicity, or a result in any other tissue."
   },
@@ -13,6 +13,14 @@
     "SJ6986",
     "SRI"
   ],
+  "therapy_names": {
+    "CC90009": "CC-90009",
+    "Clitocine": "Clitocine",
+    "DAP": "2,6-diaminopurine",
+    "G418": "G418 (geneticin)",
+    "SJ6986": "SJ6986",
+    "SRI": "SRI-41315"
+  },
   "safety": {
     "measured_therapy": "G418",
     "cell_line": "HEK293T",
@@ -59,6 +67,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00438,
           "low": 0.00158,
@@ -67,6 +76,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01737,
           "low": 0.00979,
@@ -75,6 +85,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.01956,
           "low": 0.00696,
@@ -83,6 +94,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00486,
           "low": 0.00193,
@@ -91,6 +103,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01651,
           "low": 0.00439,
@@ -99,6 +112,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.0143,
           "low": 0.00395,
@@ -149,6 +163,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00355,
           "low": 0.00128,
@@ -157,6 +172,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00305,
           "low": 0.00172,
@@ -165,6 +181,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0055,
           "low": 0.00196,
@@ -173,6 +190,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00524,
           "low": 0.00208,
@@ -181,6 +199,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01409,
           "low": 0.00374,
@@ -189,6 +208,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01165,
           "low": 0.00322,
@@ -239,6 +259,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00389,
           "low": 0.0014,
@@ -247,6 +268,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00309,
           "low": 0.00174,
@@ -255,6 +277,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0074,
           "low": 0.00263,
@@ -263,6 +286,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00723,
           "low": 0.00287,
@@ -271,6 +295,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01385,
           "low": 0.00368,
@@ -279,6 +304,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01132,
           "low": 0.00312,
@@ -329,6 +355,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00431,
           "low": 0.00155,
@@ -337,6 +364,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02027,
           "low": 0.01142,
@@ -345,6 +373,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.01045,
           "low": 0.00372,
@@ -353,6 +382,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00404,
           "low": 0.0016,
@@ -361,6 +391,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01554,
           "low": 0.00413,
@@ -369,6 +400,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01414,
           "low": 0.0039,
@@ -419,6 +451,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00239,
           "low": 0.00086,
@@ -427,6 +460,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00206,
           "low": 0.00116,
@@ -435,6 +469,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0046,
           "low": 0.00164,
@@ -443,6 +478,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00289,
           "low": 0.00115,
@@ -451,6 +487,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00683,
           "low": 0.00182,
@@ -459,6 +496,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00691,
           "low": 0.00191,
@@ -509,6 +547,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00666,
           "low": 0.0024,
@@ -517,6 +556,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01466,
           "low": 0.00826,
@@ -525,6 +565,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.03286,
           "low": 0.01169,
@@ -533,6 +574,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01734,
           "low": 0.00688,
@@ -541,6 +583,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.02029,
           "low": 0.00539,
@@ -549,6 +592,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01671,
           "low": 0.00461,
@@ -599,6 +643,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00303,
           "low": 0.00109,
@@ -607,6 +652,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00302,
           "low": 0.0017,
@@ -615,6 +661,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0062,
           "low": 0.00221,
@@ -623,6 +670,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00543,
           "low": 0.00216,
@@ -631,6 +679,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00957,
           "low": 0.00254,
@@ -639,6 +688,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00885,
           "low": 0.00244,
@@ -689,6 +739,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00756,
           "low": 0.00273,
@@ -697,6 +748,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01813,
           "low": 0.01022,
@@ -705,6 +757,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.03301,
           "low": 0.01175,
@@ -713,6 +766,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01852,
           "low": 0.00735,
@@ -721,6 +775,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.03102,
           "low": 0.00824,
@@ -729,6 +784,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.02435,
           "low": 0.00672,
@@ -779,6 +835,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00655,
           "low": 0.00236,
@@ -787,6 +844,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02048,
           "low": 0.01154,
@@ -795,6 +853,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.02949,
           "low": 0.01049,
@@ -803,6 +862,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00522,
           "low": 0.00207,
@@ -811,6 +871,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.03032,
           "low": 0.00805,
@@ -819,6 +880,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.0259,
           "low": 0.00715,
@@ -869,6 +931,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00306,
           "low": 0.0011,
@@ -877,6 +940,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00306,
           "low": 0.00173,
@@ -885,6 +949,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0058,
           "low": 0.00206,
@@ -893,6 +958,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00772,
           "low": 0.00306,
@@ -901,6 +967,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01139,
           "low": 0.00303,
@@ -909,6 +976,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.0101,
           "low": 0.00279,
@@ -959,6 +1027,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00374,
           "low": 0.00135,
@@ -967,6 +1036,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.0176,
           "low": 0.00992,
@@ -975,6 +1045,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.02529,
           "low": 0.009,
@@ -983,6 +1054,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00713,
           "low": 0.00283,
@@ -991,6 +1063,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.0166,
           "low": 0.00441,
@@ -999,6 +1072,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01258,
           "low": 0.00347,
@@ -1049,6 +1123,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.0041,
           "low": 0.00148,
@@ -1057,6 +1132,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01948,
           "low": 0.01098,
@@ -1065,6 +1141,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.03083,
           "low": 0.01097,
@@ -1073,6 +1150,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01054,
           "low": 0.00418,
@@ -1081,6 +1159,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01313,
           "low": 0.00349,
@@ -1089,6 +1168,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01103,
           "low": 0.00304,
@@ -1139,6 +1219,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00377,
           "low": 0.00136,
@@ -1147,6 +1228,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00337,
           "low": 0.0019,
@@ -1155,6 +1237,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00585,
           "low": 0.00208,
@@ -1163,6 +1246,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00416,
           "low": 0.00165,
@@ -1171,6 +1255,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01314,
           "low": 0.00349,
@@ -1179,6 +1264,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01103,
           "low": 0.00304,
@@ -1229,6 +1315,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00675,
           "low": 0.00243,
@@ -1237,6 +1324,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01727,
           "low": 0.00973,
@@ -1245,6 +1333,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0316,
           "low": 0.01124,
@@ -1253,6 +1342,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01887,
           "low": 0.00749,
@@ -1261,6 +1351,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.03114,
           "low": 0.00827,
@@ -1269,6 +1360,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.02801,
           "low": 0.00773,
@@ -1319,6 +1411,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00343,
           "low": 0.00124,
@@ -1327,6 +1420,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01639,
           "low": 0.00923,
@@ -1335,6 +1429,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.02683,
           "low": 0.00955,
@@ -1343,6 +1438,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.0069,
           "low": 0.00274,
@@ -1351,6 +1447,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01232,
           "low": 0.00327,
@@ -1359,6 +1456,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.0098,
           "low": 0.00271,
@@ -1409,6 +1507,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00516,
           "low": 0.00186,
@@ -1417,6 +1516,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02087,
           "low": 0.01176,
@@ -1425,6 +1525,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.03238,
           "low": 0.01152,
@@ -1433,6 +1534,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00854,
           "low": 0.00339,
@@ -1441,6 +1543,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.02049,
           "low": 0.00544,
@@ -1449,6 +1552,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01847,
           "low": 0.0051,
@@ -1499,6 +1603,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00575,
           "low": 0.00207,
@@ -1507,6 +1612,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00346,
           "low": 0.00195,
@@ -1515,6 +1621,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00751,
           "low": 0.00267,
@@ -1523,6 +1630,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01601,
           "low": 0.00635,
@@ -1531,6 +1639,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.02362,
           "low": 0.00627,
@@ -1539,6 +1648,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.02164,
           "low": 0.00597,
@@ -1589,6 +1699,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.0051,
           "low": 0.00184,
@@ -1597,6 +1708,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00241,
           "low": 0.00136,
@@ -1605,6 +1717,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00563,
           "low": 0.002,
@@ -1613,6 +1726,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00583,
           "low": 0.00231,
@@ -1621,6 +1735,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.02309,
           "low": 0.00613,
@@ -1629,6 +1744,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01875,
           "low": 0.00517,
@@ -1679,6 +1795,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.0057,
           "low": 0.00205,
@@ -1687,6 +1804,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.0035,
           "low": 0.00197,
@@ -1695,6 +1813,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00775,
           "low": 0.00276,
@@ -1703,6 +1822,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01571,
           "low": 0.00623,
@@ -1711,6 +1831,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.02557,
           "low": 0.00679,
@@ -1719,6 +1840,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.0231,
           "low": 0.00637,
@@ -1769,6 +1891,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00333,
           "low": 0.0012,
@@ -1777,6 +1900,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00319,
           "low": 0.0018,
@@ -1785,6 +1909,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00669,
           "low": 0.00238,
@@ -1793,6 +1918,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00523,
           "low": 0.00207,
@@ -1801,6 +1927,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00931,
           "low": 0.00247,
@@ -1809,6 +1936,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00978,
           "low": 0.0027,
@@ -1859,6 +1987,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00369,
           "low": 0.00133,
@@ -1867,6 +1996,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00318,
           "low": 0.00179,
@@ -1875,6 +2005,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00672,
           "low": 0.00239,
@@ -1883,6 +2014,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00625,
           "low": 0.00248,
@@ -1891,6 +2023,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01684,
           "low": 0.00447,
@@ -1899,6 +2032,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01479,
           "low": 0.00408,
@@ -1949,6 +2083,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00253,
           "low": 0.00091,
@@ -1957,6 +2092,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00243,
           "low": 0.00137,
@@ -1965,6 +2101,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00601,
           "low": 0.00214,
@@ -1973,6 +2110,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00337,
           "low": 0.00134,
@@ -1981,6 +2119,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00637,
           "low": 0.00169,
@@ -1989,6 +2128,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00645,
           "low": 0.00178,
@@ -2039,6 +2179,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.01456,
           "low": 0.00524,
@@ -2047,6 +2188,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02638,
           "low": 0.01486,
@@ -2055,6 +2197,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.05122,
           "low": 0.01823,
@@ -2063,6 +2206,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01667,
           "low": 0.00662,
@@ -2071,6 +2215,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.07661,
           "low": 0.02035,
@@ -2079,6 +2224,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.09006,
           "low": 0.02485,
@@ -2129,6 +2275,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00189,
           "low": 0.00068,
@@ -2137,6 +2284,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.0017,
           "low": 0.00096,
@@ -2145,6 +2293,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00391,
           "low": 0.00139,
@@ -2153,6 +2302,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00347,
           "low": 0.00138,
@@ -2161,6 +2311,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00435,
           "low": 0.00116,
@@ -2169,6 +2320,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00355,
           "low": 0.00098,
@@ -2215,6 +2367,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2223,6 +2376,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2231,6 +2385,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2239,6 +2394,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2247,6 +2403,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2255,6 +2412,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2305,6 +2463,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00189,
           "low": 0.00068,
@@ -2313,6 +2472,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.0017,
           "low": 0.00096,
@@ -2321,6 +2481,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00391,
           "low": 0.00139,
@@ -2329,6 +2490,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00347,
           "low": 0.00138,
@@ -2337,6 +2499,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00435,
           "low": 0.00116,
@@ -2345,6 +2508,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00355,
           "low": 0.00098,
@@ -2395,6 +2559,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.01456,
           "low": 0.00524,
@@ -2403,6 +2568,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02638,
           "low": 0.01486,
@@ -2411,6 +2577,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.05122,
           "low": 0.01823,
@@ -2419,6 +2586,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01667,
           "low": 0.00662,
@@ -2427,6 +2595,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.07661,
           "low": 0.02035,
@@ -2435,6 +2604,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.09006,
           "low": 0.02485,
@@ -2481,6 +2651,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2489,6 +2660,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2497,6 +2669,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2505,6 +2678,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2513,6 +2687,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2521,6 +2696,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": false,
           "readthrough": null,
           "low": null,
@@ -2571,6 +2747,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00189,
           "low": 0.00068,
@@ -2579,6 +2756,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.0017,
           "low": 0.00096,
@@ -2587,6 +2765,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00391,
           "low": 0.00139,
@@ -2595,6 +2774,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00347,
           "low": 0.00138,
@@ -2603,6 +2783,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00435,
           "low": 0.00116,
@@ -2611,6 +2792,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00355,
           "low": 0.00098,
@@ -2661,6 +2843,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00206,
           "low": 0.00074,
@@ -2669,6 +2852,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00182,
           "low": 0.00102,
@@ -2677,6 +2861,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00435,
           "low": 0.00155,
@@ -2685,6 +2870,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00328,
           "low": 0.0013,
@@ -2693,6 +2879,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00459,
           "low": 0.00122,
@@ -2701,6 +2888,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00419,
           "low": 0.00116,
@@ -2751,6 +2939,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.01456,
           "low": 0.00524,
@@ -2759,6 +2948,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02638,
           "low": 0.01486,
@@ -2767,6 +2957,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.05122,
           "low": 0.01823,
@@ -2775,6 +2966,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01667,
           "low": 0.00662,
@@ -2783,6 +2975,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.07661,
           "low": 0.02035,
@@ -2791,6 +2984,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.09006,
           "low": 0.02485,
@@ -2841,6 +3035,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.01456,
           "low": 0.00524,
@@ -2849,6 +3044,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02638,
           "low": 0.01486,
@@ -2857,6 +3053,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.05122,
           "low": 0.01823,
@@ -2865,6 +3062,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01667,
           "low": 0.00662,
@@ -2873,6 +3071,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.07661,
           "low": 0.02035,
@@ -2881,6 +3080,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.09006,
           "low": 0.02485,
@@ -2931,6 +3131,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.01456,
           "low": 0.00524,
@@ -2939,6 +3140,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02638,
           "low": 0.01486,
@@ -2947,6 +3149,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.05122,
           "low": 0.01823,
@@ -2955,6 +3158,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01667,
           "low": 0.00662,
@@ -2963,6 +3167,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.07661,
           "low": 0.02035,
@@ -2971,6 +3176,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.09006,
           "low": 0.02485,
@@ -3021,6 +3227,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.01456,
           "low": 0.00524,
@@ -3029,6 +3236,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.02638,
           "low": 0.01486,
@@ -3037,6 +3245,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.05122,
           "low": 0.01823,
@@ -3045,6 +3254,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01667,
           "low": 0.00662,
@@ -3053,6 +3263,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.07661,
           "low": 0.02035,
@@ -3061,6 +3272,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.09006,
           "low": 0.02485,
@@ -3111,6 +3323,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00206,
           "low": 0.00074,
@@ -3119,6 +3332,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00182,
           "low": 0.00102,
@@ -3127,6 +3341,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00435,
           "low": 0.00155,
@@ -3135,6 +3350,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00328,
           "low": 0.0013,
@@ -3143,6 +3359,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00459,
           "low": 0.00122,
@@ -3151,6 +3368,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00419,
           "low": 0.00116,
@@ -3201,6 +3419,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00189,
           "low": 0.00068,
@@ -3209,6 +3428,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.0017,
           "low": 0.00096,
@@ -3217,6 +3437,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00391,
           "low": 0.00139,
@@ -3225,6 +3446,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00347,
           "low": 0.00138,
@@ -3233,6 +3455,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00435,
           "low": 0.00116,
@@ -3241,6 +3464,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00355,
           "low": 0.00098,
@@ -3291,6 +3515,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.0044,
           "low": 0.00159,
@@ -3299,6 +3524,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00308,
           "low": 0.00173,
@@ -3307,6 +3533,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00616,
           "low": 0.00219,
@@ -3315,6 +3542,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00362,
           "low": 0.00144,
@@ -3323,6 +3551,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01146,
           "low": 0.00304,
@@ -3331,6 +3560,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00891,
           "low": 0.00246,
@@ -3381,6 +3611,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00342,
           "low": 0.00123,
@@ -3389,6 +3620,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00242,
           "low": 0.00136,
@@ -3397,6 +3629,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00552,
           "low": 0.00197,
@@ -3405,6 +3638,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00442,
           "low": 0.00175,
@@ -3413,6 +3647,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01038,
           "low": 0.00276,
@@ -3421,6 +3656,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00867,
           "low": 0.00239,
@@ -3471,6 +3707,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00344,
           "low": 0.00124,
@@ -3479,6 +3716,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00307,
           "low": 0.00173,
@@ -3487,6 +3725,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0058,
           "low": 0.00206,
@@ -3495,6 +3734,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00414,
           "low": 0.00164,
@@ -3503,6 +3743,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01144,
           "low": 0.00304,
@@ -3511,6 +3752,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00939,
           "low": 0.00259,
@@ -3561,6 +3803,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00418,
           "low": 0.00151,
@@ -3569,6 +3812,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00348,
           "low": 0.00196,
@@ -3577,6 +3821,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00814,
           "low": 0.0029,
@@ -3585,6 +3830,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.01072,
           "low": 0.00425,
@@ -3593,6 +3839,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01596,
           "low": 0.00424,
@@ -3601,6 +3848,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.0148,
           "low": 0.00408,
@@ -3651,6 +3899,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00444,
           "low": 0.0016,
@@ -3659,6 +3908,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00321,
           "low": 0.00181,
@@ -3667,6 +3917,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.007,
           "low": 0.00249,
@@ -3675,6 +3926,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00599,
           "low": 0.00238,
@@ -3683,6 +3935,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01412,
           "low": 0.00375,
@@ -3691,6 +3944,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01146,
           "low": 0.00316,
@@ -3741,6 +3995,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00291,
           "low": 0.00105,
@@ -3749,6 +4004,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.00277,
           "low": 0.00156,
@@ -3757,6 +4013,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00506,
           "low": 0.0018,
@@ -3765,6 +4022,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00697,
           "low": 0.00277,
@@ -3773,6 +4031,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01068,
           "low": 0.00284,
@@ -3781,6 +4040,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01034,
           "low": 0.00285,
@@ -3831,6 +4091,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.0035,
           "low": 0.00126,
@@ -3839,6 +4100,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01471,
           "low": 0.00829,
@@ -3847,6 +4109,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00598,
           "low": 0.00213,
@@ -3855,6 +4118,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00431,
           "low": 0.00171,
@@ -3863,6 +4127,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.01463,
           "low": 0.00389,
@@ -3871,6 +4136,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.01241,
           "low": 0.00343,
@@ -3921,6 +4187,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00272,
           "low": 0.00098,
@@ -3929,6 +4196,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01137,
           "low": 0.00641,
@@ -3937,6 +4205,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.0066,
           "low": 0.00235,
@@ -3945,6 +4214,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00193,
           "low": 0.00076,
@@ -3953,6 +4223,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00772,
           "low": 0.00205,
@@ -3961,6 +4232,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00698,
           "low": 0.00192,
@@ -4011,6 +4283,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00274,
           "low": 0.00099,
@@ -4019,6 +4292,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01914,
           "low": 0.01078,
@@ -4027,6 +4301,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00627,
           "low": 0.00223,
@@ -4035,6 +4310,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00366,
           "low": 0.00145,
@@ -4043,6 +4319,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.0073,
           "low": 0.00194,
@@ -4051,6 +4328,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00709,
           "low": 0.00196,
@@ -4101,6 +4379,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00337,
           "low": 0.00121,
@@ -4109,6 +4388,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01434,
           "low": 0.00808,
@@ -4117,6 +4397,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00722,
           "low": 0.00257,
@@ -4125,6 +4406,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00299,
           "low": 0.00118,
@@ -4133,6 +4415,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00806,
           "low": 0.00214,
@@ -4141,6 +4424,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00751,
           "low": 0.00207,
@@ -4191,6 +4475,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00247,
           "low": 0.00089,
@@ -4199,6 +4484,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01394,
           "low": 0.00785,
@@ -4207,6 +4493,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.006,
           "low": 0.00214,
@@ -4215,6 +4502,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00272,
           "low": 0.00108,
@@ -4223,6 +4511,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00715,
           "low": 0.0019,
@@ -4231,6 +4520,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00673,
           "low": 0.00186,
@@ -4281,6 +4571,7 @@
       "therapies": [
         {
           "id": "CC90009",
+          "name": "CC-90009",
           "available": true,
           "readthrough": 0.00247,
           "low": 0.00089,
@@ -4289,6 +4580,7 @@
         },
         {
           "id": "Clitocine",
+          "name": "Clitocine",
           "available": true,
           "readthrough": 0.01472,
           "low": 0.00829,
@@ -4297,6 +4589,7 @@
         },
         {
           "id": "DAP",
+          "name": "2,6-diaminopurine",
           "available": true,
           "readthrough": 0.00538,
           "low": 0.00192,
@@ -4305,6 +4598,7 @@
         },
         {
           "id": "G418",
+          "name": "G418 (geneticin)",
           "available": true,
           "readthrough": 0.00307,
           "low": 0.00122,
@@ -4313,6 +4607,7 @@
         },
         {
           "id": "SJ6986",
+          "name": "SJ6986",
           "available": true,
           "readthrough": 0.00706,
           "low": 0.00188,
@@ -4321,6 +4616,7 @@
         },
         {
           "id": "SRI",
+          "name": "SRI-41315",
           "available": true,
           "readthrough": 0.00651,
           "low": 0.0018,

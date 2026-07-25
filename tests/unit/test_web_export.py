@@ -89,6 +89,29 @@ def test_the_payload_carries_the_gate_statuses():
     assert "HEK293T" in table.status["safety_atlas"]
 
 
+def test_the_two_sri_compounds_are_never_left_to_be_confused():
+    """`SRI` in the readthrough data is SRI-41315; the safety control's compound is SRI-37240.
+
+    They are different molecules from one series, and the page shows both, so the short id alone
+    would read as the control compound. The payload therefore carries the full name, and the gate
+    text that mentions SRI-37240 says outright that it is not the therapy being scored.
+    """
+
+    from riborescue.variants.web_export import therapy_name
+
+    assert therapy_name("SRI") == "SRI-41315"
+    detail = build_web_table(_landscape(), _amenability()).status["readthrough_detail"]
+    assert "SRI-37240" in detail and "SRI-41315" in detail
+    assert "different molecules" in detail
+
+
+def test_every_therapy_carries_the_compound_it_names():
+    parsed = json.loads(build_web_table(_landscape(), _amenability()).to_json())
+    assert parsed["therapy_names"]["G418"] == "G418 (geneticin)"
+    v1 = next(v for v in parsed["variants"] if v["id"] == "V1")
+    assert next(t for t in v1["therapies"] if t["id"] == "DAP")["name"] == "2,6-diaminopurine"
+
+
 def test_nmd_verdicts_ride_along_when_given_and_are_null_otherwise():
     nmd = pd.DataFrame(
         [

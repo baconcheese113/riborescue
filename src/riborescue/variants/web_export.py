@@ -20,14 +20,35 @@ from typing import Any, cast
 import pandas as pd
 
 __all__ = [
+    "THERAPY_NAMES",
     "GateStatus",
     "WebTable",
     "build_web_table",
     "safety_summary",
+    "therapy_name",
 ]
 
 # The three-letter stop codons riboWaltz and the triage use, spelled as the suppressor table does.
 _STOP_RNA = {"uaa": "UAA", "uag": "UAG", "uga": "UGA", "taa": "UAA", "tag": "UAG", "tga": "UGA"}
+
+# The compound each therapy id names. The ids are the readthrough dataset's own labels, and one of
+# them is dangerously short: "SRI" there is **SRI-41315**, while the compound in the safety atlas's
+# Ribo-seq dataset is **SRI-37240** — two different molecules from the same series, which a reader
+# seeing "SRI" beside a sentence about SRI-37240 would otherwise take for one.
+THERAPY_NAMES = {
+    "CC90009": "CC-90009",
+    "Clitocine": "Clitocine",
+    "DAP": "2,6-diaminopurine",
+    "G418": "G418 (geneticin)",
+    "SJ6986": "SJ6986",
+    "SRI": "SRI-41315",
+}
+
+
+def therapy_name(therapy_id: str) -> str:
+    """The compound a therapy id names, or the id itself where no fuller name is recorded."""
+
+    return THERAPY_NAMES.get(therapy_id, therapy_id)
 
 # The interval each available therapy carries, keyed by the name it takes in the payload.
 _ARM_COLUMNS = {
@@ -44,9 +65,11 @@ class GateStatus:
     readthrough_control: str = "passed for G418, within one laboratory"
     readthrough_detail: str = (
         "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it "
-        "in the stalling direction — so the assay detects canonical G418 readthrough. This is "
-        "confirmation within one laboratory and protocol family, not independent replication, and "
-        "it does not license a null about a therapy of different data quality, modality or context."
+        "in the stalling direction — so the assay detects canonical G418 readthrough. SRI-37240 is "
+        "the control compound in that Ribo-seq dataset and is not the SRI-41315 scored here; they "
+        "are different molecules. This is confirmation within one laboratory and protocol family, "
+        "not independent replication, and it does not license a null about a therapy of different "
+        "data quality, modality or context."
     )
     safety_atlas: str = "G418 only, in HEK293T"
     safety_detail: str = (
@@ -114,6 +137,7 @@ class WebTable:
             {
                 "status": self.status,
                 "therapies": self.therapies,
+                "therapy_names": {t: therapy_name(t) for t in self.therapies},
                 "safety": self.safety,
                 "variants": self.variants,
             },
@@ -241,6 +265,7 @@ def build_web_table(
             offered.append(
                 {
                     "id": arm["therapy_id"],
+                    "name": therapy_name(str(arm["therapy_id"])),
                     "available": present,
                     **rounded,
                     "reason": None if present else str(arm["reason"]),
