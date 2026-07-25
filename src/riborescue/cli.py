@@ -83,6 +83,7 @@ from riborescue.variants.context import contexts_for, disagreements_with_protein
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
 from riborescue.variants.diseases import normalize_conditions
 from riborescue.variants.evaluation import (
+    CONTROLLED,
     SEED,
     ShuffleKind,
     UnsupportedEvalConfigError,
@@ -90,7 +91,13 @@ from riborescue.variants.evaluation import (
     evaluate,
     split,
 )
-from riborescue.variants.kinetics import MODELS, codon_scores, head_to_head, improvement
+from riborescue.variants.kinetics import (
+    MODELS,
+    codon_scores,
+    head_to_head,
+    improvement,
+    stratified_gain,
+)
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
 from riborescue.variants.native_stop_predictions import (
     concordance,
@@ -1449,6 +1456,7 @@ def head_to_head_command(
     controlled = {name: MODELS[name] for name in MODELS if name != "S"}
 
     collected: list[pd.DataFrame] = []
+    stratified: list[pd.DataFrame] = []
     for drug in names:
         features = read_table(oracle / f"features_{drug}.tsv.gz")
         rounds = (
@@ -1462,10 +1470,23 @@ def head_to_head_command(
         ):
             scored = head_to_head(features, rounds, scores, models=models, kind=kind)
             collected.append(scored.assign(drug=drug, config=config, shuffle=label))
+        stratified.append(
+            stratified_gain(
+                features,
+                rounds,
+                scores,
+                models={name: MODELS[name] for name in ("B", CONTROLLED)},
+            ).assign(drug=drug, config=config)
+        )
         click.echo(f"{drug}: {len(features):,} variants, {rounds['round'].nunique()} rounds")
 
     rows = pd.concat(collected, ignore_index=True)
     write_table(rows[["drug", "config", "shuffle", "model", "round", "r2", "held_out"]], out)
+
+    # Condition 3 of the passing rule. Only the baseline and the model the claim rests on, and only
+    # unshuffled: the question is where a real gain sits, not where a broken one does.
+    strata = pd.concat(stratified, ignore_index=True)
+    write_table(strata, out.with_name(f"{out.stem}_support{out.suffix}"))
 
     # A gain is only readable against how much was left to gain. The ceiling is that drug's own
     # replicate reliability, and the headroom is what the baseline leaves under it — the same
