@@ -23,4 +23,4 @@ pixi run app-build           # static export to frontend/out/
 ```
 
 To point it at a real dataset rather than the committed example, run `riborescue export-web` without
-`--sample` over the full `results/landscape.tsv` and drop the JSON in `public/`.
+`--sample` over the full `results/amenability_landscape.tsv` and drop the JSON in `public/`.

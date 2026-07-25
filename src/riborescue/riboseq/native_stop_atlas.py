@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from riborescue.riboseq.readthrough import _sequences
+from riborescue.riboseq.readthrough_assay import _sequences
 
 __all__ = [
     "AMINO_ACIDS",

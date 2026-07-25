@@ -65,7 +65,7 @@ def safety_summary(predicted: pd.DataFrame, therapies: list[str], measured: str 
     is stated so the small analysed denominator is not mistaken for the whole genome.
     """
 
-    from riborescue.variants.native_stops import concordance
+    from riborescue.variants.native_stop_predictions import concordance
 
     mane = predicted[predicted["mane_select"]]
     matched = mane.dropna(subset=["predicted_g418", "measured_lift"])

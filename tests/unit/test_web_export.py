@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from riborescue.variants.webexport import GateStatus, build_web_table, diverse_sample
+from riborescue.variants.web_export import GateStatus, build_web_table, diverse_sample
 
 
 def _landscape() -> pd.DataFrame:
@@ -193,7 +193,7 @@ def test_the_sample_prefers_the_states_a_uniform_draw_would_miss():
 
 
 def test_safety_summary_reports_the_measured_layer_and_its_reach():
-    from riborescue.variants.webexport import safety_summary
+    from riborescue.variants.web_export import safety_summary
 
     predicted = pd.DataFrame(
         {

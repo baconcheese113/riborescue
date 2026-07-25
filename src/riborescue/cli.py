@@ -22,9 +22,9 @@ from riborescue.core.tables import (
     read_table,
     write_table,
 )
-from riborescue.riboseq.atlas import native_stop_occupancy, translate_extension
 from riborescue.riboseq.calibration import read_manifest, select_lengths
 from riborescue.riboseq.contaminants import write_contaminants
+from riborescue.riboseq.native_stop_atlas import native_stop_occupancy, translate_extension
 from riborescue.riboseq.reads import (
     ADAPTER_REACHED_BY,
     AdapterNotFoundError,
@@ -32,7 +32,7 @@ from riborescue.riboseq.reads import (
     summarise_trimming,
     survey_adapters,
 )
-from riborescue.riboseq.readthrough import (
+from riborescue.riboseq.readthrough_assay import (
     PROGRAMMED_READTHROUGH,
     collapse_lengths,
     extension_windows,
@@ -53,7 +53,6 @@ from riborescue.variants.aenmd import (
     model_agreement,
     read_aenmd_rules,
 )
-from riborescue.variants.baseline import fit, relative_error_quantile
 from riborescue.variants.clinvar import pathogenic_nonsense
 from riborescue.variants.context import contexts_for, disagreements_with_protein
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
@@ -66,14 +65,19 @@ from riborescue.variants.evaluation import (
     split,
 )
 from riborescue.variants.landscape import TOLERABLE_SHARE, Thresholds, landscape, summarise
-from riborescue.variants.native_stops import concordance, four_quadrants, native_stop_features
-from riborescue.variants.nmd import disagreement_atlas, nmd_predictors
-from riborescue.variants.panels import coverage_frontier
-from riborescue.variants.researchexport import build_research_aggregate
+from riborescue.variants.native_stop_predictions import (
+    concordance,
+    four_quadrants,
+    native_stop_features,
+)
+from riborescue.variants.nmd_rules import disagreement_atlas, nmd_predictors
+from riborescue.variants.readthrough_model import fit, relative_error_quantile
+from riborescue.variants.research_export import build_research_aggregate
 from riborescue.variants.residue import coverage_by_design
+from riborescue.variants.suppressor_panels import coverage_frontier
 from riborescue.variants.transcripts import load_transcripts, read_sequences
 from riborescue.variants.triage import classify, classify_table
-from riborescue.variants.webexport import (
+from riborescue.variants.web_export import (
     build_web_table,
     diverse_sample,
     read_web_inputs,

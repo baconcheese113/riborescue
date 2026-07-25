@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from riborescue.riboseq.readthrough import _sequences
+from riborescue.riboseq.readthrough_assay import _sequences
 
 __all__ = [
     "concordance",
@@ -99,8 +99,10 @@ def concordance(
         boot.append(rho(frame))
     low, high = np.nanpercentile(boot, [2.5, 97.5])
     return {
-        "n": n, "rho": round(point, 4),
-        "low": round(float(low), 4), "high": round(float(high), 4),
+        "n": n,
+        "rho": round(point, 4),
+        "low": round(float(low), 4),
+        "high": round(float(high), 4),
     }
 
 

@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from riborescue.variants.researchexport import build_research_aggregate
+from riborescue.variants.research_export import build_research_aggregate
 
 
 def _diseases() -> pd.DataFrame:
@@ -38,12 +38,30 @@ def _contexts() -> pd.DataFrame:
     }
     return pd.DataFrame(
         [
-            {"variant_id": "V1", "gene_symbol": "A", "scoreable": True, "stop_type": "uga",
-             "original_aa": "R", **geometry},
-            {"variant_id": "V2", "gene_symbol": "A", "scoreable": True, "stop_type": "uga",
-             "original_aa": "R", **geometry},
-            {"variant_id": "V3", "gene_symbol": "B", "scoreable": False, "stop_type": "",
-             "original_aa": "", **geometry},
+            {
+                "variant_id": "V1",
+                "gene_symbol": "A",
+                "scoreable": True,
+                "stop_type": "uga",
+                "original_aa": "R",
+                **geometry,
+            },
+            {
+                "variant_id": "V2",
+                "gene_symbol": "A",
+                "scoreable": True,
+                "stop_type": "uga",
+                "original_aa": "R",
+                **geometry,
+            },
+            {
+                "variant_id": "V3",
+                "gene_symbol": "B",
+                "scoreable": False,
+                "stop_type": "",
+                "original_aa": "",
+                **geometry,
+            },
         ]
     )
 

@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from riborescue.variants.native_stops import (
+from riborescue.variants.native_stop_predictions import (
     concordance,
     four_quadrants,
     native_stop_features,

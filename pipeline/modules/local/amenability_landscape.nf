@@ -8,13 +8,13 @@ process AMENABILITY_LANDSCAPE {
     path scores
 
     output:
-    path 'landscape.tsv', emit: landscape
+    path 'amenability_landscape.tsv', emit: landscape
     path 'landscape_summary.tsv', emit: summary
 
     script:
     """
     riborescue landscape ${contexts} ${scores} \\
-        --out landscape.tsv \\
+        --out amenability_landscape.tsv \\
         --summary landscape_summary.tsv
     """
 }

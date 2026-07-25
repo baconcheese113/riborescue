@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from riborescue.variants.nmd import LAST_JUNCTION_NT
+from riborescue.variants.nmd_rules import LAST_JUNCTION_NT
 from riborescue.variants.residue import NEAR_COGNATE, conservative
 
 __all__ = ["LAST_JUNCTION_RULE_NT", "TOLERABLE_SHARE", "Thresholds", "landscape", "summarise"]

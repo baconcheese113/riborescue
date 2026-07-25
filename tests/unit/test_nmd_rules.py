@@ -1,6 +1,6 @@
 import pandas as pd
 
-from riborescue.variants.nmd import (
+from riborescue.variants.nmd_rules import (
     LAST_JUNCTION_NT,
     LONG_EXON_NT,
     START_PROXIMAL_NT,

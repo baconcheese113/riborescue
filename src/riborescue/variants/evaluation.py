@@ -20,7 +20,7 @@ from scipy.stats import bootstrap
 from sklearn.model_selection import GroupShuffleSplit, ShuffleSplit
 
 from riborescue.core.contracts import EvalConfig
-from riborescue.variants.baseline import cross_validate
+from riborescue.variants.readthrough_model import cross_validate
 
 __all__ = [
     "ROUNDS",

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from riborescue.variants.panels import (
+from riborescue.variants.suppressor_panels import (
     brute_force_optimal,
     coverage_frontier,
     covered_sets,

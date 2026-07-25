@@ -17,7 +17,7 @@ import pytest
 from riborescue.core.contracts import REPORTER_DOWNSTREAM_NT, REPORTER_UPSTREAM_NT
 from riborescue.core.inputs import INPUTS
 from riborescue.core.tables import read_table
-from riborescue.variants.baseline import FORMULA, cross_validate, fit_round
+from riborescue.variants.readthrough_model import FORMULA, cross_validate, fit_round
 
 ORACLE = Path(__file__).resolve().parents[1] / "fixtures" / "oracle"
 PROVENANCE = json.loads((ORACLE / "provenance.json").read_text())

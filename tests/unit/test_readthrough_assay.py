@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from riborescue.riboseq.readthrough import (
+from riborescue.riboseq.readthrough_assay import (
     MINIMUM_CDS_PSITES,
     MINIMUM_UTR3_LENGTH,
     PROGRAMMED_READTHROUGH,
@@ -449,7 +449,7 @@ def test_lengths_are_collapsed_by_summing_the_ones_a_dataset_keeps():
 
     import pandas as pd
 
-    from riborescue.riboseq.readthrough import collapse_lengths
+    from riborescue.riboseq.readthrough_assay import collapse_lengths
 
     counts = pd.DataFrame(
         {
@@ -483,7 +483,7 @@ def test_collapsing_refuses_counts_that_are_not_stratified():
     import pandas as pd
     import pytest
 
-    from riborescue.riboseq.readthrough import collapse_lengths
+    from riborescue.riboseq.readthrough_assay import collapse_lengths
 
     with pytest.raises(ValueError, match="not stratified"):
         collapse_lengths(pd.DataFrame({"transcript": ["T1"], "sample": ["a"]}), [30])
@@ -494,7 +494,7 @@ def test_collapsing_then_pooling_equals_a_direct_pooled_calculation():
 
     import pandas as pd
 
-    from riborescue.riboseq.readthrough import collapse_lengths, library_ratios
+    from riborescue.riboseq.readthrough_assay import collapse_lengths, library_ratios
 
     # Two transcripts, one library, counts split across three lengths; only two are kept.
     stratified = pd.DataFrame(

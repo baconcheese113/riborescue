@@ -9,12 +9,12 @@ process SCORE_VARIANTS {
     path held_out
 
     output:
-    path 'amenability.tsv', emit: scored
+    path 'variant_therapy_scores.tsv', emit: scored
 
     script:
     // The held-out rounds are staged beside the training tables; the scorer reads each therapy's
     // measured error from its sibling and refuses to score without it.
     """
-    riborescue score ${contexts} ${training} --out amenability.tsv
+    riborescue score ${contexts} ${training} --out variant_therapy_scores.tsv
     """
 }

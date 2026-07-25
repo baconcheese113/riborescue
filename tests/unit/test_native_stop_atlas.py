@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from riborescue.riboseq.atlas import native_stop_occupancy, translate_extension
+from riborescue.riboseq.native_stop_atlas import native_stop_occupancy, translate_extension
 
 
 def _counts(rows: list[dict]) -> pd.DataFrame:

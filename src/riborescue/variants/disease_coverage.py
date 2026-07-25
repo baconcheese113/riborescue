@@ -18,7 +18,7 @@ from dataclasses import asdict
 
 import pandas as pd
 
-from riborescue.variants.panels import greedy_panel
+from riborescue.variants.suppressor_panels import greedy_panel
 
 __all__ = [
     "disease_coverage",

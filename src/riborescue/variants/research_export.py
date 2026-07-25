@@ -20,9 +20,9 @@ import pandas as pd
 
 from riborescue.variants.aenmd import model_agreement
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
-from riborescue.variants.nmd import disagreement_atlas, nmd_predictors
+from riborescue.variants.nmd_rules import disagreement_atlas, nmd_predictors
 from riborescue.variants.nmdetective import nmdetective_summary
-from riborescue.variants.panels import coverage_frontier
+from riborescue.variants.suppressor_panels import coverage_frontier
 
 __all__ = [
     "ResearchAggregate",

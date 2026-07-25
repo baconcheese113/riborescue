@@ -31,7 +31,7 @@ gitignored, because it is working material rather than part of the repo.
 ## Layout
 
 ```
-pixi.toml  pixi.lock     dev toolchain (conda+bioconda+pypi), one lockfile, linux-64
+pyproject.toml pixi.lock the riborescue package, the Pixi toolchain, and one lockfile
 pyproject.toml           the riborescue Python package (src-layout) + tool config
 src/riborescue/          scientific logic: contracts, triage, evaluation, cli
 tests/                   pytest — unit, property (hypothesis), controls (protected)
