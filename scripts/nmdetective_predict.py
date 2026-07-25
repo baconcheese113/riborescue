@@ -39,10 +39,23 @@ def main() -> None:
     parser.add_argument("--batch-log", type=int, default=500)
     args = parser.parse_args()
 
+    import NMD.data.transcripts as transcripts
     from NMD.data.transcripts import create_six_track_encoding_with_variant
     from NMD.modeling.predict import _predict_batch, _setup_model
     from NMD.modeling.TrainerConfig import TrainerConfig
     from NMD.utils import load_model
+
+    # The encoding reconstructs the GENCODE genome on every call; caching it by version leaves the
+    # encoding math untouched but stops the reload from dominating the per-variant cost.
+    _genome_cache: dict[str, object] = {}
+    _load_genome = transcripts.Genome
+
+    def _cached_genome(version: str) -> object:
+        if version not in _genome_cache:
+            _genome_cache[version] = _load_genome(version)
+        return _genome_cache[version]
+
+    transcripts.Genome = _cached_genome
 
     config = TrainerConfig()
     model, _, _, _, device = _setup_model(config)
