@@ -64,6 +64,9 @@ riborescue = { path = "." }
 [tool.pixi.feature.dev.dependencies]
 pyright = "*"
 r-languageserver = ">=0.3.18,<0.4"
+# Report figures are generated, not drawn by hand, so the plotting library is a declared development
+# dependency rather than something assumed present. Nothing the package ships imports it.
+matplotlib-base = ">=3.9"
 # The web app's toolchain. pyright pulls Node in regardless, being a Node program behind a Python
 # wrapper, but a type checker's transitive dependency is not a build tool: named here, the floor the
 # app needs is declared rather than inherited.
@@ -258,6 +261,22 @@ reads = { cmd = """nextflow run . --step reads -profile local -resume \
   --rdna ../data/rdna/U13369.1.fasta""", cwd = "pipeline", depends-on = ["stage-runs", "adapter-survey"] }
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
+# The matched RNA-seq arm: abundance, which the footprint libraries cannot give. Counted over union
+# exons on the paired libraries, then turned into TPM, the composition, and both rankings.
+quantify = """featureCounts -T 6 -p --countReadPairs -t exon -g gene_id \
+  -a data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
+  -o results/rnaseq/counts.tsv \
+  results/reads/alignments/calu6_untreated_rep1_rnaseq.sorted.bam \
+  results/reads/alignments/calu6_untreated_rep2_rnaseq.sorted.bam \
+  results/reads/alignments/calu6_g418_rep1_rnaseq.sorted.bam \
+  results/reads/alignments/calu6_g418_rep2_rnaseq.sorted.bam"""
+expression = { cmd = """riborescue expression results/rnaseq/counts.tsv \
+  --annotation data/gencode/gencode.v50.primary_assembly.annotation.gtf.gz \
+  --tpm-out results/rnaseq/tpm.tsv \
+  --nuclear-out results/rnaseq/top_expressed_nuclear.tsv \
+  --composition-out results/rnaseq/composition.tsv \
+  --out results/rnaseq/top_expressed.tsv""", depends-on = ["quantify"] }
+expression-figures = { cmd = "bash scripts/plot_expression_all.sh", depends-on = ["expression"] }
 nmd = { cmd = "riborescue nmd results/clinvar_contexts.tsv --out results/nmd.tsv", depends-on = ["contexts"] }
 # aenmd's raw per-transcript run is the heavy `aenmd` env task (scripts/aenmd_nmd.R); this reads it
 # down to one MANE-transcript verdict per variant, in the default env, so the export can join it.

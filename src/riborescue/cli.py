@@ -24,6 +24,14 @@ from riborescue.core.tables import (
 )
 from riborescue.riboseq.calibration import read_manifest, select_lengths
 from riborescue.riboseq.contaminants import write_contaminants
+from riborescue.riboseq.expression import (
+    composition,
+    gene_symbols,
+    library_depth,
+    read_counts,
+    top_expressed,
+    tpm,
+)
 from riborescue.riboseq.native_stop_atlas import native_stop_occupancy, translate_extension
 from riborescue.riboseq.reads import (
     ADAPTER_REACHED_BY,
@@ -634,6 +642,85 @@ def alignment_summary(logs: tuple[Path, ...], out: Path) -> None:
             f"{row.multimapped_rate:.1f}% multimapped, "
             f"mean mapped length {row.mapped_length_mean:.1f}"
         )
+
+
+@main.command("expression")
+@click.argument("counts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--annotation",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The GTF the counts were made against, for gene symbols.",
+)
+@click.option(
+    "--top", default=20, show_default=True, help="How many of the most expressed genes to write."
+)
+@click.option(
+    "--tpm-out",
+    required=True,
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    help="Where to write the per-gene TPM table.",
+)
+@click.option(
+    "--nuclear-out",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    help="Where to write the same ranking with mitochondrial and structural RNA set aside.",
+)
+@click.option(
+    "--composition-out",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    help="Where to write each library's mitochondrial, structural and nuclear shares.",
+)
+@_OUT
+def expression(
+    counts: Path,
+    annotation: Path,
+    top: int,
+    tpm_out: Path,
+    nuclear_out: Path | None,
+    composition_out: Path | None,
+    out: Path,
+) -> None:
+    """Turn featureCounts COUNTS from the matched RNA-seq arm into TPM and the most expressed genes.
+
+    Abundance, not occupancy: this is the RNA-seq arm, and it answers how much message there is
+    rather than where ribosomes sit. TPM is normalised per library, so a library carrying more
+    surviving mitochondrial or structural RNA deflates every other gene in it — which is why the
+    composition is reported beside the ranking, and why the ranking is offered both ways.
+    """
+
+    table = read_counts(counts)
+    depth = library_depth(table)
+    expression_table = tpm(table)
+    symbols = gene_symbols(annotation)
+    ranked = top_expressed(expression_table, symbols, top)
+
+    written = [(tpm_out, expression_table), (out, ranked)]
+    if nuclear_out is not None:
+        written.append(
+            (
+                nuclear_out,
+                top_expressed(expression_table, symbols, top, ("mitochondrial", "structural")),
+            )
+        )
+    shares = composition(expression_table, symbols)
+    if composition_out is not None:
+        written.append((composition_out, shares))
+    for path, frame in written:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_table(frame, path)
+
+    click.echo(f"{len(table):,} genes over {len(depth)} libraries")
+    for library, assigned in depth.items():
+        click.echo(f"  {library}: {assigned:,} assigned")
+    click.echo("library composition (% of TPM):")
+    libraries = [column for column in shares.columns if column != "gene_class"]
+    for row in shares.itertuples(index=False):
+        values = "  ".join(f"{getattr(row, library):>5.1f}" for library in libraries)
+        click.echo(f"  {row.gene_class:<14} {values}")
+    click.echo(f"top {len(ranked)} by mean TPM:")
+    for row in ranked.head(5).itertuples():
+        click.echo(f"  {row.gene_symbol:<12} {row.mean_tpm:>12,.0f}")
 
 
 @main.command("evaluate")
