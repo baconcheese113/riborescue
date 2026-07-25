@@ -14,12 +14,15 @@ from riborescue.riboseq.codon_occupancy import GENETIC_CODE, SENSE_CODONS, SYNON
 from riborescue.variants.evaluation import ShuffleKind, split
 from riborescue.variants.kinetics import (
     MODELS,
+    SUPPORT_STRATA,
     attach,
     codon_scores,
     head_to_head,
     improvement,
     permute_scores,
     shuffle,
+    stratified_gain,
+    support,
 )
 from riborescue.variants.readthrough_model import FORMULA, fit_round
 
@@ -178,6 +181,7 @@ class TestHeadToHead:
         assert len(scored) == 3 * 2
         assert set(scored["model"]) == {"B", "K1", "K2"}
 
+    @pytest.mark.slow
     def test_the_baseline_is_identical_under_every_shuffle(self, features, scores, rounds):
         models = {"B": MODELS["B"], "K1": MODELS["K1"]}
         plain = head_to_head(features, rounds, scores, models=models)
@@ -186,6 +190,7 @@ class TestHeadToHead:
             baseline = shuffled.loc[shuffled["model"] == "B", "r2"].to_numpy()
             assert baseline == pytest.approx(plain.loc[plain["model"] == "B", "r2"].to_numpy())
 
+    @pytest.mark.slow
     def test_a_shuffle_moves_the_kinetic_model_and_not_the_baseline(self, features, scores, rounds):
         models = {"B": MODELS["B"], "K1": MODELS["K1"]}
         plain = head_to_head(features, rounds, scores, models=models)
@@ -234,3 +239,40 @@ class TestReliability:
         modelled = pd.read_csv(f"{_ORACLE}/metrics.tsv", sep="\t")["drug"].unique()
         spread = ceilings["ceiling"].reindex(modelled)
         assert spread.max() - spread.min() > 0.15
+
+
+class TestSupport:
+    def test_a_cell_the_training_fold_never_saw_is_unsupported(self, features):
+        train = pd.Series(features.index[: int(0.8 * len(features))])
+        strata = support(features, train)
+        seen = features.loc[features.index.isin(train)].groupby(["stop_type", "down_123nt"]).size()
+        for row in features.loc[strata == "unsupported"].head(20).itertuples():
+            assert (row.stop_type, row.down_123nt) not in seen.index
+
+    def test_every_row_lands_in_exactly_one_stratum(self, features):
+        train = pd.Series(features.index[: int(0.8 * len(features))])
+        strata = support(features, train)
+        assert set(strata) <= set(SUPPORT_STRATA)
+        assert len(strata) == len(features)
+
+    def test_a_training_fold_that_saw_everything_leaves_nothing_unsupported(self, features):
+        strata = support(features, pd.Series(features.index))
+        assert "unsupported" not in set(strata)
+
+    def test_the_gain_is_reported_within_each_stratum_it_can_measure(
+        self, features, scores, rounds
+    ):
+        models = {"B": MODELS["B"], "K1": MODELS["K1"]}
+        stratified = stratified_gain(features, rounds, scores, models=models)
+        assert set(stratified["support"]) <= set(SUPPORT_STRATA)
+        assert set(stratified["model"]) == {"B", "K1"}
+        # Every reported stratum rests on enough held-out rows for a correlation to mean anything.
+        assert (stratified["held_out"] >= 3).all()
+
+    @pytest.mark.slow
+    def test_pooling_the_strata_recovers_the_whole_held_out_set(self, features, scores, rounds):
+        models = {"B": MODELS["B"]}
+        stratified = stratified_gain(features, rounds, scores, models=models)
+        whole = head_to_head(features, rounds, scores, models=models)
+        for round_, block in stratified.groupby("round"):
+            assert block["held_out"].sum() <= whole.loc[whole["round"] == round_, "held_out"].item()

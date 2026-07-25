@@ -25,18 +25,21 @@ import pandas as pd
 
 from riborescue.riboseq.codon_occupancy import SYNONYMOUS, as_dna
 from riborescue.variants.evaluation import SEED, ShuffleKind
-from riborescue.variants.readthrough_model import FORMULA, cross_validate
+from riborescue.variants.readthrough_model import FORMULA, cross_validate, fit_round, r_squared
 
 __all__ = [
     "BASELINE",
     "KINETIC_COLUMNS",
     "MODELS",
+    "SUPPORT_STRATA",
     "attach",
     "codon_scores",
     "head_to_head",
     "improvement",
     "permute_scores",
     "shuffle",
+    "stratified_gain",
+    "support",
 ]
 
 BASELINE = "B"
@@ -182,3 +185,75 @@ def improvement(scored: pd.DataFrame, baseline: str = BASELINE) -> pd.DataFrame:
         raise ValueError(f"no {baseline!r} rows to measure against")
     gains = wide.drop(columns=baseline).sub(wide[baseline], axis=0)
     return gains.reset_index().melt(id_vars="round", var_name="model", value_name="gain")
+
+
+SUPPORT_STRATA = ("unsupported", "thin", "supported")
+"""How much training data a held-out variant's interaction cell had.
+
+`unsupported` is a `(stop_type, down_123nt)` cell the training fold never observed. Its column is
+dependent, `identifiable_columns` drops it, and the prediction falls back to the marginal — so a
+gain concentrated there is a statement about what the baseline cannot fit rather than about what
+kinetics knows. The rest split at the median of the observed cells.
+"""
+
+
+def support(features: pd.DataFrame, train_rows: pd.Series) -> pd.Series:
+    """Which support stratum each row falls in, given what its training fold contained.
+
+    Computed from the training fold and applied to every row, so the stratum a held-out variant sits
+    in is a property of that round rather than of the library as a whole.
+    """
+
+    train = features[features.index.isin(train_rows)]
+    observed = train.groupby(["stop_type", "down_123nt"]).size()
+    counts = pd.Series(
+        [
+            int(observed.get((stop, down), 0))
+            for stop, down in zip(features["stop_type"], features["down_123nt"], strict=True)
+        ],
+        index=features.index,
+    )
+    median = float(counts[counts > 0].median())
+    values = counts.to_numpy()
+    strata = np.where(values == 0, "unsupported", np.where(values < median, "thin", "supported"))
+    return pd.Series(strata, index=features.index, name="support")
+
+
+def stratified_gain(
+    features: pd.DataFrame,
+    rounds: pd.DataFrame,
+    scores: pd.Series,
+    *,
+    models: dict[str, str] | None = None,
+    kind: ShuffleKind | None = None,
+    seed: int = SEED,
+) -> pd.DataFrame:
+    """Each model's held-out performance within each support stratum, round by round.
+
+    A stratum with fewer than three held-out rows in a round has no stable correlation and is
+    dropped from that round rather than reported as a number built on two points.
+    """
+
+    prepared = shuffle(features, scores, kind, seed)
+    rows: list[dict[str, object]] = []
+    for name, formula in (models or MODELS).items():
+        for round_ in sorted(int(r) for r in rounds["round"].unique()):
+            train = rounds.loc[rounds["round"] == round_, "row"]
+            prediction = fit_round(prepared, train, round_, formula)
+            strata = support(prepared, train).reindex(prediction.predictions.index)
+            for stratum in SUPPORT_STRATA:
+                inside = strata == stratum
+                if int(inside.sum()) < 3:
+                    continue
+                rows.append(
+                    {
+                        "model": name,
+                        "round": round_,
+                        "support": stratum,
+                        "r2": r_squared(
+                            prediction.predictions[inside], prediction.observed[inside]
+                        ),
+                        "held_out": int(inside.sum()),
+                    }
+                )
+    return pd.DataFrame(rows)
