@@ -124,6 +124,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.0826,
+          "reason": ""
         }
       }
     },
@@ -209,6 +214,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": false,
+          "efficiency": null,
+          "reason": "encode_error:ValueError"
         }
       }
     },
@@ -294,6 +304,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": false,
+          "efficiency": null,
+          "reason": "encode_error:ValueError"
         }
       }
     },
@@ -378,6 +393,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.335,
           "reason": ""
         }
       }
@@ -464,6 +484,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5425,
+          "reason": ""
         }
       }
     },
@@ -548,6 +573,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5132,
           "reason": ""
         }
       }
@@ -634,6 +664,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5697,
+          "reason": ""
         }
       }
     },
@@ -718,6 +753,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.4814,
           "reason": ""
         }
       }
@@ -804,6 +844,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5442,
+          "reason": ""
         }
       }
     },
@@ -889,6 +934,11 @@
           "available": false,
           "escape": false,
           "reason": "variant_filtered"
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.7319,
+          "reason": ""
         }
       }
     },
@@ -973,6 +1023,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5213,
           "reason": ""
         }
       }
@@ -1059,6 +1114,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.6469,
+          "reason": ""
         }
       }
     },
@@ -1143,6 +1203,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.6916,
           "reason": ""
         }
       }
@@ -1229,6 +1294,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.7491,
+          "reason": ""
         }
       }
     },
@@ -1313,6 +1383,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.7415,
           "reason": ""
         }
       }
@@ -1399,6 +1474,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.6989,
+          "reason": ""
         }
       }
     },
@@ -1483,6 +1563,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.4983,
           "reason": ""
         }
       }
@@ -1569,6 +1654,11 @@
           "available": true,
           "escape": true,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.4868,
+          "reason": ""
         }
       }
     },
@@ -1653,6 +1743,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.4854,
           "reason": ""
         }
       }
@@ -1739,6 +1834,11 @@
           "available": true,
           "escape": true,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.4909,
+          "reason": ""
         }
       }
     },
@@ -1823,6 +1923,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.4957,
           "reason": ""
         }
       }
@@ -1909,6 +2014,11 @@
           "available": true,
           "escape": true,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.5224,
+          "reason": ""
         }
       }
     },
@@ -1993,6 +2103,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.1156,
           "reason": ""
         }
       }
@@ -2079,6 +2194,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.4075,
+          "reason": ""
         }
       }
     },
@@ -2159,6 +2279,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.4649,
           "reason": ""
         }
       }
@@ -2245,6 +2370,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5321,
+          "reason": ""
         }
       }
     },
@@ -2330,6 +2460,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.588,
+          "reason": ""
         }
       }
     },
@@ -2410,6 +2545,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.0782,
           "reason": ""
         }
       }
@@ -2496,6 +2636,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": false,
+          "efficiency": null,
+          "reason": "encode_error:ValueError"
         }
       }
     },
@@ -2580,6 +2725,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.2776,
           "reason": ""
         }
       }
@@ -2666,6 +2816,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.8013,
+          "reason": ""
         }
       }
     },
@@ -2750,6 +2905,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 1.0045,
           "reason": ""
         }
       }
@@ -2836,6 +2996,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": false,
+          "efficiency": null,
+          "reason": "encode_error:ValueError"
         }
       }
     },
@@ -2921,6 +3086,11 @@
           "available": false,
           "escape": false,
           "reason": "transcript_absent"
+        },
+        "nmdetective": {
+          "available": false,
+          "efficiency": null,
+          "reason": "encode_error:ValueError"
         }
       }
     },
@@ -3005,6 +3175,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.5803,
           "reason": ""
         }
       }
@@ -3091,6 +3266,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.5667,
+          "reason": ""
         }
       }
     },
@@ -3175,6 +3355,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.381,
           "reason": ""
         }
       }
@@ -3261,6 +3446,11 @@
           "available": false,
           "escape": false,
           "reason": "variant_filtered"
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.3229,
+          "reason": ""
         }
       }
     },
@@ -3346,6 +3536,11 @@
           "available": false,
           "escape": false,
           "reason": "variant_filtered"
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.3068,
+          "reason": ""
         }
       }
     },
@@ -3430,6 +3625,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.321,
           "reason": ""
         }
       }
@@ -3516,6 +3716,11 @@
           "available": true,
           "escape": false,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.3208,
+          "reason": ""
         }
       }
     },
@@ -3600,6 +3805,11 @@
         "aenmd": {
           "available": true,
           "escape": false,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.3364,
           "reason": ""
         }
       }
@@ -3686,6 +3896,11 @@
           "available": true,
           "escape": true,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.1729,
+          "reason": ""
         }
       }
     },
@@ -3770,6 +3985,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.1006,
           "reason": ""
         }
       }
@@ -3856,6 +4076,11 @@
           "available": true,
           "escape": true,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": 0.1226,
+          "reason": ""
         }
       }
     },
@@ -3940,6 +4165,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.5612,
           "reason": ""
         }
       }
@@ -4026,6 +4256,11 @@
           "available": true,
           "escape": true,
           "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.6583,
+          "reason": ""
         }
       }
     },
@@ -4110,6 +4345,11 @@
         "aenmd": {
           "available": true,
           "escape": true,
+          "reason": ""
+        },
+        "nmdetective": {
+          "available": true,
+          "efficiency": -0.5985,
           "reason": ""
         }
       }
