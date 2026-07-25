@@ -1,7 +1,7 @@
 {
   "provenance": {
     "clinvar_release": "20260715",
-    "commit": "f3fe459",
+    "commit": "1c22973",
     "qualifying_variants": 71378,
     "scoreable_variants": 70376,
     "condition_entities": 6058
@@ -29,7 +29,20 @@
     "disagree_fraction": 0.2022,
     "driven_by_start_proximal": 2933,
     "driven_by_long_exon": 10593,
-    "driven_by_both": 705
+    "driven_by_both": 705,
+    "aenmd": {
+      "scoreable": 70376,
+      "aenmd_available": 48385,
+      "both_available": 48148,
+      "aenmd_available_fraction": 0.6779,
+      "aenmd_escape": 14269,
+      "aenmd_escape_fraction": 0.2964,
+      "full_rules_vs_aenmd_agree": 47840,
+      "full_rules_vs_aenmd_agree_fraction": 0.9936,
+      "full_escape_aenmd_decay": 207,
+      "full_decay_aenmd_escape": 101,
+      "guideline_vs_aenmd_agree_fraction": 0.8047
+    }
   },
   "frontiers": {
     "variants": [
@@ -1146,6 +1159,6 @@
     "three_metrics": "reach = at least one eligible variant covered; covered_fraction = covered over all eligible variants for the entity; complete = every eligible variant covered.",
     "cross_references": "OMIM and Orphanet are ClinVar-provided cross-reference identifiers only \u2014 they add no prevalence, treatment availability, or unmet-need evidence.",
     "unmet_need": "No unmet-need claim is made; that needs a treatment-status source not used here.",
-    "nmd": "NMD escape is two rule-based predictors \u2014 the 50-nt guideline and the fuller Lindeboom rule set \u2014 not yet the ML models (NMDetective-AI, predNMD, aenmd). A disagreement is where the fuller rules turn the classification, not evidence of which rule is correct and not model uncertainty."
+    "nmd": "NMD escape is two hand-rolled rule predictors \u2014 the 50-nt guideline and the fuller Lindeboom rule set \u2014 checked against aenmd, the published rule tool, on the variants aenmd scores. The ML models (NMDetective-AI, predNMD) are not yet in. A rule disagreement is where the fuller rules turn the classification, not evidence of which rule is correct and not model uncertainty."
   }
 }

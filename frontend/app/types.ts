@@ -30,6 +30,12 @@ export interface Variant {
   nmd: NmdVerdict | null;
 }
 
+export interface AenmdVerdict {
+  available: boolean;
+  escape: boolean;
+  reason: string;
+}
+
 export interface NmdVerdict {
   escape_guideline: boolean;
   escape_full_rules: boolean;
@@ -40,6 +46,7 @@ export interface NmdVerdict {
     start_proximal: boolean;
     long_exon: boolean;
   };
+  aenmd?: AenmdVerdict | null;
 }
 
 export interface SafetyAtlas {
@@ -120,6 +127,19 @@ export interface ResearchAggregate {
     driven_by_start_proximal: number;
     driven_by_long_exon: number;
     driven_by_both: number;
+    aenmd?: {
+      scoreable: number;
+      aenmd_available: number;
+      both_available: number;
+      aenmd_available_fraction: number;
+      aenmd_escape: number;
+      aenmd_escape_fraction: number;
+      full_rules_vs_aenmd_agree: number;
+      full_rules_vs_aenmd_agree_fraction: number;
+      full_escape_aenmd_decay: number;
+      full_decay_aenmd_escape: number;
+      guideline_vs_aenmd_agree_fraction: number;
+    };
   };
   frontiers: {
     variants: FrontierStep[];

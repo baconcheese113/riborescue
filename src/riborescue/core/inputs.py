@@ -131,6 +131,17 @@ INPUTS: dict[str, Input] = {
         source="NCBI MANE release 1.5, GRCh38",
         licence="public domain (NCBI)",
     ),
+    "mane_summary": Input(
+        name="mane_summary",
+        url=(
+            "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.5/"
+            "MANE.GRCh38.v1.5.summary.txt.gz"
+        ),
+        md5="5e82e39c3a0954405cee2163fb7ca2ee",
+        path=Path("mane/MANE.GRCh38.v1.5.summary.txt.gz"),
+        source="NCBI MANE release 1.5, GRCh38 — the RefSeq/Ensembl transcript pairing",
+        licence="public domain (NCBI)",
+    ),
 }
 
 

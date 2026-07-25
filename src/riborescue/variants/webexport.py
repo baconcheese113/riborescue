@@ -155,6 +155,27 @@ def _nmd_by_variant(nmd: pd.DataFrame | None) -> dict[object, dict]:
     }
 
 
+def _aenmd_by_variant(aenmd: pd.DataFrame | None) -> dict[object, dict]:
+    """Each variant's aenmd verdict — available and escape, or the reason it was not scored."""
+
+    if aenmd is None:
+        return {}
+    return {
+        row.variant_id: {
+            "available": bool(row.aenmd_available),
+            "escape": bool(row.aenmd_escape),
+            "reason": str(row.reason) if not bool(row.aenmd_available) else "",
+        }
+        for row in aenmd.itertuples()
+    }
+
+
+def _with_aenmd(nmd: dict | None, aenmd: dict | None) -> dict | None:
+    """Attach the aenmd verdict to a variant's NMD object, when the variant has a rule-tier one."""
+
+    return None if nmd is None else {**nmd, "aenmd": aenmd}
+
+
 def build_web_table(
     landscape: pd.DataFrame,
     amenability: pd.DataFrame,
@@ -162,12 +183,14 @@ def build_web_table(
     variant_ids: list[str] | None = None,
     safety: dict | None = None,
     nmd: pd.DataFrame | None = None,
+    aenmd: pd.DataFrame | None = None,
 ) -> WebTable:
     """Join the per-variant landscape to the per-therapy intervals into the app's table.
 
     `variant_ids` narrows the output to a chosen set — the example artifact is a diverse handful,
     the full export is every scoreable variant. `nmd`, when given, adds each variant's two NMD
-    predictors and their rules so the patient view can show where they disagree.
+    predictors and their rules; `aenmd` adds the published tool's verdict beside them, so the
+    patient view can show a real second implementation agree or, where unavailable, why it did not.
     """
 
     if variant_ids is not None:
@@ -178,6 +201,7 @@ def build_web_table(
         vid: rows.to_dict("records") for vid, rows in therapy.groupby("variant_id")
     }
     nmd_by_variant = _nmd_by_variant(nmd)
+    aenmd_by_variant = _aenmd_by_variant(aenmd)
     therapies = sorted(amenability["therapy_id"].unique())
 
     variants = []
@@ -224,7 +248,9 @@ def build_web_table(
                 "best": best,
                 "therapies": offered,
                 "suppressor": _suppressor(str(row["stop_type"]), str(row["original_aa"])),
-                "nmd": nmd_by_variant.get(row["variant_id"]),
+                "nmd": _with_aenmd(
+                    nmd_by_variant.get(row["variant_id"]), aenmd_by_variant.get(row["variant_id"])
+                ),
             }
         )
 

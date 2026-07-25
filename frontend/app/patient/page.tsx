@@ -61,6 +61,13 @@ function Evidence({ variant }: { variant: Variant }) {
               <span className={`pill ${variant.nmd.escape_full_rules ? "good" : "bad"}`}>
                 full rules: {variant.nmd.escape_full_rules ? "escape" : "decay"}
               </span>{" "}
+              {variant.nmd.aenmd?.available && (
+                <>
+                  <span className={`pill ${variant.nmd.aenmd.escape ? "good" : "bad"}`}>
+                    aenmd: {variant.nmd.aenmd.escape ? "escape" : "decay"}
+                  </span>{" "}
+                </>
+              )}
               {variant.nmd.disagree ? (
                 <span className="slot-note">
                   the two rule sets <b>disagree</b> here — the fuller rules escape a stop the 50-nt
@@ -69,8 +76,22 @@ function Evidence({ variant }: { variant: Variant }) {
                   {variant.nmd.rules.start_proximal ? ", via the start-proximal rule" : ""}
                 </span>
               ) : (
-                <span className="slot-note">both rule sets agree; the ML predictors are not yet in</span>
+                <span className="slot-note">the two rule sets agree here</span>
               )}
+              {variant.nmd.aenmd &&
+                (variant.nmd.aenmd.available ? (
+                  <span className="slot-note">
+                    aenmd, the published tool,{" "}
+                    {variant.nmd.aenmd.escape === variant.nmd.escape_full_rules
+                      ? "agrees with the full rule set"
+                      : "differs from the full rule set"}
+                    ; the ML predictors are not yet in
+                  </span>
+                ) : (
+                  <span className="slot-note">
+                    aenmd did not score this variant ({variant.nmd.aenmd.reason.replace(/_/g, " ")})
+                  </span>
+                ))}
             </>
           ) : (
             <>

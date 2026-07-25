@@ -47,6 +47,12 @@ from riborescue.riboseq.readthrough import (
     unpaired_effect,
 )
 from riborescue.riboseq.sequencing import FASTQ_SUBDIR, stage
+from riborescue.variants.aenmd import (
+    aenmd_verdicts,
+    mane_ensembl_by_gene,
+    model_agreement,
+    read_aenmd_rules,
+)
 from riborescue.variants.baseline import fit, relative_error_quantile
 from riborescue.variants.clinvar import pathogenic_nonsense
 from riborescue.variants.context import contexts_for, disagreements_with_protein
@@ -482,6 +488,12 @@ def atlas_predict(
     help="The NMD predictors table, to show each variant's two escape verdicts and their rules.",
 )
 @click.option(
+    "--aenmd",
+    "aenmd_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The aenmd verdicts table, to show the published tool's call beside the rule tier.",
+)
+@click.option(
     "--sample",
     type=int,
     help="Write a diverse sample of this many variants — the example artifact — instead of all.",
@@ -492,6 +504,7 @@ def export_web(
     amenability: Path,
     predicted: Path | None,
     nmd_table: Path | None,
+    aenmd_table: Path | None,
     sample: int | None,
     out: Path,
 ) -> None:
@@ -502,7 +515,10 @@ def export_web(
     therapies = sorted(amen["therapy_id"].unique())
     safety = safety_summary(read_table(predicted), therapies) if predicted is not None else None
     nmd = read_table(nmd_table) if nmd_table is not None else None
-    table = build_web_table(land, amen, variant_ids=variant_ids, safety=safety, nmd=nmd)
+    aenmd = read_table(aenmd_table) if aenmd_table is not None else None
+    table = build_web_table(
+        land, amen, variant_ids=variant_ids, safety=safety, nmd=nmd, aenmd=aenmd
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(table.to_json())
     click.echo(
@@ -788,9 +804,20 @@ def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
 @click.option(
     "--commit", default="", help="Commit SHA for provenance; read from git HEAD if omitted."
 )
+@click.option(
+    "--aenmd",
+    "aenmd_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The aenmd verdicts table, to add the model tier's agreement with the rule tier.",
+)
 @_OUT
 def export_research(
-    table: Path, contexts: Path, clinvar_release: str, commit: str, out: Path
+    table: Path,
+    contexts: Path,
+    clinvar_release: str,
+    commit: str,
+    aenmd_table: Path | None,
+    out: Path,
 ) -> None:
     """Build the researcher dashboard aggregate: coverage frontiers and per-disease coverage.
 
@@ -810,7 +837,11 @@ def export_research(
             commit = ""
 
     aggregate = build_research_aggregate(
-        read_table(table), read_table(contexts), clinvar_release=clinvar_release, commit=commit
+        read_table(table),
+        read_table(contexts),
+        clinvar_release=clinvar_release,
+        commit=commit,
+        aenmd=read_table(aenmd_table) if aenmd_table is not None else None,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(aggregate.to_json())
@@ -962,6 +993,68 @@ def nmd(table: Path, out: Path) -> None:
         f"    driven by start-proximal {atlas['driven_by_start_proximal']}, "
         f"long-exon {atlas['driven_by_long_exon']}, both {atlas['driven_by_both']}"
     )
+
+
+@main.command("aenmd-verdicts")
+@click.option(
+    "--aenmd",
+    "aenmd_rules",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="aenmd's per-transcript rule table (results/aenmd.tsv), from scripts/aenmd_nmd.R.",
+)
+@click.option(
+    "--nonsense",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The ClinVar nonsense variants, for the coordinates the aenmd key is built from.",
+)
+@click.option(
+    "--mane-summary",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The MANE summary, for the one-to-one RefSeq/Ensembl transcript pairing.",
+)
+@click.option(
+    "--contexts",
+    "contexts_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The context table; when given, reports how the rule tier and aenmd agree.",
+)
+@_OUT
+def aenmd_verdicts_command(
+    aenmd_rules: Path, nonsense: Path, mane_summary: Path, contexts_table: Path | None, out: Path
+) -> None:
+    """aenmd's NMD escape verdict per variant, on its MANE Select transcript (ADR-0017).
+
+    aenmd is the model tier's real, independent rule implementation. This reads its per-transcript
+    output down to one verdict per variant on the MANE transcript, keeping every variant aenmd did
+    not score marked unavailable with the reason. With `--contexts`, it reports agreement with the
+    rule tier — the check that the hand-rolled `full_rules` reproduces the published tool.
+    """
+
+    rules = read_aenmd_rules(str(aenmd_rules))
+    mane = mane_ensembl_by_gene(str(mane_summary))
+    nons = pd.read_csv(nonsense, sep="\t", dtype={"chrom": str})
+    verdicts = aenmd_verdicts(rules, nons, mane)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(verdicts, out)
+
+    available = int(verdicts["aenmd_available"].sum())
+    click.echo(
+        f"{len(verdicts):,} variants, aenmd available for {available:,} "
+        f"({available / len(verdicts) * 100:.1f}%) → {out}"
+    )
+    if contexts_table is not None:
+        agree = model_agreement(nmd_predictors(read_table(contexts_table)), verdicts)
+        if agree.get("both_available"):
+            click.echo(
+                f"  full_rules vs aenmd agree: {agree['full_rules_vs_aenmd_agree']:,}/"
+                f"{agree['both_available']:,} "
+                f"({agree['full_rules_vs_aenmd_agree_fraction'] * 100:.2f}%); "
+                f"aenmd-only escapes {agree['full_decay_aenmd_escape']}, "
+                f"rule-only escapes {agree['full_escape_aenmd_decay']}"
+            )
 
 
 @main.command("trna-coverage")

@@ -107,12 +107,39 @@ psite = { cmd = "bash scripts/run_psite_all.sh hek293t results/staged_runs.tsv",
 psite-gse144140-survey = { cmd = "bash scripts/run_psite_all.sh gse144140 results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1", LENGTHS = "18:40" } }
 psite-fibroblast = { cmd = "bash scripts/run_psite_all.sh gse179274_fibroblast results/staged_runs.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
 
+# aenmd (Klonowski et al., Bioinformatics 2023) is the rule-based NMD model tier — a real, independent
+# implementation of the escape rules the ensemble computes by hand. Its Bioconductor stack and the
+# ~1 GB NCBI GRCh38 genome package live in their own environment so the default toolchain stays lean.
+# The package and its Ensembl-v105 data package are GitHub-only (not Bioconductor), installed from
+# pinned commits by scripts/install_aenmd.R; the heavy dependencies below come from bioconda so they
+# are captured in pixi.lock.
+[tool.pixi.feature.aenmd.dependencies]
+r-base = "4.5.*"
+r-remotes = "*"
+r-optparse = "*"
+r-triebeard = "*"
+r-vcfr = "*"
+bioconductor-variantannotation = "*"
+bioconductor-bsgenome = "*"
+"bioconductor-bsgenome.hsapiens.ncbi.grch38" = "*"
+bioconductor-ensembldb = "*"
+bioconductor-genomicfeatures = "*"
+bioconductor-genomicranges = "*"
+bioconductor-genomeinfodb = "*"
+bioconductor-biostrings = "*"
+bioconductor-biocfilecache = "*"
+
+[tool.pixi.feature.aenmd.tasks]
+aenmd-install = "Rscript scripts/install_aenmd.R"
+aenmd = { cmd = "Rscript scripts/aenmd_nmd.R --variants results/clinvar_nonsense.tsv --out results/aenmd.tsv", env = { OPENBLAS_NUM_THREADS = "1" } }
+
 # One solve group, so the runtime environment resolves to the versions the development environment
 # did. A container built from a different resolution proves nothing about what was tested.
 [tool.pixi.environments]
 default = { features = ["dev", "pipeline", "oracle", "riboseq"], solve-group = "riborescue" }
 runtime = { features = [], solve-group = "riborescue" }
 psite = { features = ["psite"], no-default-feature = true }
+aenmd = { features = ["aenmd"], no-default-feature = true }
 
 [tool.pixi.tasks]
 lint = "ruff check ."
@@ -173,10 +200,14 @@ reads = { cmd = """nextflow run . --step reads -profile local -resume \
 nf-test = { cmd = "nf-test test", cwd = "pipeline" }
 nf-lint = { cmd = "nextflow lint .", cwd = "pipeline" }
 nmd = { cmd = "riborescue nmd results/clinvar_contexts.tsv --out results/nmd.tsv", depends-on = ["contexts"] }
-# The dry-lab chain alone builds the viewer's data; the safety panel is added by export-web-safety
-# where the Ribo-seq atlas exists, so the app builds on a laptop that never ran the sequencing arm.
+# aenmd's raw per-transcript run is the heavy `aenmd` env task (scripts/aenmd_nmd.R); this reads it
+# down to one MANE-transcript verdict per variant, in the default env, so the export can join it.
+aenmd-verdicts = { cmd = "riborescue aenmd-verdicts --aenmd results/aenmd.tsv --nonsense results/clinvar_nonsense.tsv --mane-summary data/mane/MANE.GRCh38.v1.5.summary.txt.gz --contexts results/clinvar_contexts.tsv --out results/aenmd_verdicts.tsv" }
+# The dry-lab chain alone builds the viewer's data; the safety panel and the aenmd model tier are
+# added by export-web-safety where the Ribo-seq atlas and aenmd env have run, so the app builds on a
+# laptop that never ran the sequencing arm.
 export-web = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
-export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
+export-web-safety = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --predicted results/atlas/gse144140_predicted.tsv --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 export-web-example = { cmd = "riborescue export-web --landscape results/landscape.tsv --amenability results/amenability.tsv --sample 48 --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }

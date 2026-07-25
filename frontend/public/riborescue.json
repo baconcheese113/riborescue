@@ -119,6 +119,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -199,6 +204,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -279,6 +289,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -359,6 +374,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -439,6 +459,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -519,6 +544,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -599,6 +629,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -679,6 +714,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -759,6 +799,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -839,6 +884,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "variant_filtered"
         }
       }
     },
@@ -919,6 +969,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -999,6 +1054,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -1079,6 +1139,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -1159,6 +1224,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -1239,6 +1309,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -1319,6 +1394,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -1399,6 +1479,11 @@
           "within_last_junction": false,
           "start_proximal": true,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -1479,6 +1564,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -1559,6 +1649,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -1639,6 +1734,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -1719,6 +1819,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -1799,6 +1904,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -1879,6 +1989,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -1959,6 +2074,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -2035,6 +2155,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -2115,6 +2240,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -2195,6 +2325,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -2271,6 +2406,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -2351,6 +2491,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -2431,6 +2576,11 @@
           "within_last_junction": false,
           "start_proximal": true,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -2511,6 +2661,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -2591,6 +2746,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -2671,6 +2831,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -2751,6 +2916,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "transcript_absent"
         }
       }
     },
@@ -2831,6 +3001,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -2911,6 +3086,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -2991,6 +3171,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -3071,6 +3256,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "variant_filtered"
         }
       }
     },
@@ -3151,6 +3341,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": false,
+          "escape": false,
+          "reason": "variant_filtered"
         }
       }
     },
@@ -3231,6 +3426,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -3311,6 +3511,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -3391,6 +3596,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": false
+        },
+        "aenmd": {
+          "available": true,
+          "escape": false,
+          "reason": ""
         }
       }
     },
@@ -3471,6 +3681,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -3551,6 +3766,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -3631,6 +3851,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -3711,6 +3936,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -3791,6 +4021,11 @@
           "within_last_junction": false,
           "start_proximal": false,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     },
@@ -3871,6 +4106,11 @@
           "within_last_junction": false,
           "start_proximal": true,
           "long_exon": true
+        },
+        "aenmd": {
+          "available": true,
+          "escape": true,
+          "reason": ""
         }
       }
     }

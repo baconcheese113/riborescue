@@ -209,6 +209,19 @@ export default function ResearcherPage() {
           {n.driven_by_start_proximal.toLocaleString()}), or both ({n.driven_by_both.toLocaleString()}
           ). Every split is the fuller rules escaping a stop the guideline calls decay.
         </p>
+        {n.aenmd && (
+          <p className="panel-note" style={{ borderTop: "1px solid var(--edge)", paddingTop: "0.75rem" }}>
+            <b>Checked against aenmd</b> (Klonowski et al. 2023), the published rule tool. On the{" "}
+            {n.aenmd.both_available.toLocaleString()} stops aenmd scores ({(n.aenmd.aenmd_available_fraction * 100).toFixed(0)}%
+            of the set — it drops variants overlapping a splice region, and its Ensembl v105 predates
+            some MANE transcripts), the hand-rolled full rule set agrees with it on{" "}
+            <b>{(n.aenmd.full_rules_vs_aenmd_agree_fraction * 100).toFixed(2)}%</b>. The{" "}
+            {(n.aenmd.full_escape_aenmd_decay + n.aenmd.full_decay_aenmd_escape).toLocaleString()}{" "}
+            disagreements ({n.aenmd.full_decay_aenmd_escape} aenmd-only escapes,{" "}
+            {n.aenmd.full_escape_aenmd_decay} rule-only) are aenmd&apos;s own edge cases, not a different
+            idea of NMD. This is the rule tier checked, not the ML tier — that is still to come.
+          </p>
+        )}
       </section>
 
       <section className="panel">

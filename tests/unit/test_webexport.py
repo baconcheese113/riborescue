@@ -114,6 +114,39 @@ def test_nmd_verdicts_ride_along_when_given_and_are_null_otherwise():
     assert all(v["nmd"] is None for v in without.variants)
 
 
+def test_the_aenmd_verdict_rides_along_inside_the_nmd_object():
+    nmd = pd.DataFrame(
+        [
+            {
+                "variant_id": "V1",
+                "rule_last_exon": False,
+                "rule_within_last_junction": False,
+                "rule_start_proximal": True,
+                "rule_long_exon": False,
+                "escape_guideline": False,
+                "escape_full_rules": True,
+                "predictors_disagree": True,
+            }
+        ]
+    )
+    aenmd = pd.DataFrame(
+        [
+            {"variant_id": "V1", "aenmd_available": True, "aenmd_escape": True, "reason": ""},
+            {
+                "variant_id": "V2",
+                "aenmd_available": False,
+                "aenmd_escape": False,
+                "reason": "transcript_absent",
+            },
+        ]
+    )
+    table = build_web_table(_landscape(), _amenability(), nmd=nmd, aenmd=aenmd)
+    by_id = {v["id"]: v for v in table.variants}
+    assert by_id["V1"]["nmd"]["aenmd"] == {"available": True, "escape": True, "reason": ""}
+    # V2 has no rule-tier nmd here, so it has no nmd object to hang the aenmd verdict on.
+    assert by_id["V2"]["nmd"] is None
+
+
 def test_a_variant_carries_every_therapy_and_its_interval():
     table = build_web_table(_landscape(), _amenability())
     v1 = next(v for v in table.variants if v["id"] == "V1")
