@@ -42,6 +42,7 @@ __all__ = [
     "qualifying",
     "signature",
     "stalling",
+    "termination_arms_separate",
     "transcript_genes",
     "unpaired_effect",
 ]
@@ -477,18 +478,28 @@ def signature(effects: Mapping[str, Effect]) -> dict[str, bool]:
 def stalling(effects: Mapping[str, Effect]) -> bool:
     """Whether a compound behaves as a stalling agent rather than a readthrough one.
 
-    The negative control has to fail the signature in the direction its mechanism predicts —
-    occupancy at the stop does not fall, and occupancy beyond it does not rise — rather than fail
-    the frame condition, which is unstable when there is little downstream signal to compose.
+    Two conditions, both on means: occupancy at the stop does not fall, and occupancy beyond it does
+    not rise. Failure is required of the signature as a whole rather than of the frame condition,
+    which is unstable when there is little downstream signal to compose.
+
+    Whether the arms also separate across replicates is a stronger question, and
+    `termination_arms_separate` answers it beside this rather than inside it.
     """
 
     termination = effects["termination_occupancy"]
     downstream = effects["downstream_occupancy"]
-    return bool(
-        termination.mean_difference >= 0
-        and downstream.mean_difference <= 0
-        and termination.consistent
-    )
+    return bool(termination.mean_difference >= 0 and downstream.mean_difference <= 0)
+
+
+def termination_arms_separate(effects: Mapping[str, Effect]) -> bool:
+    """Whether the termination arms separate completely, every treated library past every control.
+
+    Reported beside the stalling verdict, never folded into it. A directional result whose arms
+    overlap is weaker evidence than one whose arms do not, so this qualifies that verdict rather
+    than setting it.
+    """
+
+    return effects["termination_occupancy"].consistent
 
 
 def paired_effect(

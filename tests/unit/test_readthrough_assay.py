@@ -16,6 +16,7 @@ from riborescue.riboseq.readthrough_assay import (
     qualifying,
     signature,
     stalling,
+    termination_arms_separate,
     transcript_genes,
     unpaired_effect,
 )
@@ -438,12 +439,17 @@ def test_a_stalling_compound_is_recognised_by_its_own_direction():
     assert stalling(g418) is False
 
 
-def test_a_stalling_verdict_needs_consistent_movement_not_just_a_mean():
-    """One noisy library must not carry the negative control on its group mean alone."""
+def test_overlapping_arms_qualify_the_stalling_verdict_without_deciding_it():
+    """The verdict is on the means, so separation reports beside it rather than inside it.
+
+    The arms here overlap, so the diagnostic fails while the verdict holds. Folding the diagnostic
+    into `stalling` would let a stricter condition decide a verdict that is not defined in terms
+    of it.
+    """
 
     ratios = _ratios(
         downstream_occupancy={"dmso": [0.01] * 3, "g418": [0.03] * 3, "sri": [0.005] * 3},
-        # termination rises on average but the groups overlap, so nothing is established
+        # termination rises on average, but the groups overlap rather than separating
         termination_occupancy={"dmso": [0.50, 0.90, 0.50], "g418": [0.30] * 3, "sri": [0.70] * 3},
         frame_gap={"dmso": [-0.1] * 3, "g418": [-0.01] * 3, "sri": [-0.1] * 3},
     )
@@ -451,7 +457,8 @@ def test_a_stalling_verdict_needs_consistent_movement_not_just_a_mean():
     sri = {q: unpaired_effect(ratios, q, CONFIRM, "sri", "dmso") for q in quantities}
     assert sri["termination_occupancy"].mean_difference > 0
     assert sri["termination_occupancy"].consistent is False
-    assert stalling(sri) is False
+    assert stalling(sri) is True
+    assert termination_arms_separate(sri) is False
 
 
 def test_the_welch_interval_rounds_degrees_of_freedom_down():

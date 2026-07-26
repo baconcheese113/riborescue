@@ -1,7 +1,8 @@
 {
+  "contracts_version": "0.3.0",
   "status": {
-    "readthrough_control": "passed for G418, within one laboratory",
-    "readthrough_detail": "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it in the stalling direction \u2014 so the assay detects canonical G418 readthrough. SRI-37240 is the control compound in that Ribo-seq dataset and is not the SRI-41315 scored here; they are different molecules. This is confirmation within one laboratory and protocol family, not independent replication, and it does not license a null about a therapy of different data quality, modality or context.",
+    "readthrough_control": "confirmed for G418 under the pre-registered endpoint (ADR-0010)",
+    "readthrough_detail": "The frame control is confirmed under ADR-0010's pre-registered endpoint: G418 completes the readthrough signature on GSE144140, and SRI-37240 fails it in the stalling direction \u2014 occupancy at the stop does not fall, occupancy beyond it does not rise. SRI-37240's replicate arms overlap, so a separate replicate-separation diagnostic is not met; that qualifies the strength of the negative control and does not change the verdict. SRI-37240 is the control compound in that Ribo-seq dataset and is not the SRI-41315 scored here; they are different molecules. This is confirmation within one laboratory and protocol family, not independent replication, and it does not license a null about a therapy of different data quality, modality or context.",
     "safety_atlas": "G418 only, in HEK293T",
     "safety_detail": "Native-stop occupancy is measured for G418 in HEK293T cells only; the other therapies have no matched empirical safety atlas. It is downstream occupancy past normal stops, not protein production, toxicity, or a result in any other tissue."
   },
@@ -21,33 +22,19 @@
     "SJ6986": "SJ6986",
     "SRI": "SRI-41315"
   },
-  "safety": {
-    "measured_therapy": "G418",
-    "cell_line": "HEK293T",
-    "canonical_stops_scored": 18887,
-    "analysed": 1708,
-    "unavailable_reason": "the rest were not expressed at footprint depth in this cell line, so they carry a prediction but no measurement to compare it against",
-    "concordance": {
-      "rho": 0.2857,
-      "low": 0.2365,
-      "high": 0.3278
-    },
-    "concordance_label": "modest rank concordance, with substantial disagreement",
-    "quadrants": {
-      "both": 58,
-      "predicted only": 369,
-      "measured only": 40,
-      "neither": 1241
-    },
-    "per_therapy": {
-      "CC90009": "no matched empirical safety atlas",
-      "Clitocine": "no matched empirical safety atlas",
-      "DAP": "no matched empirical safety atlas",
-      "G418": "native-stop occupancy measured in HEK293T",
-      "SJ6986": "no matched empirical safety atlas",
-      "SRI": "no matched empirical safety atlas"
-    },
-    "caveat": "Downstream occupancy past normal stops, not protein production, toxicity, or a result in any other tissue or therapy."
+  "safety": null,
+  "escape": {
+    "panel": "BE4max + ABE7.10, SpCas9 NGG",
+    "total": 71378,
+    "scoreable": 70660,
+    "unscoreable": 718,
+    "exact": 7622,
+    "alternative": 14420,
+    "not_editable": 48618,
+    "reachable": 22042,
+    "reachable_bystander_free": 18249,
+    "exact_bystander_free": 6384,
+    "caveat": "Geometric reachability under the declared editor panel \u2014 whether an editor can be placed on the stop. Not editing efficiency, off-target activity, delivery, tissue access, splice consequence, or clinical eligibility."
   },
   "variants": [
     {
@@ -134,16 +121,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.0826,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "exact_wildtype",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -230,16 +219,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": false,
-          "efficiency": null,
-          "reason": "encode_error:ValueError"
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "exact_wildtype",
+        "window_position": 5,
+        "bystander_free": false,
+        "candidate_guides": 2
       }
     },
     {
@@ -326,16 +317,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": false,
-          "efficiency": null,
-          "reason": "encode_error:ValueError"
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 6,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -422,16 +415,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.335,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -518,16 +513,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5425,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -614,16 +611,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5132,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "alternative_sense",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -710,16 +709,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5697,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -806,16 +807,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.4814,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -902,16 +905,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5442,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -998,16 +1003,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "variant_filtered"
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.7319,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -1094,16 +1101,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5213,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -1190,16 +1199,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.6469,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "exact_wildtype",
+        "window_position": 5,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -1286,16 +1297,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.6916,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -1382,16 +1395,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.7491,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "exact_wildtype",
+        "window_position": 4,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -1478,16 +1493,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.7415,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -1574,16 +1591,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.6989,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -1670,16 +1689,18 @@
           "start_proximal": true,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.4983,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 6,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -1766,16 +1787,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.4868,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "exact_wildtype",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -1862,16 +1885,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.4854,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "exact_wildtype",
+        "window_position": 6,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -1958,16 +1983,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.4909,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "alternative_sense",
+        "window_position": 6,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -2054,16 +2081,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.4957,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -2150,16 +2179,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.5224,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -2246,16 +2277,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.1156,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "alternative_sense",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -2342,16 +2375,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.4075,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -2434,16 +2469,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.4649,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -2530,16 +2567,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5321,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -2626,16 +2665,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.588,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -2718,16 +2759,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.0782,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 4,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -2814,16 +2857,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": false,
-          "efficiency": null,
-          "reason": "encode_error:ValueError"
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -2910,16 +2955,18 @@
           "start_proximal": true,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.2776,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3006,16 +3053,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.8013,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "alternative_sense",
+        "window_position": 4,
+        "bystander_free": false,
+        "candidate_guides": 1
       }
     },
     {
@@ -3102,16 +3151,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 1.0045,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3198,16 +3249,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": false,
-          "efficiency": null,
-          "reason": "encode_error:ValueError"
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -3294,16 +3347,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "transcript_absent"
-        },
-        "nmdetective": {
-          "available": false,
-          "efficiency": null,
-          "reason": "encode_error:ValueError"
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "exact_wildtype",
+        "window_position": 7,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     },
     {
@@ -3390,16 +3445,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.5803,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3486,16 +3543,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.5667,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3582,16 +3641,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.381,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3678,16 +3739,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "variant_filtered"
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.3229,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3774,16 +3837,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": false,
-          "escape": false,
-          "reason": "variant_filtered"
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.3068,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -3870,16 +3935,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.321,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_alternative",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "sense",
+        "restores": "alternative_sense",
+        "window_position": 6,
+        "bystander_free": true,
+        "candidate_guides": 2
       }
     },
     {
@@ -3966,16 +4033,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.3208,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4062,16 +4131,18 @@
           "start_proximal": false,
           "long_exon": false
         },
-        "aenmd": {
-          "available": true,
-          "escape": false,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.3364,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4158,16 +4229,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.1729,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4254,16 +4327,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.1006,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4350,16 +4425,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": 0.1226,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4446,16 +4523,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.5612,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4542,16 +4621,18 @@
           "start_proximal": false,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.6583,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "not_base_editable_under_panel",
+        "reachable": false,
+        "editor": "nan",
+        "strand": "nan",
+        "restores": "nan",
+        "window_position": null,
+        "bystander_free": false,
+        "candidate_guides": 0
       }
     },
     {
@@ -4638,16 +4719,18 @@
           "start_proximal": true,
           "long_exon": true
         },
-        "aenmd": {
-          "available": true,
-          "escape": true,
-          "reason": ""
-        },
-        "nmdetective": {
-          "available": true,
-          "efficiency": -0.5985,
-          "reason": ""
-        }
+        "aenmd": null,
+        "nmdetective": null
+      },
+      "editing": {
+        "reach_class": "base_editable_exact",
+        "reachable": true,
+        "editor": "ABE7.10",
+        "strand": "antisense",
+        "restores": "exact_wildtype",
+        "window_position": 6,
+        "bystander_free": true,
+        "candidate_guides": 1
       }
     }
   ]

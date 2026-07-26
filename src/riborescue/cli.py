@@ -70,6 +70,7 @@ from riborescue.riboseq.readthrough_assay import (
     qualifying,
     signature,
     stalling,
+    termination_arms_separate,
     transcript_genes,
     unpaired_effect,
 )
@@ -1454,6 +1455,11 @@ def readthrough_assay(
     click.echo(f"  {'signature':>22}: {'complete' if all(met.values()) else 'incomplete'}")
     if stalling(effects):
         click.echo(f"  {'stalling':>22}: yes — raised at the stop, not beyond it")
+        separated = termination_arms_separate(effects)
+        click.echo(
+            f"  {'replicates separate':>22}: {'yes' if separated else 'no'}"
+            f"{'' if separated else ' — directional only, the arms overlap'}"
+        )
 
 
 @main.command("head-to-head")

@@ -2,7 +2,7 @@
   "provenance": {
     "contracts_version": "0.3.0",
     "clinvar_release": "20260715",
-    "commit": "e735e06",
+    "commit": "d242ecd",
     "qualifying_variants": 71378,
     "scoreable_variants": 70376,
     "condition_entities": 6058
@@ -30,37 +30,20 @@
     "disagree_fraction": 0.2022,
     "driven_by_start_proximal": 2933,
     "driven_by_long_exon": 10593,
-    "driven_by_both": 705,
-    "aenmd": {
-      "scoreable": 70376,
-      "aenmd_available": 48385,
-      "both_available": 48148,
-      "aenmd_available_fraction": 0.6779,
-      "aenmd_escape": 14269,
-      "aenmd_escape_fraction": 0.2964,
-      "full_rules_vs_aenmd_agree": 47840,
-      "full_rules_vs_aenmd_agree_fraction": 0.9936,
-      "full_escape_aenmd_decay": 207,
-      "full_decay_aenmd_escape": 101,
-      "guideline_vs_aenmd_agree_fraction": 0.8047
-    },
-    "nmdetective": {
-      "scoreable": 70376,
-      "available": 64105,
-      "both_available": 63308,
-      "available_fraction": 0.8981,
-      "efficiency_median": 0.4627,
-      "guideline": {
-        "escape_mean_efficiency": -0.4208,
-        "decay_mean_efficiency": 0.4412,
-        "separation": 0.862
-      },
-      "full_rules": {
-        "escape_mean_efficiency": -0.1605,
-        "decay_mean_efficiency": 0.5842,
-        "separation": 0.7446
-      }
-    }
+    "driven_by_both": 705
+  },
+  "escape": {
+    "panel": "BE4max + ABE7.10, SpCas9 NGG",
+    "total": 71378,
+    "scoreable": 70660,
+    "unscoreable": 718,
+    "exact": 7622,
+    "alternative": 14420,
+    "not_editable": 48618,
+    "reachable": 22042,
+    "reachable_bystander_free": 18249,
+    "exact_bystander_free": 6384,
+    "caveat": "Geometric reachability under the declared editor panel \u2014 whether an editor can be placed on the stop. Not editing efficiency, off-target activity, delivery, tissue access, splice consequence, or clinical eligibility."
   },
   "frontiers": {
     "variants": [

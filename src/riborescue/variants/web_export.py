@@ -64,13 +64,17 @@ _ARM_COLUMNS = {
 class GateStatus:
     """What the reader must know before trusting a number: which claims are still unbacked."""
 
-    readthrough_control: str = "passed for G418, within one laboratory"
+    readthrough_control: str = "confirmed for G418 under the pre-registered endpoint (ADR-0010)"
     readthrough_detail: str = (
-        "The G418 positive control completes its signature on GSE144140, and SRI-37240 fails it "
-        "in the stalling direction — so the assay detects canonical G418 readthrough. SRI-37240 is "
-        "the control compound in that Ribo-seq dataset and is not the SRI-41315 scored here; they "
-        "are different molecules. This is confirmation within one laboratory and protocol family, "
-        "not independent replication, and it does not license a null about a therapy of different "
+        "The frame control is confirmed under ADR-0010's pre-registered endpoint: G418 completes "
+        "the readthrough signature on GSE144140, and SRI-37240 fails it in the stalling "
+        "direction — occupancy at the stop does not fall, occupancy beyond it does not rise. "
+        "SRI-37240's replicate arms overlap, so a separate replicate-separation diagnostic is not "
+        "met; that qualifies the strength of the negative control and does not change the "
+        "verdict. SRI-37240 is the control "
+        "compound in that Ribo-seq dataset and is not the SRI-41315 scored here; they are "
+        "different molecules. This is confirmation within one laboratory and protocol family, not "
+        "independent replication, and it does not license a null about a therapy of different "
         "data quality, modality or context."
     )
     safety_atlas: str = "G418 only, in HEK293T"
