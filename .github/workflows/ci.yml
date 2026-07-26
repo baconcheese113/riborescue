@@ -38,8 +38,11 @@ jobs:
       - run: docker build --tag riborescue:${{ github.sha }} .
       # The image exists to run the command Nextflow calls, so the check is that it does.
       - run: docker run --rm riborescue:${{ github.sha }} riborescue triage stop_gained
-      # And that its environment is the one the lockfile describes, not a fresh resolution.
+      # And that its environment is the one the lockfile describes, not a fresh resolution. Every
+      # third-party module the package imports is named, so a dependency the lockfile stops
+      # carrying fails here rather than at the first command that reaches for it.
       - run: |
           docker run --rm riborescue:${{ github.sha }} python -c "
-          import cyvcf2, numpy, scipy, patsy, statsmodels, sklearn, pandera, pooch, Bio, click
-          print('every direct import resolves')" 
+          import Bio, bioframe, click, cutadapt, cyvcf2, dnaio, numpy, pandas
+          import pandera, patsy, pooch, pydantic, scipy, sklearn, statsmodels
+          print('every direct import resolves')"
