@@ -15,9 +15,11 @@ not by expecting the two numbers to match.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+from scipy.stats import bootstrap, spearmanr
 
 from riborescue.riboseq.readthrough_assay import gencode_sequences
 
@@ -86,21 +88,32 @@ def concordance(
     if n < 20:
         return {"n": n, "rho": float("nan"), "low": float("nan"), "high": float("nan")}
 
-    def rho(frame: pd.DataFrame) -> float:
-        return float(frame["p"].corr(frame["m"], method="spearman"))
+    def rho(p: np.ndarray, m: np.ndarray) -> float:
+        # scipy's correlation result ships no type information.
+        return float(cast(Any, spearmanr(p, m)).statistic)
 
-    point = rho(paired)
-    rng = np.random.default_rng(seed)
-    boot = []
-    values = paired.to_numpy()
-    for _ in range(draws):
-        sample = values[rng.integers(0, n, n)]
-        frame = pd.DataFrame(sample, columns=["p", "m"])
-        boot.append(rho(frame))
-    low, high = np.nanpercentile(boot, [2.5, 97.5])
+    # Resampled as pairs: a prediction and the measurement it is being ranked against have to travel
+    # together, or the correlation is taken over a pairing the data never had.
+    values = (paired["p"].to_numpy(), paired["m"].to_numpy())
+    resampled = bootstrap(
+        values,
+        rho,
+        paired=True,
+        vectorized=False,
+        n_resamples=draws,
+        method="percentile",
+        rng=seed,
+    ).bootstrap_distribution
+
+    # A resample that draws one rank over and over is constant, and a rank correlation over a
+    # constant is undefined rather than zero. Those draws are dropped: the interval is taken over
+    # the draws that defined one, which is what keeps a rare rank from erasing the interval
+    # entirely instead of widening it.
+    defined = resampled[np.isfinite(resampled)]
+    low, high = np.percentile(defined, [2.5, 97.5]) if defined.size else (np.nan, np.nan)
     return {
         "n": n,
-        "rho": round(point, 4),
+        "rho": round(rho(*values), 4),
         "low": round(float(low), 4),
         "high": round(float(high), 4),
     }

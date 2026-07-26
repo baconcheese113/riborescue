@@ -13,9 +13,10 @@ not assembled into the primary reference, so the repeating unit is carried separ
 biotype alone removes a tenth of a footprint library; with the repeat unit it removes three fifths.
 """
 
-import gzip
-from collections.abc import Iterator, Sequence
+from collections.abc import Sequence
 from pathlib import Path
+
+from riborescue.core.sequences import records
 
 __all__ = ["CONTAMINANT_BIOTYPES", "write_contaminants"]
 
@@ -44,32 +45,21 @@ often enough that discarding them would remove signal rather than contamination.
 _BIOTYPE_FIELD = 7
 
 
-def _records(handle: Iterator[str]) -> Iterator[tuple[str, list[str]]]:
-    header, sequence = None, []
-    for line in handle:
-        if line.startswith(">"):
-            if header is not None:
-                yield header, sequence
-            header, sequence = line, []
-        elif header is not None:
-            sequence.append(line)
-    if header is not None:
-        yield header, sequence
-
-
 def write_contaminants(transcripts: Path, out: Path, include: Sequence[Path] = ()) -> int:
     """Write the structural RNA from a GENCODE transcript FASTA, plus any FASTA named in `include`.
+
+    Each sequence is written on one line rather than wrapped, because the aligner reads these to
+    build an index and a wrapped record would differ from the input for no reason.
 
     Returns how many sequences were written.
     """
 
     selected = 0
-    with gzip.open(transcripts, "rt") as source, out.open("w") as sink:
-        for header, sequence in _records(source):
-            fields = header.rstrip("\n").split("|")
+    with out.open("w") as sink:
+        for record in records(transcripts):
+            fields = record.description.split("|")
             if len(fields) > _BIOTYPE_FIELD and fields[_BIOTYPE_FIELD] in CONTAMINANT_BIOTYPES:
-                sink.write(header)
-                sink.writelines(sequence)
+                sink.write(f">{record.description}\n{record.seq}\n")
                 selected += 1
         if selected == 0:
             raise ValueError(f"{transcripts} yielded no structural RNA; is it GENCODE FASTA?")

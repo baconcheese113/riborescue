@@ -73,6 +73,9 @@ def gene_symbols(gtf: Path) -> dict[str, str]:
 
     The counts are keyed by the stable gene id, which is what makes them joinable, but a table of
     the most expressed genes is unreadable without symbols.
+
+    Streamed rather than parsed into a frame, because only two fields of the gene records are
+    wanted and materialising the whole annotation to reach them costs twenty times the memory.
     """
 
     symbols: dict[str, str] = {}

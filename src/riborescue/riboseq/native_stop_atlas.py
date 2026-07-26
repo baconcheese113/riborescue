@@ -21,82 +21,14 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 import pandas as pd
+from Bio.Seq import Seq
 
 from riborescue.riboseq.readthrough_assay import gencode_sequences
 
 __all__ = [
-    "AMINO_ACIDS",
     "native_stop_occupancy",
     "translate_extension",
 ]
-
-# The standard genetic code, stops as "*". Only what a C-terminal extension needs.
-AMINO_ACIDS = {
-    "TTT": "F",
-    "TTC": "F",
-    "TTA": "L",
-    "TTG": "L",
-    "CTT": "L",
-    "CTC": "L",
-    "CTA": "L",
-    "CTG": "L",
-    "ATT": "I",
-    "ATC": "I",
-    "ATA": "I",
-    "ATG": "M",
-    "GTT": "V",
-    "GTC": "V",
-    "GTA": "V",
-    "GTG": "V",
-    "TCT": "S",
-    "TCC": "S",
-    "TCA": "S",
-    "TCG": "S",
-    "CCT": "P",
-    "CCC": "P",
-    "CCA": "P",
-    "CCG": "P",
-    "ACT": "T",
-    "ACC": "T",
-    "ACA": "T",
-    "ACG": "T",
-    "GCT": "A",
-    "GCC": "A",
-    "GCA": "A",
-    "GCG": "A",
-    "TAT": "Y",
-    "TAC": "Y",
-    "TAA": "*",
-    "TAG": "*",
-    "CAT": "H",
-    "CAC": "H",
-    "CAA": "Q",
-    "CAG": "Q",
-    "AAT": "N",
-    "AAC": "N",
-    "AAA": "K",
-    "AAG": "K",
-    "GAT": "D",
-    "GAC": "D",
-    "GAA": "E",
-    "GAG": "E",
-    "TGT": "C",
-    "TGC": "C",
-    "TGA": "*",
-    "TGG": "W",
-    "CGT": "R",
-    "CGC": "R",
-    "CGA": "R",
-    "CGG": "R",
-    "AGT": "S",
-    "AGC": "S",
-    "AGA": "R",
-    "AGG": "R",
-    "GGT": "G",
-    "GGC": "G",
-    "GGA": "G",
-    "GGG": "G",
-}
 
 
 def native_stop_occupancy(
@@ -174,11 +106,12 @@ def translate_extension(
         meta = coords.get(str(transcript))
         if sequence is None or meta is None:
             continue
-        # The coding sequence ends with its stop; the extension begins right after it.
+        # The coding sequence ends with its stop; the extension begins right after it. A transcript
+        # whose recorded window runs past the sequence it was annotated on is translated over what
+        # the sequence holds, in whole codons, rather than over a truncated final one.
         start = int(meta["l_utr5"]) + int(meta["l_cds"])
-        window = int(extension) - 3
-        codons = [sequence[i : i + 3].upper() for i in range(start, start + window, 3)]
-        peptide = "".join(AMINO_ACIDS.get(codon, "X") for codon in codons)
+        window = min(int(extension) - 3, len(sequence) - start)
+        peptide = str(Seq(sequence[start : start + window - window % 3].upper()).translate())
         rows.append(
             {
                 "transcript": str(transcript),

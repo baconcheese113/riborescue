@@ -23,6 +23,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy import stats
+
+from riborescue.core.sequences import STOP_CODONS, gencode_accession, read_fasta
 
 __all__ = [
     "COUNT_COLUMNS",
@@ -49,8 +52,21 @@ _GENE_ID = re.compile(r'gene_id "([^"]+)"')
 _TRANSCRIPT_ID = re.compile(r'transcript_id "([^"]+)"')
 _BIN = 100_000
 
-# 95% two-sided t, by degrees of freedom, rather than pulling in scipy for a handful of points.
-_T_CRITICAL = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306}
+MANE_SELECT_TAG = "MANE_Select"
+
+CONFIDENCE = 0.95
+"""Two-sided coverage of every interval reported here."""
+
+
+def _critical(df: int) -> float:
+    """The two-sided t multiplier at CONFIDENCE for `df` degrees of freedom.
+
+    From the distribution rather than a table of transcribed values: a table has to stop somewhere,
+    and what it does past its last row — fall back to the normal quantile — silently narrows the
+    interval of exactly the larger designs that were never checked against it.
+    """
+
+    return float(stats.t.ppf(1.0 - (1.0 - CONFIDENCE) / 2.0, df))
 
 CDS_FRAMES = ["cds_frame0", "cds_frame1", "cds_frame2"]
 EXTENSION_FRAMES = ["extension_frame0", "extension_frame1", "extension_frame2"]
@@ -83,25 +99,10 @@ PROGRAMMED_READTHROUGH = frozenset(
 """Genes reported to read through their stop codon natively, which do so with or without a drug."""
 
 
-STOP_CODONS = frozenset({"TAA", "TAG", "TGA"})
-
-
 def gencode_sequences(transcripts: Path) -> dict[str, str]:
     """Transcript sequences keyed by accession, from a GENCODE FASTA."""
 
-    found: dict[str, str] = {}
-    name, parts = None, []
-    with gzip.open(transcripts, "rt") as handle:
-        for line in handle:
-            if line.startswith(">"):
-                if name is not None:
-                    found[name] = "".join(parts)
-                name, parts = line[1:].split("|", 1)[0], []
-            else:
-                parts.append(line.strip())
-    if name is not None:
-        found[name] = "".join(parts)
-    return found
+    return read_fasta(transcripts, key=gencode_accession)
 
 
 def next_in_frame_stop(sequence: str, stop_start: int) -> int | None:
@@ -148,7 +149,12 @@ def extension_windows(transcripts: Path, annotation: pd.DataFrame) -> pd.DataFra
 
 
 def _features(gtf: Path, wanted: frozenset[str]):
-    """Yield the GTF rows of the requested feature types, already split."""
+    """Yield the GTF rows of the requested feature types, already split.
+
+    Streamed rather than read into a frame. The annotation is nine million records, and every
+    question asked of it here is a filter over a handful of fields; materialising it costs twenty
+    times the memory to answer the same question.
+    """
 
     with gzip.open(gtf, "rt") as handle:
         for line in handle:
@@ -178,16 +184,47 @@ def mane_select_transcripts(gtf: Path) -> frozenset[str]:
     A gene contributes many isoforms, and counting each as an independent native stop would
     pseudo-replicate a shared context in any correlation. MANE Select names the single canonical
     transcript per protein-coding gene, so restricting to it gives one stop per gene.
+
+    Matched in the attribute text because `tag` is the one GTF key a transcript carries several of —
+    `basic`, `CCDS`, `MANE_Select`. Any reader giving each key a single value keeps whichever came
+    last, and this set comes back silently empty.
     """
 
     selected: set[str] = set()
     for field in _features(gtf, frozenset({"transcript"})):
-        if 'tag "MANE_Select"' not in field[8]:
+        if f'tag "{MANE_SELECT_TAG}"' not in field[8]:
             continue
-        transcript = _TRANSCRIPT_ID.search(field[8])
-        if transcript:
+        if transcript := _TRANSCRIPT_ID.search(field[8]):
             selected.add(transcript.group(1))
     return frozenset(selected)
+
+
+UTR_FEATURES = frozenset({"UTR", "three_prime_utr", "3UTR"})
+"""Feature names an annotation may give an untranslated region.
+
+GENCODE's GTF writes every untranslated region as a bare `UTR`, on both sides of the coding
+sequence; Ensembl's GFF3 and some GTF dialects name the 3' one outright. Both are accepted, and
+which side of the coding sequence a bare `UTR` falls on is worked out from the coordinates.
+"""
+
+
+def _downstream_utrs(gtf: Path) -> tuple[dict, list]:
+    """The coding extent of every transcript, and the untranslated regions to place against it."""
+
+    coding_extent: dict[str, tuple[int, int]] = {}
+    utrs: list[tuple[str, str, int, int, str, str]] = []
+    for field in _features(gtf, UTR_FEATURES | {"CDS"}):
+        gene = _GENE_ID.search(field[8])
+        transcript = _TRANSCRIPT_ID.search(field[8])
+        if gene is None or transcript is None:
+            continue
+        start, end = int(field[3]), int(field[4])
+        if field[2] == "CDS":
+            low, high = coding_extent.get(transcript.group(1), (start, end))
+            coding_extent[transcript.group(1)] = (min(low, start), max(high, end))
+        else:
+            utrs.append((field[0], field[6], start, end, gene.group(1), transcript.group(1)))
+    return coding_extent, utrs
 
 
 def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
@@ -196,6 +233,10 @@ def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
     Ribosomes on the neighbouring gene land in this transcript's downstream window and read as
     readthrough that never happened. Only a different gene counts: a transcript's own coding
     sequence overlapping its own untranslated region is ordinary isoform structure.
+
+    A region is the 3' one when it lies past the coding sequence in the direction the transcript is
+    read — past its end on the plus strand, before its start on the minus. A transcript with no
+    coding sequence has no 3' untranslated region to speak of and takes no part.
     """
 
     coding: dict[tuple[str, str, int], list[tuple[int, int, str]]] = defaultdict(list)
@@ -207,17 +248,19 @@ def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
         for window in range(start // _BIN, end // _BIN + 1):
             coding[(field[0], field[6], window)].append((start, end, gene.group(1)))
 
+    coding_extent, utrs = _downstream_utrs(gtf)
     contaminated: set[str] = set()
-    for field in _features(gtf, frozenset({"three_prime_utr"})):
-        gene = _GENE_ID.search(field[8])
-        transcript = _TRANSCRIPT_ID.search(field[8])
-        if gene is None or transcript is None:
+    for chrom, strand, start, end, gene, transcript in utrs:
+        extent = coding_extent.get(transcript)
+        if extent is None:
             continue
-        start, end = int(field[3]), int(field[4])
+        cds_start, cds_end = extent
+        if not (start > cds_end if strand == "+" else end < cds_start):
+            continue
         for window in range(start // _BIN, end // _BIN + 1):
-            for other_start, other_end, other_gene in coding.get((field[0], field[6], window), ()):
-                if other_gene != gene.group(1) and other_start <= end and start <= other_end:
-                    contaminated.add(transcript.group(1))
+            for other_start, other_end, other_gene in coding.get((chrom, strand, window), ()):
+                if other_gene != gene and other_start <= end and start <= other_end:
+                    contaminated.add(transcript)
                     break
     return frozenset(contaminated)
 
@@ -349,10 +392,7 @@ class PairedEffect:
         n = len(values)
         if n < 2:
             return (float("nan"), float("nan"))
-        # 95% two-sided for n-1 degrees of freedom, read from the t table rather than pulled in
-        # from scipy for three points.
-        critical = _T_CRITICAL.get(n - 1, 1.96)
-        half = critical * values.std(ddof=1) / np.sqrt(n)
+        half = _critical(n - 1) * values.std(ddof=1) / np.sqrt(n)
         return (float(values.mean() - half), float(values.mean() + half))
 
     @property
@@ -382,7 +422,12 @@ class UnpairedEffect:
 
     @property
     def interval(self) -> tuple[float, float]:
-        """A Welch interval, which does not assume the two groups vary alike."""
+        """A Welch interval, which does not assume the two groups vary alike.
+
+        Welch's degrees of freedom are fractional, and they are rounded down rather than used as
+        they come: fewer degrees of freedom is the wider interval, and at three libraries an arm
+        the conservative direction is the only defensible one.
+        """
 
         a, b = np.asarray(self.treated, dtype=float), np.asarray(self.control, dtype=float)
         if len(a) < 2 or len(b) < 2:
@@ -392,9 +437,7 @@ class UnpairedEffect:
         if error == 0:
             return (self.mean_difference, self.mean_difference)
         df = (va + vb) ** 2 / (va**2 / (len(a) - 1) + vb**2 / (len(b) - 1))
-        # Rounding down is the conservative direction: fewer degrees of freedom, wider interval.
-        critical = _T_CRITICAL.get(max(1, math.floor(df)), 1.96)
-        half = critical * error
+        half = _critical(max(1, math.floor(df))) * error
         return (self.mean_difference - half, self.mean_difference + half)
 
     @property

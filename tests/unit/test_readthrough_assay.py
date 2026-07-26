@@ -213,6 +213,64 @@ def test_a_transcript_overlapping_only_itself_is_kept(gtf: Path):
     assert "T3" not in overlapping_downstream_cds(gtf)
 
 
+# GENCODE's GTF writes every untranslated region as a bare `UTR` on both sides of the coding
+# sequence and never emits `three_prime_utr`, so a fixture spelling it the Ensembl way exercises a
+# feature the real annotation does not contain.
+GENCODE_GTF = """\
+chr1\tX\ttranscript\t100\t900\t.\t+\t.\tgene_id "G1"; transcript_id "T1"; gene_name "ACTB";
+chr1\tX\tCDS\t100\t500\t.\t+\t0\tgene_id "G1"; transcript_id "T1"; gene_name "ACTB";
+chr1\tX\tUTR\t1\t99\t.\t+\t.\tgene_id "G1"; transcript_id "T1"; gene_name "ACTB";
+chr1\tX\tUTR\t501\t900\t.\t+\t.\tgene_id "G1"; transcript_id "T1"; gene_name "ACTB";
+chr1\tX\ttranscript\t600\t1200\t.\t+\t.\tgene_id "G2"; transcript_id "T2"; gene_name "NEIGH";
+chr1\tX\tCDS\t600\t1200\t.\t+\t0\tgene_id "G2"; transcript_id "T2"; gene_name "NEIGH";
+chr2\tX\ttranscript\t100\t900\t.\t-\t.\tgene_id "G4"; transcript_id "T4"; gene_name "MINUS";
+chr2\tX\tCDS\t500\t900\t.\t-\t0\tgene_id "G4"; transcript_id "T4"; gene_name "MINUS";
+chr2\tX\tUTR\t100\t499\t.\t-\t.\tgene_id "G4"; transcript_id "T4"; gene_name "MINUS";
+chr2\tX\ttranscript\t100\t300\t.\t-\t.\tgene_id "G5"; transcript_id "T5"; gene_name "NEIGH2";
+chr2\tX\tCDS\t100\t300\t.\t-\t0\tgene_id "G5"; transcript_id "T5"; gene_name "NEIGH2";
+"""
+
+
+@pytest.fixture
+def gencode_gtf(tmp_path: Path) -> Path:
+    path = tmp_path / "gencode.gtf.gz"
+    with gzip.open(path, "wt") as handle:
+        handle.write(GENCODE_GTF)
+    return path
+
+
+def test_a_bare_utr_is_placed_against_the_coding_sequence(gencode_gtf: Path):
+    """The annotation the project actually reads names no 3' UTR, only `UTR` on both sides.
+
+    T1's downstream region runs into G2's coding sequence and its upstream one does not, so the
+    exclusion has to tell the two apart by where they sit rather than by what they are called.
+    """
+
+    assert "T1" in overlapping_downstream_cds(gencode_gtf)
+
+
+def test_the_downstream_side_follows_the_strand(gencode_gtf: Path):
+    """On the minus strand the 3' region is the one *before* the coding sequence, not after it."""
+
+    assert "T4" in overlapping_downstream_cds(gencode_gtf)
+
+
+def test_the_upstream_region_is_not_the_downstream_window(gencode_gtf: Path):
+    """T1 also carries a 5' UTR; a neighbour there says nothing about readthrough past its stop."""
+
+    upstream_only = """\
+chr3\tX\ttranscript\t100\t900\t.\t+\t.\tgene_id "G6"; transcript_id "T6"; gene_name "A";
+chr3\tX\tCDS\t500\t900\t.\t+\t0\tgene_id "G6"; transcript_id "T6"; gene_name "A";
+chr3\tX\tUTR\t100\t499\t.\t+\t.\tgene_id "G6"; transcript_id "T6"; gene_name "A";
+chr3\tX\ttranscript\t100\t300\t.\t+\t.\tgene_id "G7"; transcript_id "T7"; gene_name "B";
+chr3\tX\tCDS\t100\t300\t.\t+\t0\tgene_id "G7"; transcript_id "T7"; gene_name "B";
+"""
+    path = gencode_gtf.with_name("upstream.gtf.gz")
+    with gzip.open(path, "wt") as handle:
+        handle.write(upstream_only)
+    assert "T6" not in overlapping_downstream_cds(path)
+
+
 def test_a_transcript_qualifying_in_only_one_condition_is_dropped_from_both():
     """Otherwise the treated and untreated medians are taken over different transcripts, and the
     comparison is partly about which transcripts cleared the coverage bar."""

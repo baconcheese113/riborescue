@@ -7,14 +7,15 @@ carries linker sequence into alignment. That failure is silent — the reads sti
 clipped — so the rate at which the adapter was found is asserted rather than reported.
 """
 
-import gzip
 import json
 import statistics
 from collections.abc import Collection, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
+import dnaio
 import pandas as pd
+from cutadapt.adapters import BackAdapter
 
 __all__ = [
     "ADAPTER_REACHED_BY",
@@ -154,30 +155,11 @@ class AdapterSurvey:
 
 
 def _sequences(fastq: Path, limit: int) -> Iterator[str]:
-    with gzip.open(fastq, "rt") as handle:
-        for index, line in enumerate(handle):
-            if index >= limit * 4:
+    with dnaio.open(fastq) as handle:
+        for index, record in enumerate(handle):
+            if index >= limit:
                 return
-            if index % 4 == 1:
-                yield line.rstrip("\n")
-
-
-def _adapter_start(sequence: str, fixed: str, overlap: int) -> int:
-    """Where the adapter begins in one read, or -1.
-
-    A short read runs out before the whole adapter fits, so only its first bases are present and
-    they sit at the read's end. Cutadapt accepts that as a match once enough of them are there, and
-    so must this: demanding the whole sequence would report a 50 nt library as adapter-free while
-    cutadapt trims it correctly.
-    """
-
-    whole = sequence.find(fixed)
-    if whole >= 0:
-        return whole
-    for length in range(min(len(fixed) - 1, len(sequence)), overlap - 1, -1):
-        if sequence.endswith(fixed[:length]):
-            return len(sequence) - length
-    return -1
+            yield record.sequence
 
 
 def survey_adapter(
@@ -197,20 +179,27 @@ def survey_adapter(
 
     The declared overlap counts against the whole adapter, degenerate bases included, so the number
     of fixed bases that have to match is what remains after them.
+
+    Where the adapter begins is cutadapt's own 3'-adapter matcher, so a read this reports as
+    carrying the linker is one cutadapt will trim — including the short read that runs out before
+    the whole adapter fits, which only a partial match at the read's end finds. Errors are not
+    tolerated here as they are in trimming: a survey asks whether the declared adapter is the
+    library's chemistry at all, and an exact match answers that without a rate to argue about.
     """
 
     fixed = adapter.lstrip("N")
     degenerate = len(adapter) - len(fixed)
     flanking = cut_5p + degenerate
-    overlap = max(1, adapter_overlap - degenerate)
+    linker = BackAdapter(
+        sequence=fixed, max_errors=0, min_overlap=max(1, adapter_overlap - degenerate)
+    )
     reads = found_in = 0
     lengths: list[int] = []
     for sequence in _sequences(fastq, limit):
         reads += 1
-        found = _adapter_start(sequence, fixed, overlap)
-        if found >= 0:
+        if (found := linker.match_to(sequence)) is not None:
             found_in += 1
-            lengths.append(found - flanking)
+            lengths.append(found.rstart - flanking)
     if reads == 0:
         raise ValueError(f"{fastq} holds no reads")
     quantiles = statistics.quantiles(lengths, n=10) if len(lengths) > 10 else None

@@ -91,3 +91,25 @@ def test_the_extension_peptide_translates_from_past_the_native_stop(tmp_path: Pa
     # window is extension-3 = 6 nt after the stop codon: GGG CCC -> G P
     assert peptides.loc["ENST1", "extension_peptide"] == "GP"
     assert peptides.loc["ENST1", "extension_aa"] == 2
+
+
+def test_a_window_running_past_the_sequence_translates_only_what_is_there(tmp_path: Path):
+    """A window wider than the sequence yields the residues that exist, not placeholders for the
+    rest.
+
+    `extension_windows` derives the window by finding the next in-frame stop within the sequence, so
+    it can never outrun it and this cannot arise from the pipeline. It arises from an extension
+    table read off disk that was built against a different reference, and the honest answer there is
+    the peptide the sequence supports rather than one padded out to the width that was asked for.
+    """
+
+    fasta = tmp_path / "t.fa.gz"
+    with gzip.open(fasta, "wt") as handle:
+        handle.write(">ENST1|gene\nCCCATGAAATAAGGGCCC\n")
+    annotation = pd.DataFrame({"transcript": ["ENST1"], "l_utr5": [3], "l_cds": [9]})
+    # 300 nt of window against 6 nt of remaining sequence.
+    extensions = pd.DataFrame({"transcript": ["ENST1"], "extension": [303]})
+
+    peptides = translate_extension(fasta, annotation, extensions).set_index("transcript")
+    assert peptides.loc["ENST1", "extension_peptide"] == "GP"
+    assert peptides.loc["ENST1", "extension_aa"] == 2

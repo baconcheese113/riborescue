@@ -6,12 +6,13 @@ Coordinates follow their sources: genomic positions are 1-based inclusive, as GF
 and transcript offsets are 0-based, as Python indexes a string.
 """
 
-import gzip
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+
+from riborescue.core.sequences import STOP_CODONS, read_fasta
 
 __all__ = [
     "PRIMARY_CHROMOSOMES",
@@ -21,8 +22,6 @@ __all__ = [
     "read_annotation",
     "read_sequences",
 ]
-
-STOP_CODONS = frozenset({"TAA", "TAG", "TGA"})
 
 PRIMARY_CHROMOSOMES = frozenset(f"chr{name}" for name in [*map(str, range(1, 23)), "X", "Y"])
 """The primary assembly. Alternate and fix patches carry duplicate genes on other coordinates."""
@@ -158,20 +157,7 @@ def read_annotation(gff: Path) -> pd.DataFrame:
 def read_sequences(fasta: Path) -> dict[str, str]:
     """Read transcript sequences, keyed by accession, from a RefSeq FASTA."""
 
-    sequences: dict[str, str] = {}
-    accession, chunks = None, []
-    opener = gzip.open if fasta.suffix == ".gz" else open
-    with opener(fasta, "rt") as handle:
-        for line in handle:
-            if line.startswith(">"):
-                if accession is not None:
-                    sequences[accession] = "".join(chunks)
-                accession, chunks = line[1:].split()[0], []
-            else:
-                chunks.append(line.strip().upper())
-    if accession is not None:
-        sequences[accession] = "".join(chunks)
-    return sequences
+    return read_fasta(fasta)
 
 
 def load_transcripts(gff: Path, fasta: Path) -> dict[str, TranscriptModel]:

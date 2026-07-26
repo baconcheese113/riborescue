@@ -8,11 +8,10 @@ whether a library is a ribosome profile at all.
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass, field
 from pathlib import Path
 
 import pandas as pd
+from pydantic import BaseModel, ConfigDict, computed_field, field_serializer
 
 __all__ = [
     "MINIMUM_FRAME0_SHARE",
@@ -48,32 +47,39 @@ OFFSET_FROM_5 = (11, 14)
 """Inferred 5' offset the dominant length must fall within, inclusive."""
 
 
-@dataclass(frozen=True)
-class LibraryVerdict:
+class LibraryVerdict(BaseModel):
     """One library measured against the thresholds fixed before it was looked at."""
+
+    model_config = ConfigDict(frozen=True)
 
     sample: str
     psites: int
     frame0_share: float
     dominant_length: int
     offset_from_5: int
-    failures: tuple[str, ...] = field(default_factory=tuple)
+    failures: tuple[str, ...] = ()
+
+    @field_serializer("frame0_share")
+    def _rounded(self, share: float) -> float:
+        return round(share, 5)
 
     @property
     def passes(self) -> bool:
         return not self.failures
 
 
-@dataclass(frozen=True)
-class CalibrationManifest:
+class CalibrationManifest(BaseModel):
     """The lengths a dataset keeps, and each library's verdict on them."""
+
+    model_config = ConfigDict(frozen=True)
 
     dataset: str
     lengths: tuple[int, ...]
     surveyed: tuple[int, int]
-    libraries: tuple[LibraryVerdict, ...]
     script_md5: str | None = None
+    libraries: tuple[LibraryVerdict, ...]
 
+    @computed_field
     @property
     def passes(self) -> bool:
         return bool(self.lengths) and all(library.passes for library in self.libraries)
@@ -83,27 +89,7 @@ class CalibrationManifest:
         return {lib.sample: lib.failures for lib in self.libraries if lib.failures}
 
     def to_json(self) -> str:
-        return json.dumps(
-            {
-                "dataset": self.dataset,
-                "lengths": list(self.lengths),
-                "surveyed": list(self.surveyed),
-                "script_md5": self.script_md5,
-                "passes": self.passes,
-                "libraries": [
-                    {
-                        "sample": lib.sample,
-                        "psites": lib.psites,
-                        "frame0_share": round(lib.frame0_share, 5),
-                        "dominant_length": lib.dominant_length,
-                        "offset_from_5": lib.offset_from_5,
-                        "failures": list(lib.failures),
-                    }
-                    for lib in self.libraries
-                ],
-            },
-            indent=2,
-        )
+        return self.model_dump_json(indent=2)
 
 
 def _periodic_lengths(frames: pd.DataFrame) -> set[int]:
@@ -167,7 +153,16 @@ def select_lengths(
             failures.append(f"frame-0 share {share:.1%}, under {MINIMUM_FRAME0_SHARE:.0%}")
         if not OFFSET_FROM_5[0] <= offset <= OFFSET_FROM_5[1]:
             failures.append(f"5' offset {offset} nt outside {OFFSET_FROM_5[0]}-{OFFSET_FROM_5[1]}")
-        verdicts.append(LibraryVerdict(sample, psites, share, length, offset, tuple(failures)))
+        verdicts.append(
+            LibraryVerdict(
+                sample=sample,
+                psites=psites,
+                frame0_share=share,
+                dominant_length=length,
+                offset_from_5=offset,
+                failures=tuple(failures),
+            )
+        )
 
     return CalibrationManifest(
         dataset=dataset,
@@ -183,26 +178,12 @@ def load_manifest(path: Path) -> CalibrationManifest:
 
     Only the detectability arm of ADR-0019 reads a manifest this way, because its subject is a
     dataset that failed. Every analysis that reports a contrast calls `read_manifest` instead.
+
+    `passes` is recomputed from the verdicts rather than read, so a manifest whose recorded verdict
+    was edited to disagree with the libraries it lists cannot be believed on the edited value.
     """
 
-    record = json.loads(path.read_text())
-    return CalibrationManifest(
-        dataset=record["dataset"],
-        lengths=tuple(record["lengths"]),
-        surveyed=tuple(record["surveyed"]),
-        libraries=tuple(
-            LibraryVerdict(
-                sample=lib["sample"],
-                psites=lib["psites"],
-                frame0_share=lib["frame0_share"],
-                dominant_length=lib["dominant_length"],
-                offset_from_5=lib["offset_from_5"],
-                failures=tuple(lib["failures"]),
-            )
-            for lib in record["libraries"]
-        ),
-        script_md5=record.get("script_md5"),
-    )
+    return CalibrationManifest.model_validate_json(path.read_text())
 
 
 def read_manifest(path: Path) -> CalibrationManifest:

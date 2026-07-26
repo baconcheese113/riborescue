@@ -57,6 +57,8 @@ platforms = ["linux-64"]
 [tool.pixi.feature.base.dependencies]
 python = "3.12.*"
 cyvcf2 = ">=0.34.0,<0.35"
+dnaio = ">=1.2.4,<2"
+cutadapt = ">=5.2,<6"
 
 [tool.pixi.feature.base.pypi-dependencies]
 riborescue = { path = "." }
@@ -264,6 +266,13 @@ codon-occupancy = "bash scripts/run_codon_occupancy.sh gse144140 dmso"
 # three shuffles. Grouped by gene is where the claim lives; the other two say whether a gain is
 # capacity rather than signal, so all three run.
 head-to-head = "bash scripts/run_head_to_head.sh"
+# The corrected shuffle null (ADR-0021): 199 synchronised permutations per family, sharded by
+# permutation index, each shard resuming from what it already wrote. Under an hour, and the only
+# heavy job that should be running.
+permutation-null = "bash scripts/run_permutation_null.sh"
+permutation-report = """riborescue permutation-report results/kinetics/permutation_null/null.tsv \
+  --observed results/kinetics/permutation_null/null.0_observed.tsv \
+  --out results/kinetics/permutation_null/familywise.tsv"""
 # The per-drug ceiling every held-out score is read against, from the authors' own two replicates.
 reliability = "Rscript scripts/export_reliability.R"
 disk = "bash scripts/require_disk.sh 200"

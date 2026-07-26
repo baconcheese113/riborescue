@@ -23,6 +23,7 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
+from Bio.Data.CodonTable import standard_dna_table
 
 __all__ = [
     "GENETIC_CODE",
@@ -59,28 +60,15 @@ _FIRST_SCORABLE = -(-_WINDOW_FROM_START // 3)
 SITE_SHIFT = {"a": 1, "p": 0}
 """Codons to add to the P-site index to reach the scored site. The A site is one codon 3'."""
 
-GENETIC_CODE: dict[str, str] = {
-    "TTT": "F", "TTC": "F", "TTA": "L", "TTG": "L",
-    "CTT": "L", "CTC": "L", "CTA": "L", "CTG": "L",
-    "ATT": "I", "ATC": "I", "ATA": "I", "ATG": "M",
-    "GTT": "V", "GTC": "V", "GTA": "V", "GTG": "V",
-    "TCT": "S", "TCC": "S", "TCA": "S", "TCG": "S",
-    "CCT": "P", "CCC": "P", "CCA": "P", "CCG": "P",
-    "ACT": "T", "ACC": "T", "ACA": "T", "ACG": "T",
-    "GCT": "A", "GCC": "A", "GCA": "A", "GCG": "A",
-    "TAT": "Y", "TAC": "Y", "TAA": "*", "TAG": "*",
-    "CAT": "H", "CAC": "H", "CAA": "Q", "CAG": "Q",
-    "AAT": "N", "AAC": "N", "AAA": "K", "AAG": "K",
-    "GAT": "D", "GAC": "D", "GAA": "E", "GAG": "E",
-    "TGT": "C", "TGC": "C", "TGA": "*", "TGG": "W",
-    "CGT": "R", "CGC": "R", "CGA": "R", "CGG": "R",
-    "AGT": "S", "AGC": "S", "AGA": "R", "AGG": "R",
-    "GGT": "G", "GGC": "G", "GGA": "G", "GGG": "G",
-}  # fmt: skip
-"""The standard genetic code. The synonymous families below are read from it, not listed twice."""
+STOP_CODONS = frozenset(standard_dna_table.stop_codons)
+SENSE_CODONS = tuple(sorted(standard_dna_table.forward_table))
 
-STOP_CODONS = frozenset(codon for codon, residue in GENETIC_CODE.items() if residue == "*")
-SENSE_CODONS = tuple(sorted(set(GENETIC_CODE) - STOP_CODONS))
+GENETIC_CODE: dict[str, str] = standard_dna_table.forward_table | dict.fromkeys(STOP_CODONS, "*")
+"""The standard genetic code, stops as `*`.
+
+Taken from Biopython's table rather than transcribed, so the one place a codon assignment could be
+mistyped is upstream and tested. The synonymous families below are read from it, not listed twice.
+"""
 
 SYNONYMOUS: dict[str, tuple[str, ...]] = {
     residue: tuple(sorted(c for c in SENSE_CODONS if GENETIC_CODE[c] == residue))
