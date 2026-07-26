@@ -1,0 +1,5 @@
+sample	run_accession	reads_raw	reads_cleaned	reads_retained_percent	adapter_percent	gc_raw_percent	gc_cleaned_percent	duplicates_raw_percent	duplicates_cleaned_percent
+calu6_untreated_rep1_rnaseq	SRR10251310	21750004	21647880	99.53	6.231	46.0	46.0	87.735	87.856
+calu6_untreated_rep2_rnaseq	SRR10251311	13637672	13526459	99.185	7.299	46.5	46.5	82.508	82.589
+calu6_g418_rep1_rnaseq	SRR10251312	16298763	16200849	99.399	10.179	51.0	51.0	73.142	73.127
+calu6_g418_rep2_rnaseq	SRR10251313	13763615	13711018	99.618	9.861	51.0	51.0	70.496	70.513

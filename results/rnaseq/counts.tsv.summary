@@ -1,0 +1,15 @@
+Status	results/reads/alignments/calu6_untreated_rep1_rnaseq.sorted.bam	results/reads/alignments/calu6_untreated_rep2_rnaseq.sorted.bam	results/reads/alignments/calu6_g418_rep1_rnaseq.sorted.bam	results/reads/alignments/calu6_g418_rep2_rnaseq.sorted.bam
+Assigned	2869430	1848327	7313874	5673907
+Unassigned_Unmapped	0	0	0	0
+Unassigned_Read_Type	0	0	0	0
+Unassigned_Singleton	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0
+Unassigned_Chimera	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0
+Unassigned_Duplicate	0	0	0	0
+Unassigned_MultiMapping	7900576	1124737	12132188	14889652
+Unassigned_Secondary	0	0	0	0
+Unassigned_NonSplit	0	0	0	0
+Unassigned_NoFeatures	456726	285101	417121	411416
+Unassigned_Overlapping_Length	0	0	0	0
+Unassigned_Ambiguity	265150	225093	1085677	814999

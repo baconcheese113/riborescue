@@ -6,10 +6,10 @@ set -euo pipefail
 
 python scripts/plot_expression.py \
   --top results/rnaseq/top_expressed.tsv \
-  --out docs/figures/top_expressed.png
+  --out results/rnaseq/top_expressed.png
 
 python scripts/plot_expression.py \
   --top results/rnaseq/top_expressed_nuclear.tsv \
-  --out docs/figures/top_expressed_nuclear.png \
+  --out results/rnaseq/top_expressed_nuclear.png \
   --title "Most expressed nuclear genes, matched RNA-seq (Calu-6)" \
   --note "Mitochondrial and small structural RNA set aside; TPM over union exons, shaded on log10."

@@ -311,6 +311,12 @@ expression = { cmd = """riborescue expression results/rnaseq/counts.tsv \
   --composition-out results/rnaseq/composition.tsv \
   --out results/rnaseq/top_expressed.tsv""", depends-on = ["quantify"] }
 expression-figures = { cmd = "bash scripts/plot_expression_all.sh", depends-on = ["expression"] }
+course-figures = """python scripts/plot_course_qc.py \
+  --samples pipeline/assets/riboseq_samples.tsv \
+  --multiqc results/reads/qc/multiqc_data/multiqc_general_stats.txt \
+  --trimming results/reads/qc/trim_summary.tsv \
+  --alignment results/reads/qc/alignment_summary.tsv \
+  --outdir results/reads/qc"""
 nmd = { cmd = "riborescue nmd results/clinvar_contexts.tsv --out results/nmd.tsv", depends-on = ["contexts"] }
 # aenmd's raw per-transcript run is the heavy `aenmd` env task (scripts/aenmd_nmd.R); this reads it
 # down to one MANE-transcript verdict per variant, in the default env, so the export can join it.

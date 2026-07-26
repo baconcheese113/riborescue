@@ -1,0 +1,4 @@
+readthrough_threshold	variants	escapes_decay	reaches_threshold	reaches_threshold_lower_bound	most_insertions_tolerable	all_conditions	all_conditions_lower_bound
+0.005	70376	7120	70269	43419	33522	3472	1509
+0.01	70376	7120	59797	15488	33522	2757	251
+0.02	70376	7120	27638	165	33522	505	0

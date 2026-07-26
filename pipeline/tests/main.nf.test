@@ -3,10 +3,10 @@ nextflow_pipeline {
     name "RiboRescue entry workflows"
     script "main.nf"
 
-    test("SCORE triages the fixture variants") {
+    test("TRIAGE classifies the fixture variants") {
         when {
             params {
-                step = "score"
+                step = "triage"
                 outdir = "$outputDir"
             }
         }
@@ -20,10 +20,10 @@ nextflow_pipeline {
         }
     }
 
-    test("TRAIN validates the labels it will fit against") {
+    test("VALIDATE-LABELS checks the fixture labels") {
         when {
             params {
-                step = "train"
+                step = "validate-labels"
                 outdir = "$outputDir"
             }
         }
@@ -94,7 +94,7 @@ nextflow_pipeline {
     test("a handoff naming an absent upstream output fails the run") {
         when {
             params {
-                step = "score"
+                step = "triage"
                 handoff = "$projectDir/tests/data/handoff.json"
                 results_root = "$projectDir/tests/data"
                 outdir = "$outputDir"

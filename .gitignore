@@ -27,14 +27,40 @@ frontend/.vercel/
 .nf-test.log
 .nextflow.log*
 work/
-results/
+/pipeline/results/
+/results/**
+!/results/**/
+!/results/README.md
+!/results/evaluation.tsv
+!/results/experiments.tsv
+!/results/landscape_summary.tsv
+!/results/reads/qc/alignment_summary.tsv
+!/results/reads/qc/course_qc_summary.tsv
+!/results/reads/qc/alignment_metrics.png
+!/results/reads/qc/multiqc_report.html
+!/results/reads/qc/pre_post_cleaning.png
+!/results/reads/qc/qc_overview.png
+!/results/reads/qc/trim_summary.tsv
+!/results/reads/qc/multiqc_data/multiqc_general_stats.txt
+!/results/rnaseq/composition.tsv
+!/results/rnaseq/counts.tsv.summary
+!/results/rnaseq/top_expressed.png
+!/results/rnaseq/top_expressed.tsv
+!/results/rnaseq/top_expressed_nuclear.png
+!/results/rnaseq/top_expressed_nuclear.tsv
+!/results/rnaseq/tpm.tsv
+!/results/readthrough/gse144140/g418_vs_dmso.paired.published.tsv
+!/results/readthrough/gse144140/sri37240_vs_dmso.paired.published.tsv
+!/results/kinetics/gse144140/codon_occupancy.a.published.tsv
+!/results/kinetics/gse144140/codon_occupancy.p.published.tsv
+!/results/kinetics/permutation_null/familywise.tsv
 
 # Data — fetched from public sources, never committed. Anchored, so test fixtures under
 # pipeline/tests/data stay in git
 /data/
 
 # Docs — the decision records and the evidence behind a human gate are tracked; design documents
-# and course material stay local
+# and course material stay local. Compact course results are selected under results/.
 /docs/*
 !/docs/decisions/
 !/docs/figures/

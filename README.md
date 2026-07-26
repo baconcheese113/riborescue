@@ -24,7 +24,7 @@ with uncertainty shown by default.
 | `scripts/` | R analysis (reproduction oracle, P-site calibration) and data-fetch scripts |
 | `frontend/` | The static web app (Next.js) that presents the table |
 | `data/` | Fetched inputs — from public sources, verified by checksum, never committed |
-| `results/` | Pipeline and analysis outputs — regenerated from inputs, never committed |
+| [`results/`](results/) | Small course results and project conclusions |
 | `docs/decisions/` | Architecture decision records — the reasoning behind each major technical choice |
 | `Dockerfile` | The runtime image Nextflow processes use, carrying the `riborescue` command |
 | `.github/workflows/` | The gate that runs on every push: lint, types, tests, reproduction parity, pipeline, image |

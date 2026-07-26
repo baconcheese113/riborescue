@@ -8,12 +8,11 @@
  *                        joined into the landscape of what is plausibly addressable
  *   --step reads         quality control, adapter trimming and quality control again over the
  *                        staged Ribo-seq and RNA-seq runs
- *   --step train         fits the readthrough model from measured labels
- *   --step score         triages submitted variants against the upstream handoff
+ *   --step validate-labels  checks the measured readthrough labels against their schema
+ *   --step triage           triages submitted variants against the upstream handoff
  *
- * Only the workflows consuming Ribo-seq output require the upstream handoff; the amenability path
- * runs from public annotation alone. Every step calls the installed riborescue command; no analysis
- * logic lives in Groovy.
+ * validate-labels and triage require an upstream handoff. Every step calls the installed
+ * riborescue command; no analysis logic lives in Groovy.
  */
 
 include { ALIGNMENT_SUMMARY } from './modules/local/alignment_summary.nf'
@@ -148,10 +147,10 @@ workflow READS {
     )
 }
 
-workflow TRAIN {
+workflow LABELS {
     main:
     if( !params.labels )
-        error '--labels is required: the measured readthrough efficiency table to fit against'
+        error '--labels is required: the measured readthrough efficiency table to validate'
 
     // Combining with the validated manifest makes the handoff a prerequisite rather than a
     // neighbour: an invalid one stops the run before any label is read.
@@ -163,10 +162,10 @@ workflow TRAIN {
     )
 }
 
-workflow SCORE {
+workflow TRIAGE {
     main:
     if( !params.variants )
-        error '--variants is required: the variant table to score'
+        error '--variants is required: the variant table to triage'
 
     HANDOFF()
     TRIAGE_VARIANTS(
@@ -182,10 +181,11 @@ workflow {
         AMENABILITY()
     else if( params.step == 'reads' )
         READS()
-    else if( params.step == 'train' )
-        TRAIN()
-    else if( params.step == 'score' )
-        SCORE()
+    else if( params.step == 'validate-labels' )
+        LABELS()
+    else if( params.step == 'triage' )
+        TRIAGE()
     else
-        error "--step must be 'amenability', 'reads', 'train' or 'score', not '${params.step}'"
+        error "--step must be 'amenability', 'reads', 'validate-labels' or 'triage', " +
+              "not '${params.step}'"
 }
