@@ -150,6 +150,8 @@ Four things this number is not:
 - **It does not merge into the primary count.** The headline base-editing number stays 31.2% NGG;
   the 89.0% is the labelled sensitivity arm.
 
-The finding that survives all of that: the canonical-NGG negative space is **largely a PAM-stringency
-artifact of the geometry, not a fundamental limit** — which is a stronger reason to leave prime
-editing deferred, since expanded-PAM base editing already spans most of the gap.
+The finding that survives all of that: within this fixed-window geometric abstraction the canonical-NGG
+negative space is **largely a PAM-stringency artifact, not a fundamental limit** — a statement about
+the geometry, not an experimental result. This is a PAM-relaxed, NRN-only sensitivity; SpRY's weaker
+NYN was not modelled. It is a stronger reason to leave prime editing deferred, since expanded-PAM base
+editing already spans most of the gap.
