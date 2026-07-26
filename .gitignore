@@ -59,10 +59,12 @@ work/
 # pipeline/tests/data stay in git
 /data/
 
-# Docs — the decision records and the evidence behind a human gate are tracked; design documents
-# and course material stay local. Compact course results are selected under results/.
+# Docs — the decision records and the release artifacts are tracked, because a checklist that gates
+# a release has to be reviewable in the repository. Everything else under docs/ stays local.
+# Compact course results are selected under results/.
 /docs/*
 !/docs/decisions/
+!/docs/release/
 !/docs/figures/
 /docs/figures/*
 !/docs/figures/*/
@@ -74,6 +76,7 @@ work/
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+.mcp.json
 
 # External tool checkouts (cloned at pinned commits by scripts)
 vendor/

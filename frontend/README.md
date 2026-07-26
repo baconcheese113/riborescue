@@ -19,8 +19,13 @@ status banners, so there is little here to maintain and it can be replaced whole
 pixi run export-web-example   # regenerate public/riborescue.json from results/
 pixi run app-install          # npm install, once
 pixi run app-dev              # dev server at http://localhost:3000
-pixi run app-build           # static export to frontend/out/
+pixi run app-build            # static export to frontend/out/
+pixi run app-preview          # build, then serve the export at http://localhost:3001
 ```
+
+`app-preview` is what a page should be checked against. The export is what deploys, and the dev
+server renders the same pages through a different runtime — under WSL2 its client bundle has been
+seen not to mount on `/researcher` while the export renders it in full.
 
 To point it at a real dataset rather than the committed example, run `riborescue export-web` without
 `--sample` over the full `results/amenability_landscape.tsv` and drop the JSON in `public/`.
