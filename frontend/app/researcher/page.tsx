@@ -117,7 +117,7 @@ function ExperimentCard({ e }: { e: Experiment }) {
         <dt>What the lab does</dt><dd>{e.what_the_lab_does}</dd>
         <dt>Compared against</dt><dd>{e.comparison}</dd>
         <dt>What would count as a yes</dt><dd>{e.success_criterion}</dd>
-        <dt>If it comes back no</dt><dd>{e.if_it_fails}</dd>
+        <dt>What an unfavourable result would mean</dt><dd>{e.if_it_fails}</dd>
         <dt>Why we cannot answer it now</dt><dd>{e.evidence_gap_reason}</dd>
       </dl>
 
@@ -136,15 +136,19 @@ function ExperimentCard({ e }: { e: Experiment }) {
       </div>
 
       <p className="counts">
-        Addresses {e.open_questions_addressed} open question
-        {e.open_questions_addressed === 1 ? "" : "s"}
-        {e.claims_named !== "none" ? ` (${e.claims_named.replace(/; /g, ", ")})` : ""} · evidence
+        {e.open_questions_addressed > 0
+          ? `Addresses ${e.open_questions_addressed} open question${e.open_questions_addressed === 1 ? "" : "s"} (${e.claims_named.replace(/; /g, ", ")})`
+          : e.claims_named !== "none"
+            ? `Strengthens ${e.claims_named.replace(/; /g, ", ")}, already recorded as supported`
+            : "Opens a question the ledger does not yet carry"} · evidence
         today: {e.evidence_grade} · complexity: {e.complexity}
         {e.safety_relevant === "TRUE" ? " · bears on safety" : ""}
       </p>
 
       <details>
-        <summary>Technical details</summary>
+        <summary>
+          Technical details<span className="sr-only"> for {e.experiment_id}</span>
+        </summary>
         <dl className="technical">
           <dt>Assay</dt><dd>{e.assay}</dd>
           <dt>Model system</dt><dd>{e.model_system}</dd>
@@ -220,6 +224,39 @@ export default function ResearcherPage() {
       </div>
 
       <section className="panel">
+        <h2>What should researchers test next?</h2>
+        <p className="panel-note">
+          This project&rsquo;s two research claims came back negative and one dataset could not answer
+          the question it was collected for. What follows from that is not a better ranking of
+          therapies but the measurements that would settle the open questions. Nothing here says a
+          therapy will work.
+        </p>
+        <div className="banner">
+          <span className="tag">How to read this</span>
+          <p>
+            The questions and protocols below are <strong>written by hand</strong> — a lab procedure
+            cannot be generated from a table. What is <strong>computed</strong> is everything that
+            makes them comparable: how many variants and conditions each could reach, which recorded
+            questions it addresses, and the replicate counts our own measured variance implies. There
+            is deliberately no single score: trading fewer variants for a closed question is your
+            decision, not ours.
+          </p>
+        </div>
+        <div className="experiments">
+          {[...data.experiments]
+            .sort(
+              (a, b) =>
+                Number(b.on_frontier) - Number(a.on_frontier) ||
+                b.open_questions_addressed - a.open_questions_addressed ||
+                b.potential_variants - a.potential_variants,
+            )
+            .map((e) => (
+              <ExperimentCard key={e.experiment_id} e={e} />
+            ))}
+        </div>
+      </section>
+
+      <section className="panel">
         <h2>Coverage frontiers</h2>
         <p className="panel-note">
           The fewest designs covering the most variants, genes, and — as a <b>reach</b> frontier —
@@ -232,14 +269,84 @@ export default function ResearcherPage() {
         <FrontierChart frontiers={data.frontiers} />
       </section>
 
+      {data.escape && (
+        <section className="panel">
+          <h2>Escape map: base-editing reachability</h2>
+          <p className="panel-note">
+            A second modality, as geometry only: whether a base editor ({data.escape.panel}) can be
+            placed on the premature stop — a compatible PAM at the right distance with the
+            stop-removing base in the editing window. <b>Not editing efficiency, off-target activity,
+            delivery, tissue access, splice consequence, or eligibility.</b> Every variant is
+            accounted for: {data.escape.total.toLocaleString()} total →{" "}
+            {data.escape.scoreable.toLocaleString()} placed on a stop-forming codon (
+            {data.escape.unscoreable.toLocaleString()} not placeable), and the bars are fractions of
+            the placed set.
+          </p>
+          <div className="bars">
+            <div className="bar-row">
+              <span className="bar-label">exact restoration</span>
+              <span className="bar-track">
+                <span
+                  className="bar-fill"
+                  style={{ width: `${(data.escape.exact / data.escape.scoreable) * 100}%` }}
+                />
+              </span>
+              <span className="bar-num">
+                {data.escape.exact.toLocaleString()} (
+                {((data.escape.exact / data.escape.scoreable) * 100).toFixed(1)}%)
+              </span>
+            </div>
+            <div className="bar-row">
+              <span className="bar-label">alternative sense</span>
+              <span className="bar-track">
+                <span
+                  className="bar-fill alt"
+                  style={{ width: `${(data.escape.alternative / data.escape.scoreable) * 100}%` }}
+                />
+              </span>
+              <span className="bar-num">
+                {data.escape.alternative.toLocaleString()} (
+                {((data.escape.alternative / data.escape.scoreable) * 100).toFixed(1)}%)
+              </span>
+            </div>
+            <div className="bar-row">
+              <span className="bar-label">not editable under panel</span>
+              <span className="bar-track">
+                <span
+                  className="bar-fill warn"
+                  style={{ width: `${(data.escape.not_editable / data.escape.scoreable) * 100}%` }}
+                />
+              </span>
+              <span className="bar-num">
+                {data.escape.not_editable.toLocaleString()} (
+                {((data.escape.not_editable / data.escape.scoreable) * 100).toFixed(1)}%)
+              </span>
+            </div>
+          </div>
+          <p className="panel-note">
+            {data.escape.reachable.toLocaleString()} variants are reachable, of which{" "}
+            {data.escape.reachable_bystander_free.toLocaleString()} by a guide with no coding
+            bystander, and {data.escape.exact_bystander_free.toLocaleString()} of the{" "}
+            {data.escape.exact.toLocaleString()} exact restorations are bystander-free. Every
+            reachable candidate uses <b>ABE7.10</b>: reverting the first base of a stop codon is a
+            T→C change, which requires editing the opposite-strand A — a constraint of the genetic
+            code, since no stop codon contains a cytosine for a C→T editor to act on. The categorical
+            negative class is <b>not base-editable under this panel</b>, never &ldquo;no route
+            exists&rdquo; — prime editing is unevaluated and readthrough is a separate continuous
+            axis.
+          </p>
+        </section>
+      )}
+
       <section className="panel">
         <h2>NMD escape: two rules, and where they disagree</h2>
         <p className="panel-note">
           Whether a premature stop escapes nonsense-mediated decay decides how much transcript
           survives to rescue. The 50-nt last-junction rule (the one ClinGen PVS1 uses), against the
-          fuller Lindeboom rule set that adds start-proximal and long-exon escape. These are{" "}
-          <b>rule-based predictors, not the ML models</b> — a disagreement is where the fuller rules
-          turn the classification, not evidence of which rule is correct or model uncertainty.
+          fuller Lindeboom rule set that adds start-proximal and long-exon escape. This split is between{" "}
+          <b>two rule sets</b>, and a disagreement is where the fuller rules turn the classification —
+          not evidence of which rule is correct. The model tier below reads the same variants a third
+          and fourth way.
         </p>
         <div className="bars">
           <div className="bar-row">
@@ -364,39 +471,6 @@ export default function ResearcherPage() {
       </section>
 
       <section className="panel">
-        <h2>What should researchers test next?</h2>
-        <p className="panel-note">
-          This project&rsquo;s two research claims came back negative and one dataset could not answer
-          the question it was collected for. What follows from that is not a better ranking of
-          therapies but the measurements that would settle the open questions. Nothing here says a
-          therapy will work.
-        </p>
-        <div className="banner">
-          <span className="tag">How to read this</span>
-          <p>
-            The questions and protocols below are <strong>written by hand</strong> — a lab procedure
-            cannot be generated from a table. What is <strong>computed</strong> is everything that
-            makes them comparable: how many variants and conditions each could reach, which recorded
-            questions it addresses, and the replicate counts our own measured variance implies. There
-            is deliberately no single score: trading fewer variants for a closed question is your
-            decision, not ours.
-          </p>
-        </div>
-        <div className="experiments">
-          {[...data.experiments]
-            .sort(
-              (a, b) =>
-                Number(b.on_frontier) - Number(a.on_frontier) ||
-                b.open_questions_addressed - a.open_questions_addressed ||
-                b.potential_variants - a.potential_variants,
-            )
-            .map((e) => (
-              <ExperimentCard key={e.experiment_id} e={e} />
-            ))}
-        </div>
-      </section>
-
-      <section className="panel">
         <h2>Downloads &amp; what is not here yet</h2>
         <p className="panel-note">
           <a href="/riborescue_research.json" download>
@@ -407,8 +481,9 @@ export default function ResearcherPage() {
         <div className="banner unavailable">
           <span className="tag">Planned</span>
           <p>
-            A therapy × condition heatmap needs a therapy-level condition join, and an NMD/function
-            model filter needs those layers built. They are deliberately absent rather than mocked.
+            A therapy × condition heatmap needs a therapy-level condition join, and a function
+            filter needs a function layer that does not exist yet (ADR-0018 proposes one). Both are
+            deliberately absent rather than mocked. The NMD layer is built and is above.
           </p>
         </div>
       </section>
