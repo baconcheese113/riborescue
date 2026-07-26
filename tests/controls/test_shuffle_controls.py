@@ -1,7 +1,7 @@
 """The controls that decide the kinetics claim, and the guard that keeps them honest.
 
-Every negative control is registered in CONTROLS and named after its test. They ran, so their xfail
-markers are gone; what replaces them is the distinction the markers were standing in for.
+Every negative control is registered in CONTROLS, and the recorded outcomes below are what say it
+ran. A control deleted from the analysis loses its row and this suite goes red.
 
 **A failing control is a scientific outcome, not broken software.** A control that does not clear
 means the claim is not made — which is a valid, green state for a test suite to be in. What must
@@ -15,7 +15,6 @@ The control calculations themselves are exercised under `slow`, because each one
 over every round of six drugs.
 """
 
-import sys
 from pathlib import Path
 from typing import ClassVar
 
@@ -37,7 +36,6 @@ CONTROLS: dict[str, str] = {
     "shuffle_context_matched": "head_to_head",
     "grouped_split_leakage": "head_to_head",
 }
-WAVES_COMPLETE: frozenset[str] = frozenset({"head_to_head"})
 
 RECORDED = Path("tests/fixtures/kinetics/control_outcomes.tsv")
 """What the controls returned, under ADR-0020's frozen single-permutation rule.
@@ -171,11 +169,3 @@ def test_no_control_is_silently_removed():
             f"control '{name}' is registered but has no recorded outcome"
         )
 
-
-def test_graduated_controls_drop_their_xfail():
-    module = sys.modules[__name__]
-    for name, stage in CONTROLS.items():
-        if stage in WAVES_COMPLETE:
-            test = getattr(module, f"test_{name}", None)
-            marks = {m.name for m in getattr(test, "pytestmark", [])}
-            assert "xfail" not in marks, f"'{name}' has graduated; remove its xfail marker"
