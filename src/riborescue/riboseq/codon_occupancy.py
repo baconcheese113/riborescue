@@ -23,28 +23,23 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
-from Bio.Data.CodonTable import standard_dna_table
+
+from riborescue.core.sequences import GENETIC_CODE, SENSE_CODONS
+
+# The coverage floor is the readthrough assay's, imported rather than restated: one convention
+# across the project is worth more than a separately optimal one, and two copies of a number
+# that must agree are two numbers that can stop agreeing.
+from riborescue.riboseq.readthrough_assay import MINIMUM_CDS_PSITES
 
 __all__ = [
-    "GENETIC_CODE",
     "MINIMUM_CDS_PSITES",
     "MINIMUM_SCORABLE_CODONS",
-    "SENSE_CODONS",
     "SITE_SHIFT",
-    "STOP_CODONS",
-    "SYNONYMOUS",
     "aggregate_libraries",
-    "as_dna",
     "library_table",
     "scorable_bounds",
     "transcript_codons",
 ]
-
-MINIMUM_CDS_PSITES = 100
-"""In-frame P-sites a transcript needs over the scored window, matching the readthrough assay.
-
-One convention across the project is worth more here than a separately optimal one.
-"""
 
 MINIMUM_SCORABLE_CODONS = 64
 """Scorable positions a transcript needs, so it cannot enter the table on a single window."""
@@ -59,29 +54,6 @@ _FIRST_SCORABLE = -(-_WINDOW_FROM_START // 3)
 
 SITE_SHIFT = {"a": 1, "p": 0}
 """Codons to add to the P-site index to reach the scored site. The A site is one codon 3'."""
-
-STOP_CODONS = frozenset(standard_dna_table.stop_codons)
-SENSE_CODONS = tuple(sorted(standard_dna_table.forward_table))
-
-GENETIC_CODE: dict[str, str] = standard_dna_table.forward_table | dict.fromkeys(STOP_CODONS, "*")
-"""The standard genetic code, stops as `*`.
-
-Taken from Biopython's table rather than transcribed, so the one place a codon assignment could be
-mistyped is upstream and tested. The synonymous families below are read from it, not listed twice.
-"""
-
-SYNONYMOUS: dict[str, tuple[str, ...]] = {
-    residue: tuple(sorted(c for c in SENSE_CODONS if GENETIC_CODE[c] == residue))
-    for residue in sorted({GENETIC_CODE[c] for c in SENSE_CODONS})
-}
-"""Each amino acid's codons. Methionine and tryptophan have one each and are invariant under the
-context-matched shuffle, which is reported rather than hidden."""
-
-
-def as_dna(triplet: str) -> str:
-    """`uuc` and `TTC` name the same codon. The table is keyed on the DNA spelling."""
-
-    return triplet.upper().replace("U", "T")
 
 
 def scorable_bounds(l_cds: int) -> tuple[int, int]:

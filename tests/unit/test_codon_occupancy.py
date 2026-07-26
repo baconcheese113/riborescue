@@ -8,13 +8,9 @@ most easily drops, and dropping it makes a codon ribosomes never pause on look o
 import pandas as pd
 import pytest
 
+from riborescue.core.sequences import GENETIC_CODE, SENSE_CODONS, STOP_CODONS, SYNONYMOUS, as_dna
 from riborescue.riboseq.codon_occupancy import (
-    GENETIC_CODE,
-    SENSE_CODONS,
-    STOP_CODONS,
-    SYNONYMOUS,
     aggregate_libraries,
-    as_dna,
     library_table,
     scorable_bounds,
     transcript_codons,

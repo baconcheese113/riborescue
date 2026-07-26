@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from riborescue.variants.transcripts import load_transcripts, read_annotation, reverse_complement
+from riborescue.variants.transcripts import load_transcripts, read_annotation
 
 MANE = Path(__file__).parents[1] / "fixtures" / "mane"
 
@@ -48,8 +48,8 @@ def test_a_position_outside_the_transcript_has_no_offset(plus, position):
 
 
 def test_the_spliced_exons_account_for_the_whole_sequence(plus, minus):
-    assert plus.spliced_length == len(plus.sequence) == 20
-    assert minus.spliced_length == len(minus.sequence) == 20
+    assert sum(plus.exon_lengths) == len(plus.sequence) == 20
+    assert sum(minus.exon_lengths) == len(minus.sequence) == 20
 
 
 def test_coding_starts_at_the_first_coding_base_on_either_strand(plus, minus):
@@ -69,8 +69,10 @@ def test_a_position_before_the_coding_start_has_no_codon(plus):
 
 
 def test_the_transcript_base_is_read_on_the_transcripts_own_strand(plus, minus):
-    assert plus.base_at(105) == "A"
-    assert minus.base_at(406) == "A"
+    """A genomic position indexes the transcript's own strand, complemented on the minus."""
+
+    assert plus.sequence[plus.offset_of(105)] == "A"
+    assert minus.sequence[minus.offset_of(406)] == "A"
 
 
 def test_each_transcript_carries_its_gene_and_placement(plus, minus):
@@ -82,14 +84,6 @@ def test_only_exon_and_coding_features_are_read():
     annotation = read_annotation(MANE / "sample.gff")
     assert set(annotation["feature"]) == {"exon", "CDS"}
     assert set(annotation["transcript_id"]) == {"NM_000001.1", "NM_000002.1"}
-
-
-@pytest.mark.parametrize(
-    ("sequence", "expected"),
-    [("ATGC", "GCAT"), ("AAAA", "TTTT"), ("", ""), ("ACGTN", "NACGT")],
-)
-def test_reverse_complement_reverses_and_complements(sequence, expected):
-    assert reverse_complement(sequence) == expected
 
 
 def test_a_mane_plus_clinical_transcript_is_left_out(models):

@@ -19,6 +19,8 @@ from typing import Any, cast
 
 import pandas as pd
 
+from riborescue.core.sequences import STOP_CODONS, as_dna, as_rna
+
 __all__ = [
     "THERAPY_NAMES",
     "GateStatus",
@@ -27,9 +29,6 @@ __all__ = [
     "safety_summary",
     "therapy_name",
 ]
-
-# The three-letter stop codons riboWaltz and the triage use, spelled as the suppressor table does.
-_STOP_RNA = {"uaa": "UAA", "uag": "UAG", "uga": "UGA", "taa": "UAA", "tag": "UAG", "tga": "UGA"}
 
 # The compound each therapy id names. The ids are the readthrough dataset's own labels, and one of
 # them is dangerously short: "SRI" there is **SRI-41315**, while the compound in the safety atlas's
@@ -154,10 +153,11 @@ def _suppressor(stop_type: str, residue: str) -> dict | None:
     the modality this project ultimately cares about and the one no small molecule can target.
     """
 
-    rna = _STOP_RNA.get(str(stop_type).lower())
-    if rna is None or not isinstance(residue, str) or len(residue) != 1:
+    if as_dna(str(stop_type)) not in STOP_CODONS:
         return None
-    return {"design": f"{rna}-{residue}", "restores_exactly": True}
+    if not isinstance(residue, str) or len(residue) != 1:
+        return None
+    return {"design": f"{as_rna(str(stop_type)).upper()}-{residue}", "restores_exactly": True}
 
 
 def _nmd_by_variant(nmd: pd.DataFrame | None) -> dict[object, dict]:
@@ -290,7 +290,7 @@ def build_web_table(
                 "id": row["variant_id"],
                 "gene": row["gene_symbol"],
                 "protein_position": None if pd.isna(position) else int(position),
-                "stop": str(row["stop_type"]).upper().replace("T", "U"),
+                "stop": as_rna(str(row["stop_type"])).upper(),
                 "residue": row["original_aa"],
                 "review_stars": None if pd.isna(row["review_stars"]) else int(row["review_stars"]),
                 "escapes_decay": bool(row["escapes_decay_by_rule"]),

@@ -26,7 +26,6 @@ __all__ = [
 PRIMARY_CHROMOSOMES = frozenset(f"chr{name}" for name in [*map(str, range(1, 23)), "X", "Y"])
 """The primary assembly. Alternate and fix patches carry duplicate genes on other coordinates."""
 
-_COMPLEMENT = str.maketrans("ACGTN", "TGCAN")
 # Exons carry transcript_id, coding features only Parent, so the parent names both.
 _TRANSCRIPT_ID = re.compile(r"Parent=rna-([^;]+)")
 _GENE_ID = re.compile(r"GeneID:(\d+)")
@@ -47,10 +46,6 @@ class TranscriptModel:
     cds_end: int
     sequence: str
     protein_id: str
-
-    @property
-    def spliced_length(self) -> int:
-        return sum(end - start + 1 for start, end in self.exons)
 
     def offset_of(self, position: int) -> int | None:
         """Return the 0-based offset of a genomic position in the spliced transcript.
@@ -87,12 +82,6 @@ class TranscriptModel:
             running += length
             offsets.append(running)
         return tuple(offsets)
-
-    def base_at(self, position: int) -> str | None:
-        """The transcript base at a genomic position, on the transcript's own strand."""
-
-        offset = self.offset_of(position)
-        return None if offset is None else self.sequence[offset]
 
     @property
     def coding_offset(self) -> int | None:
@@ -185,7 +174,3 @@ def load_transcripts(gff: Path, fasta: Path) -> dict[str, TranscriptModel]:
             protein_id=str(coding["protein_id"].iloc[0]),
         )
     return models
-
-
-def reverse_complement(sequence: str) -> str:
-    return sequence.translate(_COMPLEMENT)[::-1]

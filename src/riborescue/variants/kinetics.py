@@ -25,7 +25,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from riborescue.riboseq.codon_occupancy import SYNONYMOUS, as_dna
+from riborescue.core.sequences import SYNONYMOUS, as_dna
 from riborescue.variants.evaluation import SEED, BootstrapCI, ShuffleKind
 from riborescue.variants.readthrough_model import FORMULA, cross_validate, fit_round, r_squared
 

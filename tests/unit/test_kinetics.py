@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 
 from riborescue.core.contracts import EvalConfig
-from riborescue.riboseq.codon_occupancy import GENETIC_CODE, SENSE_CODONS, SYNONYMOUS
+from riborescue.core.sequences import GENETIC_CODE, SENSE_CODONS, SYNONYMOUS
 from riborescue.variants.evaluation import ShuffleKind, split
 from riborescue.variants.kinetics import (
     MODELS,

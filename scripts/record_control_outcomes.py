@@ -41,20 +41,41 @@ def main() -> None:
     unshuffled = _gains(EvalConfig.grouped_by_gene, None)
     best = max(unshuffled, key=lambda drug: unshuffled[drug].mean())
     interval = bootstrap_ci(unshuffled[best])
-    rows.append({"control": "grouped_gain", "drug": best, "gain": interval.point,
-                 "ci_low": interval.low, "ci_high": interval.high,
-                 "includes_zero": interval.includes_zero()})
+    rows.append(
+        {
+            "control": "grouped_gain",
+            "drug": best,
+            "gain": interval.point,
+            "ci_low": interval.low,
+            "ci_high": interval.high,
+            "includes_zero": interval.includes_zero(),
+        }
+    )
 
     for kind in ShuffleKind:
         interval = run_shuffle_control(kind)
-        rows.append({"control": kind.value, "drug": "worst case", "gain": interval.point,
-                     "ci_low": interval.low, "ci_high": interval.high,
-                     "includes_zero": interval.includes_zero()})
+        rows.append(
+            {
+                "control": kind.value,
+                "drug": "worst case",
+                "gain": interval.point,
+                "ci_low": interval.low,
+                "ci_high": interval.high,
+                "includes_zero": interval.includes_zero(),
+            }
+        )
 
     interval = grouped_split_leakage("grouped_by_gene")
-    rows.append({"control": "grouped_split_leakage", "drug": "worst case", "gain": interval.point,
-                 "ci_low": interval.low, "ci_high": interval.high,
-                 "includes_zero": interval.includes_zero()})
+    rows.append(
+        {
+            "control": "grouped_split_leakage",
+            "drug": "worst case",
+            "gain": interval.point,
+            "ci_low": interval.low,
+            "ci_high": interval.high,
+            "includes_zero": interval.includes_zero(),
+        }
+    )
 
     table = pd.DataFrame(rows)
     write_table(table, arguments.out)

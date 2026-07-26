@@ -15,6 +15,8 @@ from Bio.Align import substitution_matrices
 from Bio.Data.CodonTable import standard_dna_table
 from Bio.Seq import Seq
 
+from riborescue.core.sequences import as_dna
+
 __all__ = [
     "AMINO_ACIDS",
     "NEAR_COGNATE",
@@ -35,7 +37,7 @@ AMINO_ACIDS = tuple(sorted(set(standard_dna_table.forward_table.values())))
 def near_cognate_residues(stop_codon: str) -> tuple[str, ...]:
     """Amino acids encoded by codons one base from the stop, in DNA to match the codon table."""
 
-    codon = stop_codon.upper().replace("U", "T")
+    codon = as_dna(stop_codon)
     found = set()
     for index, original in enumerate(codon):
         for base in _BASES:

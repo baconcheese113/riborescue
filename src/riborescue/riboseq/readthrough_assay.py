@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from riborescue.core.sequences import STOP_CODONS, gencode_accession, read_fasta
+from riborescue.core.sequences import STOP_CODONS, gencode_sequences
 
 __all__ = [
     "COUNT_COLUMNS",
@@ -36,7 +36,6 @@ __all__ = [
     "PairedEffect",
     "UnpairedEffect",
     "collapse_lengths",
-    "gencode_sequences",
     "library_ratios",
     "overlapping_downstream_cds",
     "paired_effect",
@@ -68,6 +67,7 @@ def _critical(df: int) -> float:
 
     return float(stats.t.ppf(1.0 - (1.0 - CONFIDENCE) / 2.0, df))
 
+
 CDS_FRAMES = ["cds_frame0", "cds_frame1", "cds_frame2"]
 EXTENSION_FRAMES = ["extension_frame0", "extension_frame1", "extension_frame2"]
 
@@ -97,12 +97,6 @@ PROGRAMMED_READTHROUGH = frozenset(
     }
 )
 """Genes reported to read through their stop codon natively, which do so with or without a drug."""
-
-
-def gencode_sequences(transcripts: Path) -> dict[str, str]:
-    """Transcript sequences keyed by accession, from a GENCODE FASTA."""
-
-    return read_fasta(transcripts, key=gencode_accession)
 
 
 def next_in_frame_stop(sequence: str, stop_start: int) -> int | None:

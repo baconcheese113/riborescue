@@ -17,6 +17,7 @@ import pandas as pd
 from Bio.Seq import Seq
 
 from riborescue.core.contracts import REPORTER_DOWNSTREAM_NT
+from riborescue.core.sequences import as_rna
 from riborescue.variants.transcripts import STOP_CODONS, TranscriptModel
 
 __all__ = [
@@ -35,7 +36,6 @@ def _int(value: object) -> int:
     return int(cast(int, value))
 
 
-_TRANSCRIBE = str.maketrans("ACGT", "acgu")
 _COMPLEMENT = str.maketrans("ACGT", "TGCA")
 _WINDOW = min(REPORTER_DOWNSTREAM_NT)
 
@@ -79,10 +79,6 @@ class PtcContext:
     nt_to_last_junction: int | None
     nt_from_start: int
     ptc_exon_length: int
-
-
-def _transcribe(sequence: str) -> str:
-    return sequence.translate(_TRANSCRIBE)
 
 
 def context_for(
@@ -133,13 +129,13 @@ def context_for(
     return PtcContext(
         transcript_id=model.transcript_id,
         protein_position=(codon_start - coding) // 3 + 1,
-        stop_type=_transcribe(mutated),
+        stop_type=as_rna(mutated),
         reference_codon=codon,
         original_aa=str(Seq(codon).translate()),
-        up_123nt=_transcribe(upstream[-3:]),
-        down_123nt=_transcribe(downstream[:3]),
-        upstream=_transcribe(upstream),
-        downstream=_transcribe(downstream),
+        up_123nt=as_rna(upstream[-3:]),
+        down_123nt=as_rna(downstream[:3]),
+        upstream=as_rna(upstream),
+        downstream=as_rna(downstream),
         exon_count=len(model.exons),
         in_last_exon=last_junction is None or codon_start >= last_junction,
         nt_to_last_junction=None if last_junction is None else last_junction - codon_start,

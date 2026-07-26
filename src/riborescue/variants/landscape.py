@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from riborescue.core.sequences import as_dna
 from riborescue.variants.nmd_rules import LAST_JUNCTION_NT
 from riborescue.variants.residue import NEAR_COGNATE, conservative
 
@@ -45,7 +46,7 @@ def _escapes_decay(contexts: pd.DataFrame) -> pd.Series:
 
 
 def _near_cognates(stop_type: object) -> tuple[str, ...]:
-    return NEAR_COGNATE[str(stop_type).upper().replace("U", "T")]
+    return NEAR_COGNATE[as_dna(str(stop_type))]
 
 
 def _tolerable_share(contexts: pd.DataFrame) -> pd.Series:

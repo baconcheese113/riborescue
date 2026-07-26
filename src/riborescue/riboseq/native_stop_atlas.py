@@ -23,7 +23,7 @@ from pathlib import Path
 import pandas as pd
 from Bio.Seq import Seq
 
-from riborescue.riboseq.readthrough_assay import gencode_sequences
+from riborescue.core.sequences import gencode_sequences
 
 __all__ = [
     "native_stop_occupancy",

@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from riborescue.core.sequences import as_dna
+
 __all__ = [
     "SUPPORT_TERMS",
     "context_analogues",
@@ -48,12 +50,7 @@ the model needs it."""
 def _normalise(frame: pd.DataFrame, columns=SUPPORT_TERMS) -> pd.DataFrame:
     """Triplets are spelled as RNA in the library and as DNA in the scored table, or the reverse."""
 
-    return frame.assign(
-        **{
-            column: frame[column].astype(str).str.upper().str.replace("U", "T")
-            for column in columns
-        }
-    )
+    return frame.assign(**{column: frame[column].astype(str).map(as_dna) for column in columns})
 
 
 def term_support(library: pd.DataFrame) -> dict[str, pd.Series]:

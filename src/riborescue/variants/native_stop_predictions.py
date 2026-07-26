@@ -21,19 +21,13 @@ import numpy as np
 import pandas as pd
 from scipy.stats import bootstrap, spearmanr
 
-from riborescue.riboseq.readthrough_assay import gencode_sequences
+from riborescue.core.sequences import STOP_CODONS, as_dna, as_rna, gencode_sequences
 
 __all__ = [
     "concordance",
     "four_quadrants",
     "native_stop_features",
 ]
-
-
-def _transcribe(dna: str) -> str:
-    """Lower-case RNA, as the model's training levels are spelled."""
-
-    return dna.lower().replace("t", "u")
 
 
 def native_stop_features(transcripts: Path, annotation: pd.DataFrame) -> pd.DataFrame:
@@ -59,14 +53,14 @@ def native_stop_features(transcripts: Path, annotation: pd.DataFrame) -> pd.Data
         down = sequence[stop_start + 3 : stop_start + 6]
         if len(stop) < 3 or len(up) < 3 or len(down) < 3:
             continue
-        if _transcribe(stop) not in ("uaa", "uag", "uga"):
+        if as_dna(stop) not in STOP_CODONS:
             continue
         rows.append(
             {
                 "transcript": str(transcript),
-                "stop_type": _transcribe(stop),
-                "up_123nt": _transcribe(up),
-                "down_123nt": _transcribe(down),
+                "stop_type": as_rna(stop),
+                "up_123nt": as_rna(up),
+                "down_123nt": as_rna(down),
             }
         )
     return pd.DataFrame(rows)
