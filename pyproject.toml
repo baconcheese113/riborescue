@@ -282,6 +282,9 @@ permutation-report = """riborescue permutation-report results/kinetics/permutati
   --out results/kinetics/permutation_null/familywise.tsv"""
 # The per-drug ceiling every held-out score is read against, from the authors' own two replicates.
 reliability = "Rscript scripts/export_reliability.R"
+# What a reader needs to regenerate the results: commit, locked toolchain, every input with its
+# checksum, the command behind each output, and what could not be found.
+provenance = "python scripts/provenance.py"
 disk = "bash scripts/require_disk.sh 200"
 prefetch = { cmd = "bash scripts/prefetch_runs.sh pipeline/assets/riboseq_samples.tsv", depends-on = ["disk"] }
 stage-runs = { cmd = "riborescue stage-runs pipeline/assets/riboseq_samples.tsv --out results/staged_runs.tsv", depends-on = ["prefetch"] }
@@ -336,6 +339,9 @@ export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }
+# Serve the built export. This is what ships, and it is the preview to check a page against; the
+# dev server renders the same pages through a different runtime.
+app-preview = { cmd = "python -m http.server 3001 --directory out", cwd = "frontend", depends-on = ["app-build"] }
 # Regenerate the viewer's data from the result tables and build the static bundle in one step.
 # The explorer and patient views read an example slice, not the full set, so the app never ships a
 # 70k-row browser payload; the researcher view reads the whole-set coverage aggregate instead.
