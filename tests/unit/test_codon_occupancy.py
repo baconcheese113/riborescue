@@ -185,3 +185,38 @@ class TestAggregate:
         )
         table = aggregate_libraries({"shallow": shallow, "deep": deep}).set_index("codon")
         assert table.loc["AAA", "occupancy_sd"] == pytest.approx(2.0**0.5 / 2, rel=1e-6)
+
+
+class TestTheMeasuredTable:
+    """The committed table, checked for the biology each site convention should recover.
+
+    Not a claim about readthrough — a check that the site shift is implemented the way it is
+    documented. Each convention has a signature the literature agrees on, and they are different
+    signatures, so recovering both is what says the shift is real rather than an off-by-one.
+    """
+
+    @staticmethod
+    def _table(name: str) -> pd.DataFrame:
+        return pd.read_csv(f"tests/fixtures/kinetics/{name}", sep="\t")
+
+    def test_the_a_site_table_is_the_one_the_features_are_built_from(self):
+        assert set(self._table("codon_occupancy.tsv")["site"]) == {"a"}
+
+    def test_every_sense_codon_is_measured_over_enough_positions_to_mean_something(self):
+        table = self._table("codon_occupancy.tsv")
+        assert len(table) == 61
+        assert table["positions"].min() > 1_000
+        assert table["libraries"].eq(3).all()
+
+    def test_the_a_site_finds_the_charged_residues_slow(self):
+        # Elevated A-site occupancy on Glu and Asp is the documented human signature.
+        by_residue = self._table("codon_occupancy.a.published.tsv").groupby("amino_acid")
+        means = by_residue["occupancy"].mean().sort_values()
+        assert set(means.tail(3).index) >= {"E", "D"}
+
+    def test_the_p_site_finds_proline_slow_instead(self):
+        # Peptidyl-prolyl transfer is intrinsically slow, and it is the P site that sees it. A table
+        # whose A and P conventions gave the same answer would mean the shift was not applied.
+        table = pd.read_csv("results/kinetics/gse144140/codon_occupancy.p.published.tsv", sep="\t")
+        means = table.groupby("amino_acid")["occupancy"].mean()
+        assert means.idxmax() == "P"

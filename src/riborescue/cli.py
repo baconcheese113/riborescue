@@ -105,9 +105,11 @@ from riborescue.variants.native_stop_predictions import (
     native_stop_features,
 )
 from riborescue.variants.nmd_rules import disagreement_atlas, nmd_predictors
+from riborescue.variants.permutation_null import load_folds, null_gains, observed_gains
 from riborescue.variants.readthrough_model import fit, relative_error_quantile
 from riborescue.variants.research_export import build_research_aggregate
 from riborescue.variants.residue import coverage_by_design
+from riborescue.variants.support_atlas import context_analogues, support_atlas
 from riborescue.variants.suppressor_panels import coverage_frontier
 from riborescue.variants.transcripts import load_transcripts, read_sequences
 from riborescue.variants.triage import classify, classify_table
@@ -1528,6 +1530,158 @@ def head_to_head_command(
             f"{row.gain:+.4f} [{row.ci_low:+.4f}, {row.ci_high:+.4f}] {mark}, "
             f"{row.share_of_headroom:+.1%} of the {row.headroom:.3f} left under the ceiling"
         )
+
+
+@main.command("support-atlas")
+@click.argument("contexts", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--oracle",
+    default=Path("tests/fixtures/oracle"),
+    show_default=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="The reproduction fixtures, whose per-drug features are the measured library.",
+)
+@click.option(
+    "--analogues",
+    type=click.Path(dir_okay=False, path_type=Path),
+    help="Where to write the measured reporter variants sharing each scored variant's context.",
+)
+@click.option("--limit", default=10, show_default=True, help="Analogues carried per variant.")
+@_OUT
+def support_atlas_command(
+    contexts: Path, oracle: Path, analogues: Path | None, limit: int, out: Path
+) -> None:
+    """Say what the model had actually seen when it scored each variant in CONTEXTS.
+
+    Support is a property of terms, not of contexts: the published model is factorised, so it
+    composes an unseen context from marginals it estimated separately, and it is well supported
+    there exactly when every contributing level is. Reported per term, per drug.
+    """
+
+    scored = read_table(contexts)
+    scoreable = scored.loc[
+        scored["scoreable"] & scored["up_123nt"].notna() & scored["down_123nt"].notna()
+    ]
+    click.echo(f"{len(scoreable):,} of {len(scored):,} variants are scoreable and placed")
+
+    drugs = sorted(
+        path.name.removeprefix("features_").removesuffix(".tsv.gz")
+        for path in oracle.glob("features_*.tsv.gz")
+    )
+    atlases, paired = [], []
+    for drug in drugs:
+        library = read_table(oracle / f"features_{drug}.tsv.gz")
+        atlases.append(support_atlas(scoreable, library).assign(therapy_id=drug))
+        if analogues is not None:
+            paired.append(
+                context_analogues(scoreable, library, label=f"Toledano {drug}", limit=limit).assign(
+                    therapy_id=drug
+                )
+            )
+
+    atlas = pd.concat(atlases, ignore_index=True)
+    write_table(atlas, out)
+    if analogues is not None:
+        write_table(pd.concat(paired, ignore_index=True), analogues)
+
+    one = atlas.loc[atlas["therapy_id"] == drugs[0]]
+    click.echo(f"per drug, over {len(one):,} scored variants:")
+    click.echo(
+        f"  measured exactly:     {one['measured_exactly'].sum():>7,} "
+        f"({one['measured_exactly'].mean():.1%}) have their complete context in the library"
+    )
+    click.echo(
+        f"  aliased interaction:  {one['aliased_interaction'].sum():>7,} "
+        f"({one['aliased_interaction'].mean():.2%}) fall back to the marginal"
+    )
+    click.echo(
+        f"  unsupported on a term:{(one['weakest_term'] == 0).sum():>7,} "
+        "cannot be scored on every term the model uses"
+    )
+    for column in ("support_upstream", "support_downstream", "support_interaction_cell"):
+        click.echo(
+            f"  {column:>22}: median {one[column].median():>5.0f}, "
+            f"5th percentile {one[column].quantile(0.05):>4.0f}"
+        )
+
+
+@main.command("permutation-null")
+@click.option(
+    "--codon-table",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The codon occupancy table the kinetic features are looked up in.",
+)
+@click.option(
+    "--oracle",
+    default=Path("tests/fixtures/oracle"),
+    show_default=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+)
+@click.option("--site", type=click.Choice(sorted(SITE_SHIFT)), default="a", show_default=True)
+@click.option(
+    "--shuffle",
+    "kinds",
+    multiple=True,
+    type=click.Choice([k.value for k in ShuffleKind]),
+    help="Which shuffle families to build a null for. Default all three.",
+)
+@click.option("--permutations", default=999, show_default=True, help="Draws in this shard.")
+@click.option(
+    "--offset", default=0, show_default=True, help="First permutation index of this shard."
+)
+@click.option(
+    "--observed/--no-observed",
+    default=True,
+    help="Also compute the unshuffled gain. Cheap, and every shard writing it lets the gather "
+    "check that the shards agree on it.",
+)
+@_OUT
+def permutation_null_command(
+    codon_table: Path,
+    oracle: Path,
+    site: str,
+    kinds: tuple[str, ...],
+    permutations: int,
+    offset: int,
+    observed: bool,
+    out: Path,
+) -> None:
+    """Build the null distribution of the kinetics gain from many independent shuffles.
+
+    ADR-0021. The permutation is synchronised across drugs and the statistic is the maximum over
+    them, so six drugs measured on one library are corrected as the one family they are.
+    """
+
+    scores = codon_scores(read_table(codon_table), site=site)
+    drugs = tuple(
+        sorted(
+            path.name.removeprefix("features_").removesuffix(".tsv.gz")
+            for path in oracle.glob("features_*.tsv.gz")
+        )
+    )
+    click.echo(f"{len(drugs)} drugs: {', '.join(drugs)}")
+    folds = load_folds(drugs, scores, oracle=oracle)
+    click.echo(
+        f"baselines fitted once per drug and round: {sum(len(f.numbers) for f in folds)} fits"
+    )
+
+    if observed:
+        measured = observed_gains(folds)
+        write_table(measured, out.with_name(f"{out.stem}_observed{out.suffix}"))
+        for drug, gain in measured.groupby("drug")["gain"].mean().items():
+            click.echo(f"  observed {drug:>10}: {gain:+.5f}")
+
+    families = tuple(ShuffleKind(k) for k in kinds) or tuple(ShuffleKind)
+    collected = [
+        null_gains(folds, scores, kind, permutations=permutations, offset=offset)
+        for kind in families
+    ]
+    write_table(pd.concat(collected, ignore_index=True), out)
+    click.echo(
+        f"wrote {permutations} permutations from offset {offset} "
+        f"for {', '.join(k.value for k in families)}"
+    )
 
 
 @main.command("codon-occupancy")

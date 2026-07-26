@@ -20,11 +20,13 @@ is read against it rather than against zero.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
 
 from riborescue.riboseq.codon_occupancy import SYNONYMOUS, as_dna
-from riborescue.variants.evaluation import SEED, ShuffleKind
+from riborescue.variants.evaluation import SEED, BootstrapCI, ShuffleKind
 from riborescue.variants.readthrough_model import FORMULA, cross_validate, fit_round, r_squared
 
 __all__ = [
@@ -32,6 +34,7 @@ __all__ = [
     "KINETIC_COLUMNS",
     "MODELS",
     "SUPPORT_STRATA",
+    "Criteria",
     "attach",
     "codon_scores",
     "head_to_head",
@@ -257,3 +260,52 @@ def stratified_gain(
                     }
                 )
     return pd.DataFrame(rows)
+
+
+@dataclass(frozen=True)
+class Criteria:
+    """ADR-0020's passing rule, evaluated. Every reporting path goes through this.
+
+    The rule is a conjunction and is written as one, so that a claim cannot be made from two of
+    three conditions by a reader who looked at the first two. `supported` is the only thing entitled
+    to be described as kinetics carrying transferable information.
+    """
+
+    grouped_gain: BootstrapCI
+    shuffles: dict[str, BootstrapCI]
+    confined_to_unsupported: bool
+
+    @property
+    def gain_excludes_zero(self) -> bool:
+        """Condition 1: the gain under the grouped-by-gene split is positive and clears zero."""
+
+        return self.grouped_gain.point > 0 and not self.grouped_gain.includes_zero()
+
+    @property
+    def shuffles_collapse(self) -> bool:
+        """Condition 2: every shuffle control's interval includes zero."""
+
+        return bool(self.shuffles) and all(ci.includes_zero() for ci in self.shuffles.values())
+
+    @property
+    def survives_support(self) -> bool:
+        """Condition 3: the gain is not confined to cells the baseline could not fit."""
+
+        return not self.confined_to_unsupported
+
+    @property
+    def supported(self) -> bool:
+        return self.gain_excludes_zero and self.shuffles_collapse and self.survives_support
+
+    def failures(self) -> tuple[str, ...]:
+        """Which conditions did not hold, named. Empty when the claim is supported."""
+
+        return tuple(
+            name
+            for name, held in (
+                ("gain_excludes_zero", self.gain_excludes_zero),
+                ("shuffles_collapse", self.shuffles_collapse),
+                ("survives_support", self.survives_support),
+            )
+            if not held
+        )
