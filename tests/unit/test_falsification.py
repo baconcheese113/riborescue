@@ -76,9 +76,9 @@ class TestTheCommittedLedger:
 
     def test_the_untestable_row_carries_what_would_make_it_testable(self):
         ledger = read_ledger(LEDGER)
-        for row in ledger[ledger["verdict"] == "untestable"].itertuples():
+        for settle in ledger.loc[ledger["verdict"] == "untestable", "what_would_settle_it"]:
             # `untestable` is a data gap, so the row is only useful if it says what closes it.
-            assert len(row.what_would_settle_it) > 40
+            assert len(str(settle)) > 40
 
     def test_the_suppressor_trna_claim_is_untestable_and_not_refuted(self):
         # The design could not have resolved it either way, which is a different statement from

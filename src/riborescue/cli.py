@@ -2,6 +2,7 @@
 
 import math
 import subprocess
+import time
 from pathlib import Path
 
 import click
@@ -1626,7 +1627,7 @@ def support_atlas_command(
     type=click.Choice([k.value for k in ShuffleKind]),
     help="Which shuffle families to build a null for. Default all three.",
 )
-@click.option("--permutations", default=999, show_default=True, help="Draws in this shard.")
+@click.option("--permutations", default=199, show_default=True, help="Draws in this shard.")
 @click.option(
     "--offset", default=0, show_default=True, help="First permutation index of this shard."
 )
@@ -1673,14 +1674,44 @@ def permutation_null_command(
             click.echo(f"  observed {drug:>10}: {gain:+.5f}")
 
     families = tuple(ShuffleKind(k) for k in kinds) or tuple(ShuffleKind)
-    collected = [
-        null_gains(folds, scores, kind, permutations=permutations, offset=offset)
-        for kind in families
-    ]
-    write_table(pd.concat(collected, ignore_index=True), out)
+
+    # Anything already on disk from an interrupted run is kept and not recomputed. A permutation is
+    # identified by its family and index, and the index seeds the shuffle, so a resumed row is the
+    # row the original run would have written.
+    done: dict[str, set[int]] = {kind.value: set() for kind in families}
+    if out.exists():
+        for family, index in read_table(out)[["shuffle", "permutation"]].itertuples(index=False):
+            done.setdefault(str(family), set()).add(int(index))
+        already = sum(len(v) for v in done.values())
+        click.echo(f"resuming: {already} permutations already written to {out}")
+
+    started = time.monotonic()
+    wanted = permutations * len(families)
+    finished = 0
+    for kind in families:
+        for frame in null_gains(
+            folds,
+            scores,
+            kind,
+            permutations=permutations,
+            offset=offset,
+            skip=done[kind.value],
+        ):
+            header = not out.exists()
+            frame.to_csv(out, sep="\t", index=False, mode="a", header=header)
+            finished += 1
+            if finished % 5 == 0:
+                elapsed = time.monotonic() - started
+                remaining = wanted - len(done[kind.value]) - finished
+                rate = elapsed / finished
+                click.echo(
+                    f"  {kind.value:>15} {finished:>4}/{wanted} done, "
+                    f"{rate:.1f}s each, ~{rate * max(remaining, 0) / 60:.0f} min left",
+                    err=True,
+                )
     click.echo(
-        f"wrote {permutations} permutations from offset {offset} "
-        f"for {', '.join(k.value for k in families)}"
+        f"wrote {finished} permutations from offset {offset} "
+        f"for {', '.join(k.value for k in families)} in {(time.monotonic() - started) / 60:.0f} min"
     )
 
 

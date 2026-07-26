@@ -24,6 +24,7 @@ thousand permutations a few hours rather than a few days.
 
 from __future__ import annotations
 
+from collections.abc import Collection, Iterator
 from dataclasses import dataclass
 
 import numpy as np
@@ -126,35 +127,46 @@ def null_gains(
     permutations: int,
     offset: int = 0,
     seed: int = SEED,
-) -> pd.DataFrame:
-    """The mean gain of each drug under each of a run of independent shuffles.
+    skip: Collection[int] = (),
+) -> Iterator[pd.DataFrame]:
+    """Yield each shuffle's per-drug mean gain, one permutation at a time.
 
     One permutation index gives one shuffled mapping, applied to every drug, so the drugs stay as
     dependent under the null as they are in the data. `offset` lets a long run be sharded across
-    processes without two shards drawing the same permutation.
+    processes without two shards drawing the same permutation, and `skip` lets a killed shard resume
+    without recomputing what it already wrote.
+
+    Yielded rather than returned, because a run of a thousand permutations is hours long and a
+    function that returns at the end is one that cannot be watched, cannot be resumed, and loses
+    everything if it is interrupted. All three of those happened.
     """
 
-    rows: list[dict[str, object]] = []
+    skipped = set(skip)
     for index in range(offset, offset + permutations):
+        if index in skipped:
+            continue
         draw = seed + 1 + index
         permuted = (
             None if kind is ShuffleKind.within_gene else permute_scores(scores, kind, seed=draw)
         )
-        for one in folds:
-            features = (
-                shuffle(one.features, scores, kind, seed=draw)
-                if permuted is None
-                else attach(one.features, permuted)
-            )
-            rows.append(
-                {
-                    "permutation": index,
-                    "shuffle": kind.value,
-                    "drug": one.drug,
-                    "gain": float(np.mean(_gain(one, features))),
-                }
-            )
-    return pd.DataFrame(rows)
+        yield pd.DataFrame(
+            {
+                "permutation": index,
+                "shuffle": kind.value,
+                "drug": one.drug,
+                "gain": float(
+                    np.mean(
+                        _gain(
+                            one,
+                            shuffle(one.features, scores, kind, seed=draw)
+                            if permuted is None
+                            else attach(one.features, permuted),
+                        )
+                    )
+                ),
+            }
+            for one in folds
+        )
 
 
 def familywise_pvalues(observed: pd.DataFrame, null: pd.DataFrame) -> pd.DataFrame:

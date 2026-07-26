@@ -5,13 +5,21 @@
 # permutation index. Each shard draws its own disjoint range, so no two shards can draw the same
 # mapping and the shards concatenate into one null without deduplication.
 #
+# 199 draws put the smallest attainable familywise p-value at 1/200, which is well below the 0.05 a
+# result would have to clear. A thousand draws buys resolution only where a p-value lands under
+# 0.005, and the pilot puts the best drug an order of magnitude above that. Raise PERMUTATIONS if a
+# run ever comes back needing it.
+#
+# Each shard appends every permutation as it finishes and skips what it already wrote, so a killed
+# run resumes rather than starting over and its progress can be watched while it runs.
+#
 # One BLAS thread each. The fits are small dense problems; an unbounded BLAS would have one shard
 # take every core while the rest queued.
 
 set -euo pipefail
 
 table=${1:-tests/fixtures/kinetics/codon_occupancy.tsv}
-permutations=${PERMUTATIONS:-999}
+permutations=${PERMUTATIONS:-199}
 shards=${SHARDS:-14}
 outdir=${NULL_OUTDIR:-results/kinetics/permutation_null}
 
