@@ -3,7 +3,12 @@ import json
 import pandas as pd
 
 from riborescue.core.contracts import CONTRACTS_VERSION
-from riborescue.variants.web_export import GateStatus, build_web_table, diverse_sample
+from riborescue.variants.web_export import (
+    GateStatus,
+    build_web_table,
+    diverse_sample,
+    escape_summary,
+)
 
 
 def _landscape() -> pd.DataFrame:
@@ -242,6 +247,72 @@ def test_safety_summary_reports_the_measured_layer_and_its_reach():
     assert summary["per_therapy"]["G418"].startswith("native-stop occupancy measured")
     assert summary["per_therapy"]["Clitocine"] == "no matched empirical safety atlas"
     assert "toxicity" in summary["caveat"]
+
+
+def _base_editing() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "variant_id": "V1",
+                "scoreable": True,
+                "reachable": True,
+                "reach_class": "base_editable_exact",
+                "n_guides": 2,
+                "bystander_free": True,
+                "editor": "ABE7.10",
+                "strand": "antisense",
+                "restores": "exact_wildtype",
+                "window_position": 5,
+            },
+            {
+                "variant_id": "V2",
+                "scoreable": True,
+                "reachable": False,
+                "reach_class": "not_base_editable_under_panel",
+                "n_guides": 0,
+                "bystander_free": False,
+                "editor": "",
+                "strand": "",
+                "restores": "",
+                "window_position": None,
+            },
+            {
+                "variant_id": "V3",
+                "scoreable": False,
+                "reachable": False,
+                "reach_class": "",
+            },
+        ]
+    )
+
+
+def test_the_escape_summary_accounts_for_every_row():
+    summary = escape_summary(_base_editing())
+    assert summary["total"] == 3
+    assert summary["scoreable"] == 2
+    assert summary["unscoreable"] == 1
+    # exact + alternative + not_editable equals scoreable — nothing dropped silently.
+    assert (
+        summary["exact"] + summary["alternative"] + summary["not_editable"] == summary["scoreable"]
+    )
+    assert summary["exact"] == 1 and summary["reachable"] == 1
+    assert summary["exact_bystander_free"] == 1
+    assert "off-target" in summary["caveat"]
+
+
+def test_base_editing_rides_along_per_variant_and_drives_the_escape_aggregate():
+    table = build_web_table(_landscape(), _amenability(), base_editing=_base_editing())
+    by_id = {v["id"]: v for v in table.variants}
+    assert by_id["V1"]["editing"]["reach_class"] == "base_editable_exact"
+    assert by_id["V1"]["editing"]["editor"] == "ABE7.10"
+    assert by_id["V1"]["editing"]["window_position"] == 5
+    assert by_id["V2"]["editing"]["reach_class"] == "not_base_editable_under_panel"
+    parsed = json.loads(table.to_json())
+    assert parsed["escape"]["scoreable"] == 2
+    # Without the table, the field is absent and every variant's editing is null.
+    plain = build_web_table(_landscape(), _amenability())
+    assert plain.escape is None
+    assert all(v["editing"] is None for v in plain.variants)
 
 
 def test_a_variant_with_no_available_therapy_has_null_best_not_nan():

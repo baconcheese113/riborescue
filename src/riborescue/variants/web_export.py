@@ -27,6 +27,7 @@ __all__ = [
     "GateStatus",
     "WebTable",
     "build_web_table",
+    "escape_summary",
     "safety_summary",
     "therapy_name",
 ]
@@ -130,6 +131,7 @@ class WebTable:
     therapies: list[str]
     variants: list[dict]
     safety: dict | None = None
+    escape: dict | None = None
 
     def to_json(self) -> str:
         # allow_nan=False turns a stray NaN or Infinity into an error here rather than the tokens
@@ -141,11 +143,66 @@ class WebTable:
                 "therapies": self.therapies,
                 "therapy_names": {t: therapy_name(t) for t in self.therapies},
                 "safety": self.safety,
+                "escape": self.escape,
                 "variants": self.variants,
             },
             indent=2,
             allow_nan=False,
         )
+
+
+def escape_summary(base_editing: pd.DataFrame) -> dict:
+    """The denominator flow the escape map rests on: every row accounted for, none dropped silently.
+
+    Percentages are the viewer's to compute against `scoreable`, but the total and the unscoreable
+    count travel with it so the flow reads all → scoreable → exact / alternative / not editable.
+    Reachability is geometric; the caveat says so wherever the number is shown.
+    """
+
+    scoreable = base_editing[base_editing["scoreable"]]
+    counts = scoreable["reach_class"].value_counts()
+    exact = int(counts.get("base_editable_exact", 0))
+    alternative = int(counts.get("base_editable_alternative", 0))
+    exact_rows = scoreable[scoreable["reach_class"] == "base_editable_exact"]
+    return {
+        "panel": "BE4max + ABE7.10, SpCas9 NGG",
+        "total": len(base_editing),
+        "scoreable": len(scoreable),
+        "unscoreable": len(base_editing) - len(scoreable),
+        "exact": exact,
+        "alternative": alternative,
+        "not_editable": int(counts.get("not_base_editable_under_panel", 0)),
+        "reachable": exact + alternative,
+        "reachable_bystander_free": int(scoreable["bystander_free"].fillna(False).sum()),
+        "exact_bystander_free": int(exact_rows["bystander_free"].fillna(False).sum()),
+        "caveat": (
+            "Geometric reachability under the declared editor panel — whether an editor can be "
+            "placed on the stop. Not editing efficiency, off-target activity, delivery, tissue "
+            "access, splice consequence, or clinical eligibility."
+        ),
+    }
+
+
+def _editing_by_variant(base_editing: pd.DataFrame | None) -> dict[object, dict]:
+    """Each variant's base-editing reachability and its representative guide, keyed for the join."""
+
+    if base_editing is None:
+        return {}
+    out: dict[object, dict] = {}
+    for row in base_editing[base_editing["scoreable"]].to_dict("records"):
+        window = row.get("window_position")
+        free = row.get("bystander_free")
+        out[row["variant_id"]] = {
+            "reach_class": str(row["reach_class"]),
+            "reachable": bool(row["reachable"]),
+            "editor": str(row["editor"]) or None,
+            "strand": str(row["strand"]) or None,
+            "restores": str(row["restores"]) or None,
+            "window_position": None if pd.isna(window) else int(window),
+            "bystander_free": None if pd.isna(free) else bool(free),
+            "candidate_guides": 0 if pd.isna(row.get("n_guides")) else int(row["n_guides"]),
+        }
+    return out
 
 
 def _suppressor(stop_type: str, residue: str) -> dict | None:
@@ -234,6 +291,7 @@ def build_web_table(
     nmd: pd.DataFrame | None = None,
     aenmd: pd.DataFrame | None = None,
     nmdetective: pd.DataFrame | None = None,
+    base_editing: pd.DataFrame | None = None,
 ) -> WebTable:
     """Join the per-variant landscape to the per-therapy intervals into the app's table.
 
@@ -253,6 +311,7 @@ def build_web_table(
     nmd_by_variant = _nmd_by_variant(nmd)
     aenmd_by_variant = _aenmd_by_variant(aenmd)
     nmdetective_by_variant = _nmdetective_by_variant(nmdetective)
+    editing_by_variant = _editing_by_variant(base_editing)
     therapies = sorted(amenability["therapy_id"].unique())
 
     variants = []
@@ -305,6 +364,7 @@ def build_web_table(
                     aenmd_by_variant.get(row["variant_id"]),
                     nmdetective_by_variant.get(row["variant_id"]),
                 ),
+                "editing": editing_by_variant.get(row["variant_id"]),
             }
         )
 
@@ -313,6 +373,7 @@ def build_web_table(
         therapies=therapies,
         variants=variants,
         safety=safety,
+        escape=None if base_editing is None else escape_summary(base_editing),
     )
 
 

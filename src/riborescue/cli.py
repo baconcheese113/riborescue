@@ -80,6 +80,12 @@ from riborescue.variants.aenmd import (
     model_agreement,
     read_aenmd_rules,
 )
+from riborescue.variants.base_editing import (
+    PRIMARY_PANEL,
+    SENSITIVITY_PANEL,
+    escape_map,
+    reachability_table,
+)
 from riborescue.variants.clinvar import pathogenic_nonsense
 from riborescue.variants.context import contexts_for, disagreements_with_protein
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
@@ -556,6 +562,12 @@ def atlas_predict(
     help="The NMDetective-AI table, to show the deep model's efficiency score per variant.",
 )
 @click.option(
+    "--base-editing",
+    "base_editing_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The base-editing reachability table, for the escape map and per-variant rescue routes.",
+)
+@click.option(
     "--sample",
     type=int,
     help="Write a diverse sample of this many variants — the example artifact — instead of all.",
@@ -568,6 +580,7 @@ def export_web(
     nmd_table: Path | None,
     aenmd_table: Path | None,
     nmdetective_table: Path | None,
+    base_editing_table: Path | None,
     sample: int | None,
     out: Path,
 ) -> None:
@@ -580,6 +593,7 @@ def export_web(
     nmd = read_table(nmd_table) if nmd_table is not None else None
     aenmd = read_table(aenmd_table) if aenmd_table is not None else None
     nmdetective = read_table(nmdetective_table) if nmdetective_table is not None else None
+    base_editing = read_table(base_editing_table) if base_editing_table is not None else None
     table = build_web_table(
         land,
         amen,
@@ -588,6 +602,7 @@ def export_web(
         nmd=nmd,
         aenmd=aenmd,
         nmdetective=nmdetective,
+        base_editing=base_editing,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(table.to_json())
@@ -970,6 +985,12 @@ def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help="The experiment roadmap, so the researcher view can show what to measure next.",
 )
+@click.option(
+    "--base-editing",
+    "base_editing_table",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The base-editing reachability table, for the escape-map denominator flow.",
+)
 @_OUT
 def export_research(
     table: Path,
@@ -979,6 +1000,7 @@ def export_research(
     aenmd_table: Path | None,
     nmdetective_table: Path | None,
     experiments: Path | None,
+    base_editing_table: Path | None,
     out: Path,
 ) -> None:
     """Build the researcher dashboard aggregate: coverage frontiers and per-disease coverage.
@@ -1006,6 +1028,7 @@ def export_research(
         aenmd=read_table(aenmd_table) if aenmd_table is not None else None,
         nmdetective=read_table(nmdetective_table) if nmdetective_table is not None else None,
         experiments=read_table(experiments) if experiments is not None else None,
+        base_editing=read_table(base_editing_table) if base_editing_table is not None else None,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(aggregate.to_json())
@@ -2194,6 +2217,67 @@ def amenability_landscape(contexts: Path, scores: Path, out: Path, summary: Path
             f"{row['all_conditions']:>5} meet every condition "
             f"({row['all_conditions_lower_bound']} on the interval's lower bound)"
         )
+
+
+@main.command("base-editing")
+@click.argument("variants", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--annotation", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option("--transcripts", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option(
+    "--sensitivity",
+    is_flag=True,
+    help="Add the expanded-PAM sensitivity arm (SpCas9-NG, SpG, SpRY) — a separate, relaxed-PAM "
+    "run, not the primary count.",
+)
+@_OUT
+def base_editing_reachability(
+    variants: Path, annotation: Path, transcripts: Path, sensitivity: bool, out: Path
+) -> None:
+    """Geometric base-editing reachability of every variant, on the declared editor panel.
+
+    Reachability is whether an editor can be placed on the premature stop — never eligibility.
+    Editing efficiency, off-target activity, delivery, tissue access, splice consequence and
+    toxicity are out of scope.
+    """
+
+    models = load_transcripts(annotation, transcripts)
+    by_gene = {model.gene_id: model for model in models.values()}
+    panel = PRIMARY_PANEL + SENSITIVITY_PANEL if sensitivity else PRIMARY_PANEL
+    table = reachability_table(read_table(variants), by_gene, panel=panel)
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(table, out)
+
+    scoreable = table[table["scoreable"]]
+    arm = "primary + expanded-PAM sensitivity" if sensitivity else "primary"
+    click.echo(f"{len(scoreable)} of {len(table)} placed on a stop-forming codon ({arm} panel)")
+    for name, count in scoreable["reach_class"].value_counts().items():
+        click.echo(f"  {count:>6} {name}")
+    if len(scoreable):
+        free = int(scoreable["bystander_free"].fillna(False).sum())
+        click.echo(f"  {free} reachable by a bystander-free guide")
+
+
+@main.command("escape-map")
+@click.argument("reachability", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument("scores", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@_OUT
+def escape_map_command(reachability: Path, scores: Path, out: Path) -> None:
+    """Overlay continuous readthrough on base-editing reachability, variant by variant.
+
+    Readthrough stays continuous; the categorical negative class is "not base-editable under the
+    declared panel", never "no route exists" — prime editing is unevaluated and readthrough is an
+    overlay.
+    """
+
+    table = escape_map(read_table(reachability), read_table(scores))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    write_table(table, out)
+
+    placed = table[table["scoreable"]]
+    click.echo(f"{len(placed)} variants on the escape map")
+    for name, count in placed["reach_class"].value_counts().items():
+        click.echo(f"  {count:>6} {name}")
 
 
 def _validated(

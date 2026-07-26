@@ -231,6 +231,11 @@ landscape = "riborescue landscape results/clinvar_contexts.tsv results/variant_t
 extensions = "riborescue extensions data/gencode/gencode.v50.transcripts.fa.gz --annotation results/psite/_reference/gencode.v50.primary_assembly.annotation/annotation.tsv --out results/psite/_reference/gencode.v50.primary_assembly.annotation/extensions.tsv"
 trna-coverage = "riborescue trna-coverage results/clinvar_contexts.tsv --out results/trna_coverage.tsv"
 trna-panel = "riborescue trna-panel results/clinvar_contexts.tsv --objective genes --out results/trna_panel_genes.tsv"
+base-editing = { cmd = """riborescue base-editing results/clinvar_nonsense.tsv \
+  --annotation data/mane/MANE.GRCh38.v1.5.refseq_genomic.gff.gz \
+  --transcripts data/mane/MANE.GRCh38.v1.5.refseq_rna.fna.gz \
+  --out results/base_editing.tsv""", depends-on = ["clinvar"] }
+escape-map = { cmd = "riborescue escape-map results/base_editing.tsv results/variant_therapy_scores.tsv --out results/escape_map.tsv", depends-on = ["base-editing", "score"] }
 diseases = { cmd = "riborescue diseases results/clinvar_nonsense.tsv --out results/diseases.tsv", depends-on = ["clinvar"] }
 disease-coverage = { cmd = "riborescue disease-coverage results/diseases.tsv --contexts results/clinvar_contexts.tsv --out results/disease_coverage.tsv", depends-on = ["diseases", "contexts"] }
 disease-panel = { cmd = "riborescue disease-panel results/diseases.tsv --contexts results/clinvar_contexts.tsv --out results/disease_panel.tsv", depends-on = ["diseases", "contexts"] }
@@ -314,6 +319,7 @@ expression = { cmd = """riborescue expression results/rnaseq/counts.tsv \
   --composition-out results/rnaseq/composition.tsv \
   --out results/rnaseq/top_expressed.tsv""", depends-on = ["quantify"] }
 expression-figures = { cmd = "bash scripts/plot_expression_all.sh", depends-on = ["expression"] }
+escape-figure = { cmd = "python scripts/plot_escape_map.py", depends-on = ["escape-map"] }
 course-figures = """python scripts/plot_course_qc.py \
   --samples pipeline/assets/riboseq_samples.tsv \
   --multiqc results/reads/qc/multiqc_data/multiqc_general_stats.txt \
@@ -329,13 +335,13 @@ aenmd-verdicts = { cmd = "riborescue aenmd-verdicts --aenmd results/aenmd.tsv --
 # run, so the app builds on a laptop that never ran the sequencing arm. Both it and the plain
 # example write the same slice the app ships — export-web, without `--sample`, writes all 70k rows
 # and is for pointing the viewer at a dataset of your own.
-export-web = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
-export-web-safety = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --predicted results/atlas/gse144140_predicted.tsv --sample 48 --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --out frontend/public/riborescue.json", depends-on = ["nmd", "export-research-tiers"] }
-export-web-example = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --sample 48 --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
+export-web = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --nmd results/nmd.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue.json", depends-on = ["nmd", "base-editing"] }
+export-web-safety = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --predicted results/atlas/gse144140_predicted.tsv --sample 48 --nmd results/nmd.tsv --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue.json", depends-on = ["nmd", "export-research-tiers", "base-editing"] }
+export-web-example = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --sample 48 --nmd results/nmd.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue.json", depends-on = ["nmd", "base-editing"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
 # The tiers variant adds the two independent NMD models' agreement, which needs their environments.
-export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --experiments results/experiments.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
-export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --experiments results/experiments.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
+export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
+export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }

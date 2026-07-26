@@ -24,6 +24,7 @@ from riborescue.variants.disease_coverage import disease_coverage, disease_reach
 from riborescue.variants.nmd_rules import disagreement_atlas, nmd_predictors
 from riborescue.variants.nmdetective import nmdetective_summary
 from riborescue.variants.suppressor_panels import coverage_frontier
+from riborescue.variants.web_export import escape_summary
 
 __all__ = [
     "ResearchAggregate",
@@ -61,6 +62,7 @@ class ResearchAggregate:
     condition_coverage_top: list[dict]
     experiments: list[dict]
     caveats: dict
+    escape: dict | None = None
 
     def to_json(self) -> str:
         # allow_nan=False so a stray NaN fails here rather than becoming a token no browser parses.
@@ -70,6 +72,7 @@ class ResearchAggregate:
                 "mapping_completeness": self.mapping_completeness,
                 "reach_denominator": self.reach_denominator,
                 "nmd": self.nmd,
+                "escape": self.escape,
                 "frontiers": self.frontiers,
                 "condition_coverage_top": self.condition_coverage_top,
                 "experiments": self.experiments,
@@ -90,6 +93,7 @@ def build_research_aggregate(
     aenmd: pd.DataFrame | None = None,
     nmdetective: pd.DataFrame | None = None,
     experiments: pd.DataFrame | None = None,
+    base_editing: pd.DataFrame | None = None,
 ) -> ResearchAggregate:
     """Assemble the researcher aggregate from the disease and context tables.
 
@@ -169,6 +173,7 @@ def build_research_aggregate(
             "genes": _frontier(coverage_frontier(contexts, "genes")),
             "conditions": diseases_frontier,
         },
+        escape=None if base_editing is None else escape_summary(base_editing),
         condition_coverage_top=top_rows,
         experiments=([] if experiments is None else experiments.to_dict(orient="records")),
         caveats={

@@ -45,6 +45,113 @@ function TherapyCards({ variant }: { variant: Variant }) {
   );
 }
 
+// The modalities that could target this stop, each a geometric candidate rather than a therapy: is
+// there a predicted readthrough, and can a base editor be placed on the stop. Neither is eligibility.
+function RescueRoutes({ variant }: { variant: Variant }) {
+  const e = variant.editing;
+  const exact = e?.reach_class === "base_editable_exact";
+  const alternative = e?.reach_class === "base_editable_alternative";
+  return (
+    <div className="routes">
+      <div className="route">
+        <div className="route-head">
+          <span className="route-name">Readthrough</span>
+          {variant.best ? (
+            <span className="pill good">candidate</span>
+          ) : (
+            <span className="pill muted">no predicted readthrough</span>
+          )}
+        </div>
+        <div className="route-body">
+          {variant.best ? (
+            <span className="slot-note">
+              best predicted {percent(variant.best.readthrough)} with {variant.best.therapy}, lower
+              bound {percent(variant.best.low)} — the therapies compared below
+            </span>
+          ) : (
+            <span className="slot-note">no therapy has a prediction for this variant</span>
+          )}
+        </div>
+      </div>
+
+      <div className="route">
+        <div className="route-head">
+          <span className="route-name">Base editing</span>
+          {e && (exact || alternative) ? (
+            <span className="pill good">base-editable</span>
+          ) : e ? (
+            <span className="pill bad">not base-editable under this panel</span>
+          ) : (
+            <span className="pill muted">not evaluated</span>
+          )}
+        </div>
+        <div className="route-body">
+          {e && (exact || alternative) ? (
+            <>
+              <span className="slot-note">
+                {exact ? (
+                  <>
+                    restores the <b>original {variant.residue}</b> exactly
+                  </>
+                ) : (
+                  <>
+                    removes the stop by <b>alternative sense-codon conversion</b> — not the original{" "}
+                    {variant.residue}, and protein function is not established
+                  </>
+                )}{" "}
+                · {e.editor} on the {e.strand} strand
+                {e.bystander_free ? (
+                  <>
+                    {" "}
+                    · <span className="pill good">no coding bystanders</span>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    · <span className="pill bad">has coding bystanders</span>
+                  </>
+                )}
+              </span>
+              <details className="route-more">
+                <summary>Guide detail</summary>
+                <dl className="route-detail">
+                  <div>
+                    <dt>Editor</dt>
+                    <dd>{e.editor}</dd>
+                  </div>
+                  <div>
+                    <dt>Strand</dt>
+                    <dd>{e.strand}</dd>
+                  </div>
+                  <div>
+                    <dt>Editing-window position</dt>
+                    <dd>{e.window_position ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Candidate guides</dt>
+                    <dd>{e.candidate_guides}</dd>
+                  </div>
+                </dl>
+                <p className="route-caveat">
+                  Geometric candidate only — whether an editor can be placed on the stop. Not editing
+                  efficiency, off-target activity, product purity, delivery, tissue access, splice
+                  consequence, or clinical eligibility.
+                </p>
+              </details>
+            </>
+          ) : e ? (
+            <span className="slot-note">
+              no BE4max or ABE7.10 guide with an NGG PAM places the stop in its editing window
+            </span>
+          ) : (
+            <span className="slot-note">base-editing reachability was not exported for this variant</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // The evidence beside the therapies, each slot saying what is known and — where a layer is not built
 // — that it is not, rather than leaving a blank the reader fills in optimistically.
 function Evidence({ variant }: { variant: Variant }) {
@@ -251,6 +358,8 @@ export default function PatientPage() {
                   {variant.gene} <span className="detail-sub">{variant.stop} at {variant.residue}
                   {variant.protein_position ? `, codon ${variant.protein_position}` : ""}</span>
                 </h2>
+                <h3 className="cards-title">Possible rescue routes</h3>
+                <RescueRoutes variant={variant} />
                 <h3 className="cards-title">Every therapy, predicted</h3>
                 <TherapyCards variant={variant} />
                 <h3 className="cards-title">Evidence</h3>

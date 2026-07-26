@@ -18,6 +18,38 @@ export interface Suppressor {
   restores_exactly: boolean;
 }
 
+// Geometric base-editing reachability of one variant. A candidate placement, never eligibility:
+// not editing efficiency, off-target activity, delivery, tissue access, or splice.
+export interface Editing {
+  reach_class:
+    | "base_editable_exact"
+    | "base_editable_alternative"
+    | "not_base_editable_under_panel";
+  reachable: boolean;
+  editor: string | null;
+  strand: string | null;
+  restores: string | null;
+  window_position: number | null;
+  bystander_free: boolean | null;
+  candidate_guides: number;
+}
+
+// The escape-map denominator flow: every variant accounted for, none dropped silently. Percentages
+// are computed against `scoreable`; the total and unscoreable count travel with it.
+export interface EscapeSummary {
+  panel: string;
+  total: number;
+  scoreable: number;
+  unscoreable: number;
+  exact: number;
+  alternative: number;
+  not_editable: number;
+  reachable: number;
+  reachable_bystander_free: number;
+  exact_bystander_free: number;
+  caveat: string;
+}
+
 export interface Variant {
   id: string;
   gene: string;
@@ -31,6 +63,7 @@ export interface Variant {
   therapies: Therapy[];
   suppressor: Suppressor | null;
   nmd: NmdVerdict | null;
+  editing: Editing | null;
 }
 
 export interface AenmdVerdict {
@@ -82,6 +115,7 @@ export interface WebTable {
   therapies: string[];
   therapy_names: Record<string, string>;
   safety: SafetyAtlas | null;
+  escape: EscapeSummary | null;
   variants: Variant[];
 }
 
@@ -157,6 +191,7 @@ export interface ResearchAggregate {
     condition_entities: number;
   };
   mapping_completeness: Record<string, number>;
+  escape?: EscapeSummary | null;
   reach_denominator: {
     eligible_condition_entities: number;
     unique_variant_condition_pairs: number;
