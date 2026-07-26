@@ -8,8 +8,8 @@ jobs:
     name: lint, types and tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: prefix-dev/setup-pixi@v0.8.1
+      - uses: actions/checkout@v7
+      - uses: prefix-dev/setup-pixi@v0
         with:
           # The lockfile is the environment; a run that resolves something else proves nothing.
           locked: true
@@ -23,8 +23,8 @@ jobs:
     name: pipeline
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: prefix-dev/setup-pixi@v0.8.1
+      - uses: actions/checkout@v7
+      - uses: prefix-dev/setup-pixi@v0
         with:
           locked: true
       - run: pixi run nf-lint
@@ -34,7 +34,7 @@ jobs:
     name: runtime image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker build --tag riborescue:${{ github.sha }} .
       # The image exists to run the command Nextflow calls, so the check is that it does.
       - run: docker run --rm riborescue:${{ github.sha }} riborescue triage stop_gained
