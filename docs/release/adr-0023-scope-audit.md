@@ -120,3 +120,36 @@ Four of the five limits in §4 are closed; the fifth is a true description, not 
 - **The one-editor characterisation stands.** BE4max still contributes zero guides across the scoreable set; "BE4max + ABE7.10" names what was searched, and the number remains an ABE7.10-with-NGG number. This is reported, not fixed.
 
 A notebook entry now records what building the layer cost. Both ADRs no longer collide: this layer's record is **ADR-0023**; `0022-the-stalling-endpoint-reconciled.md` keeps 0022. The ADR's `Status` line reads `accepted · Decider: Joseph`.
+
+## 7 · The PAM-flexibility sensitivity analysis
+
+Running the sensitivity arm returned a result worth stating carefully, because it is easy to
+overstate. It is a **PAM-flexibility geometric sensitivity analysis: the primary BE4max/ABE7.10
+editing windows are held fixed while PAM recognition is relaxed** to what SpCas9-NG (`NG`), SpG
+(`NGN`) and SpRY (`NRN`) recognise. It is **not** a panel of individually validated editor
+architectures — a validated NG-ABEmax construct has its own characterised window, which this
+abstraction does not adopt; it varies only the PAM. This interpretation was clarified after the first
+sensitivity numbers were seen.
+
+Against the **70,660** scoreable denominator, base-editing placement rises from **31.2% (22,042)**
+under canonical NGG to **89.0% (62,869)** under relaxed PAM. The honest incremental is **40,827**
+variants that no canonical-NGG guide reaches but a relaxed-PAM guide does — read from the
+`requires_relaxed_pam` flag, which is `reachable ∧ ¬primary_reachable`, **not** from the
+representative-guide `arm` (that label counts 47,100, because a variant a primary guide reaches can
+still pick a cleaner relaxed guide as its representative; a test pins this distinction).
+
+Four things this number is not:
+
+- **`31.2% → 89.0%` is geometric placement, not expected editing.** Activity, specificity, delivery
+  and tissue compatibility are unmodelled. A placed guide is a candidate, not an outcome.
+- **`NRN` is conservative only within this fixed-window abstraction.** SpRY also has lower `NYN`
+  activity, not searched here, so 89.0% could rise under this same geometry — it is not an
+  experimental lower bound.
+- **The residual 7,791 is not entirely a window limit.** 6,667 are `target_outside_window` and 1,124
+  lack any modelled PAM; both are stated.
+- **It does not merge into the primary count.** The headline base-editing number stays 31.2% NGG;
+  the 89.0% is the labelled sensitivity arm.
+
+The finding that survives all of that: the canonical-NGG negative space is **largely a PAM-stringency
+artifact of the geometry, not a fundamental limit** — which is a stronger reason to leave prime
+editing deferred, since expanded-PAM base editing already spans most of the gap.

@@ -428,8 +428,12 @@ def reachability_table(
 
     A representative guide is chosen for the row — exact restoration first, then bystander-free,
     then fewest missense bystanders — the full guide set stays available through `reachability_for`.
-    The expanded-PAM `SENSITIVITY_PANEL` is a separately requested arm, not the primary count; the
-    row's `arm` names which editor reached the variant.
+
+    `arm` is that representative guide's arm, decided by guide quality alone. Reachability by editor
+    class is tracked apart from it: `primary_reachable` when any canonical-NGG guide exists, and
+    `requires_relaxed_pam` only when the variant is reached but no primary guide does — so a variant
+    a primary guide reaches is never counted as needing the expanded panel just because a relaxed
+    guide happens to be the cleaner one.
     """
 
     rows = []
@@ -454,10 +458,14 @@ def reachability_table(
                     "scoreable": False,
                     "reach_class": "",
                     "reachable": False,
+                    "primary_reachable": False,
+                    "requires_relaxed_pam": False,
                     "reason": "unscoreable_context",
                 }
             )
             continue
+        primary_reachable = any(g.arm == "primary" for g in reach.guides)
+        reachable = bool(reach.guides)
         best = min(
             reach.guides,
             key=lambda g: (
@@ -471,7 +479,9 @@ def reachability_table(
             base
             | {
                 "scoreable": True,
-                "reachable": bool(reach.guides),
+                "reachable": reachable,
+                "primary_reachable": primary_reachable,
+                "requires_relaxed_pam": reachable and not primary_reachable,
                 "reach_class": reach.reach_class.value,
                 "reason": reach.reason,
                 "protein_position": reach.protein_position,

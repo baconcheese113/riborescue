@@ -194,6 +194,29 @@ def test_a_relaxed_pam_reaches_a_stop_the_ngg_panel_cannot():
     assert reached and all(g.arm == "sensitivity" for g in reached)
 
 
+def test_requires_relaxed_pam_tracks_reachability_not_the_representative_guide():
+    """A variant an NGG guide reaches, but whose cleaner representative guide is a relaxed-PAM one.
+
+    The NGG placement at start 13 carries a missense bystander at offset 18; a bystander-free
+    NG-only placement at start 11 wins the representative ranking. `arm` is therefore sensitivity,
+    yet the variant does not *require* the relaxed panel — a primary guide reaches it — so
+    `requires_relaxed_pam` must be false. It is derived from `primary_reachable`, never from `arm`.
+    """
+
+    # start-11 NG PAM (seq[32]=G, 33=T so it is NG, not NGG); missense bystander A at offset 18.
+    model = _model(_seq(_TGG | {32: "G", 33: "T", 18: "A"}))
+    variants = pd.DataFrame(
+        [{"variant_id": "v", "gene_id": 42, "gene_symbol": "T", "pos": 18, "ref": "G", "alt": "A"}]
+    )
+    full = PRIMARY_PANEL + SENSITIVITY_PANEL
+    table = reachability_table(variants, {42: model}, panel=full).set_index("variant_id")
+    row = table.loc["v"].to_dict()
+    assert row["reachable"]
+    assert row["primary_reachable"]  # the NGG guide at start 13 reaches it
+    assert row["arm"] == "sensitivity"  # but the bystander-free NG guide is the representative
+    assert not row["requires_relaxed_pam"]  # so it does not need the relaxed panel
+
+
 def test_a_failure_names_no_pam_when_no_motif_is_in_reach():
     # An all-A context: no GG on either strand near the stop, so no PAM reaches any target.
     model = _model(
