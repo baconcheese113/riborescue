@@ -739,3 +739,62 @@ td.num {
     max-height: none;
   }
 }
+
+/* The experiment roadmap. One card per programme, plain question first and the statistics behind a
+   disclosure, because the reader deciding what to run next needs the question before the method. */
+.experiments { display: grid; gap: 1rem; margin-top: 1rem; }
+
+.experiment {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: 6px;
+  padding: 1rem 1.1rem;
+  background: var(--panel);
+}
+/* The frontier marker is a left edge rather than a fill, so a card is legible before it is ranked. */
+.experiment.frontier { border-left-color: var(--good); }
+
+.experiment header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.experiment h3 { margin: 0; font-size: 1rem; line-height: 1.4; flex: 1 1 20rem; }
+.experiment .why { color: var(--ink-2); margin: 0.5rem 0 0.9rem; }
+
+.experiment dl.plain { display: grid; grid-template-columns: minmax(9rem, 12rem) 1fr; gap: 0.35rem 1rem; margin: 0; }
+.experiment dl.plain dt { font-weight: 600; color: var(--ink-2); font-size: 0.86rem; }
+.experiment dl.plain dd { margin: 0; }
+
+/* Direct scope beside potential reach, never merged: one is measured, the other is conditional. */
+.experiment .scope {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 0.9rem 0;
+  padding: 0.75rem 0.9rem;
+  background: var(--surface-2, rgba(127, 127, 127, 0.06));
+  border-radius: 5px;
+}
+.experiment .scope p { margin: 0.2rem 0 0; font-size: 0.9rem; color: var(--ink-2); }
+.experiment .scope-label { font-weight: 600; font-size: 0.86rem; }
+
+.experiment .counts { font-size: 0.86rem; color: var(--ink-2); margin: 0.6rem 0 0; }
+.experiment details { margin-top: 0.8rem; }
+.experiment summary { cursor: pointer; font-size: 0.88rem; color: var(--ink-2); }
+.experiment dl.technical {
+  display: grid;
+  grid-template-columns: minmax(9rem, 12rem) 1fr;
+  gap: 0.3rem 1rem;
+  margin: 0.7rem 0 0;
+  font-size: 0.88rem;
+}
+.experiment dl.technical dt { font-weight: 600; color: var(--ink-2); }
+.experiment dl.technical dd { margin: 0; }
+
+@media (max-width: 40rem) {
+  .experiment dl.plain, .experiment dl.technical { grid-template-columns: 1fr; gap: 0.15rem; }
+  .experiment dl.plain dd, .experiment dl.technical dd { margin-bottom: 0.45rem; }
+}

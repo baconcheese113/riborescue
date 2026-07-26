@@ -130,6 +130,14 @@ from riborescue.variants.web_export import (
 
 __all__ = ["main"]
 
+TRAINING_CONTEXT = "HEK293T; Toledano et al. reporter library"
+"""The cell line and construct every readthrough label was measured in.
+
+Carried on each scored row rather than left to the reader, because a prediction is only about the
+context its training was measured in: a number derived here is not a fibroblast or liver number, and
+nothing downstream can tell the difference once the column is gone.
+"""
+
 _IN = click.argument("table", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 _OUT = click.option(
     "--out",
@@ -957,6 +965,11 @@ def disease_panel_cmd(table: Path, contexts: Path, out: Path) -> None:
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help="The NMDetective-AI table, to add the deep model's efficiency separation to the atlas.",
 )
+@click.option(
+    "--experiments",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The experiment roadmap, so the researcher view can show what to measure next.",
+)
 @_OUT
 def export_research(
     table: Path,
@@ -965,6 +978,7 @@ def export_research(
     commit: str,
     aenmd_table: Path | None,
     nmdetective_table: Path | None,
+    experiments: Path | None,
     out: Path,
 ) -> None:
     """Build the researcher dashboard aggregate: coverage frontiers and per-disease coverage.
@@ -991,6 +1005,7 @@ def export_research(
         commit=commit,
         aenmd=read_table(aenmd_table) if aenmd_table is not None else None,
         nmdetective=read_table(nmdetective_table) if nmdetective_table is not None else None,
+        experiments=read_table(experiments) if experiments is not None else None,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(aggregate.to_json())
@@ -1071,6 +1086,7 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
 
         rows = scoreable.assign(
             therapy_id=therapy,
+            biological_context=TRAINING_CONTEXT,
             readthrough_predicted=predicted,
             readthrough_low=(predicted * (1 - spread)).clip(lower=0.0),
             readthrough_high=predicted * (1 + spread),
@@ -1096,6 +1112,7 @@ def score_contexts(contexts: Path, training: tuple[Path, ...], out: Path) -> Non
                 "protein_position",
                 "stop_type",
                 "therapy_id",
+                "biological_context",
                 "readthrough_predicted",
                 "readthrough_low",
                 "readthrough_high",

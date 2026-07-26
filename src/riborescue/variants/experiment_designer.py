@@ -205,7 +205,9 @@ def propose(
                 "potential_genes": reached["gene_symbol"].nunique(),
                 "potential_conditions": conditions.nunique(),
                 "open_questions_addressed": len(named & open_claims),
-                "claims_named": "; ".join(sorted(named)),
+                # "none" for the same reason `dominated_by` uses it: an empty string comes
+                # back from a table as a NaN, which no JSON encoder will emit.
+                "claims_named": "; ".join(sorted(named)) if named else "none",
                 "evidence_gap": _EVIDENCE_GAP[str(row.evidence_grade)],
                 "feasibility": _FEASIBILITY[str(row.complexity)],
             }
@@ -234,5 +236,7 @@ def frontier(proposed: pd.DataFrame, axes: tuple[str, ...] = AXES) -> pd.DataFra
             and (values[other] > values[index]).any()
         ]
         on_frontier.append(not beaten)
-        dominated_by.append("; ".join(beaten))
+        # "none" rather than empty, so the column survives a round trip through a table without
+        # becoming a NaN that no JSON encoder will emit.
+        dominated_by.append("; ".join(beaten) if beaten else "none")
     return proposed.assign(on_frontier=on_frontier, dominated_by=dominated_by)

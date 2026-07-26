@@ -144,6 +144,7 @@ class TestFrontier:
         assert ranked.loc["BETTER", "on_frontier"]
         assert not ranked.loc["WORSE", "on_frontier"]
         assert ranked.loc["WORSE", "dominated_by"] == "BETTER"
+        assert ranked.loc["BETTER", "dominated_by"] == "none"
 
     def test_a_programme_better_on_one_axis_stays_on(self):
         # This is the whole reason the axes are not summed: fewer variants but a closed claim is a

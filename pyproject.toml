@@ -325,8 +325,8 @@ export-web-safety = { cmd = "riborescue export-web --landscape results/amenabili
 export-web-example = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --sample 48 --nmd results/nmd.tsv --out frontend/public/riborescue.json", depends-on = ["nmd"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
 # The tiers variant adds the two independent NMD models' agreement, which needs their environments.
-export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
-export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
+export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --experiments results/experiments.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
+export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --experiments results/experiments.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts"] }
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }

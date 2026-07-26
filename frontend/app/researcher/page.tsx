@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { FrontierStep, ResearchAggregate } from "../types";
+import type { Experiment, FrontierStep, ResearchAggregate } from "../types";
 
 // Validated categorical hues (blue / aqua / orange), assigned in fixed order to the three frontiers.
 const SERIES: { key: "variants" | "genes" | "conditions"; label: string; color: string }[] = [
@@ -93,6 +93,74 @@ function CompletenessBars({ counts }: { counts: Record<string, number> }) {
           </div>
         ))}
     </div>
+  );
+}
+
+
+// One programme. The plain question leads; the protocol, the statistics and the provenance sit
+// behind a disclosure, because a researcher deciding what to run next reads the question first and
+// the decision rule only once they care.
+function ExperimentCard({ e }: { e: Experiment }) {
+  return (
+    <article className={`experiment${e.on_frontier ? " frontier" : ""}`}>
+      <header>
+        <h3>{e.question}</h3>
+        {e.on_frontier ? (
+          <span className="pill good">Nothing beats it on every measure</span>
+        ) : (
+          <span className="pill muted">Beaten by {e.dominated_by.replace(/; /g, ", ")}</span>
+        )}
+      </header>
+      <p className="why">{e.why_it_matters}</p>
+
+      <dl className="plain">
+        <dt>What the lab does</dt><dd>{e.what_the_lab_does}</dd>
+        <dt>Compared against</dt><dd>{e.comparison}</dd>
+        <dt>What would count as a yes</dt><dd>{e.success_criterion}</dd>
+        <dt>If it comes back no</dt><dd>{e.if_it_fails}</dd>
+        <dt>Why we cannot answer it now</dt><dd>{e.evidence_gap_reason}</dd>
+      </dl>
+
+      <div className="scope">
+        <div>
+          <span className="scope-label">Directly measures</span>
+          <p>{e.direct_scope}</p>
+        </div>
+        <div>
+          <span className="scope-label">
+            Could reach {e.potential_variants.toLocaleString()} variants,{" "}
+            {e.potential_conditions.toLocaleString()} conditions — <em>if it generalises</em>
+          </span>
+          <p>{e.generalisation_required}</p>
+        </div>
+      </div>
+
+      <p className="counts">
+        Addresses {e.open_questions_addressed} open question
+        {e.open_questions_addressed === 1 ? "" : "s"}
+        {e.claims_named !== "none" ? ` (${e.claims_named.replace(/; /g, ", ")})` : ""} · evidence
+        today: {e.evidence_grade} · complexity: {e.complexity}
+        {e.safety_relevant === "TRUE" ? " · bears on safety" : ""}
+      </p>
+
+      <details>
+        <summary>Technical details</summary>
+        <dl className="technical">
+          <dt>Assay</dt><dd>{e.assay}</dd>
+          <dt>Model system</dt><dd>{e.model_system}</dd>
+          <dt>Endpoint</dt><dd>{e.endpoint}</dd>
+          <dt>Decision rule</dt><dd>{e.decision_rule}</dd>
+          <dt>Replicates</dt><dd>{e.replicates}</dd>
+          <dt>Power endpoint</dt><dd>{e.replicate_endpoint}</dd>
+          <dt>Effect size assumed</dt><dd>{e.replicate_effect}</dd>
+          <dt>Variance source</dt><dd>{e.replicate_variance_source}</dd>
+          <dt>Design</dt><dd>{e.replicate_design}</dd>
+          <dt>Alpha and power</dt><dd>{e.replicate_alpha_power}</dd>
+          <dt>Method</dt><dd>{e.replicate_method}</dd>
+          <dt>Provenance</dt><dd>{e.provenance}</dd>
+        </dl>
+      </details>
+    </article>
   );
 }
 
@@ -292,6 +360,39 @@ export default function ResearcherPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section className="panel">
+        <h2>What should researchers test next?</h2>
+        <p className="panel-note">
+          This project&rsquo;s two research claims came back negative and one dataset could not answer
+          the question it was collected for. What follows from that is not a better ranking of
+          therapies but the measurements that would settle the open questions. Nothing here says a
+          therapy will work.
+        </p>
+        <div className="banner">
+          <span className="tag">How to read this</span>
+          <p>
+            The questions and protocols below are <strong>written by hand</strong> — a lab procedure
+            cannot be generated from a table. What is <strong>computed</strong> is everything that
+            makes them comparable: how many variants and conditions each could reach, which recorded
+            questions it addresses, and the replicate counts our own measured variance implies. There
+            is deliberately no single score: trading fewer variants for a closed question is your
+            decision, not ours.
+          </p>
+        </div>
+        <div className="experiments">
+          {[...data.experiments]
+            .sort(
+              (a, b) =>
+                Number(b.on_frontier) - Number(a.on_frontier) ||
+                b.open_questions_addressed - a.open_questions_addressed ||
+                b.potential_variants - a.potential_variants,
+            )
+            .map((e) => (
+              <ExperimentCard key={e.experiment_id} e={e} />
+            ))}
         </div>
       </section>
 

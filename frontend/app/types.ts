@@ -111,6 +111,43 @@ export interface ConditionCoverage {
   mapping_completeness: string;
 }
 
+// One proposed programme. `direct_scope` is what the experiment actually puts under measurement;
+// `potential_*` is who would benefit if the result generalises, and the two are never merged.
+export interface Experiment {
+  experiment_id: string;
+  question: string;
+  why_it_matters: string;
+  what_the_lab_does: string;
+  comparison: string;
+  success_criterion: string;
+  if_it_fails: string;
+  evidence_gap_reason: string;
+  direct_scope: string;
+  generalisation_required: string;
+  assay: string;
+  model_system: string;
+  endpoint: string;
+  decision_rule: string;
+  replicates: string;
+  replicate_endpoint: string;
+  replicate_effect: string;
+  replicate_variance_source: string;
+  replicate_design: string;
+  replicate_alpha_power: string;
+  replicate_method: string;
+  evidence_grade: string;
+  complexity: string;
+  safety_relevant: string;
+  provenance: string;
+  claims_named: string;
+  potential_variants: number;
+  potential_genes: number;
+  potential_conditions: number;
+  open_questions_addressed: number;
+  on_frontier: boolean;
+  dominated_by: string;
+}
+
 export interface ResearchAggregate {
   provenance: {
     clinvar_release: string;
@@ -167,5 +204,6 @@ export interface ResearchAggregate {
     conditions: FrontierStep[];
   };
   condition_coverage_top: ConditionCoverage[];
+  experiments: Experiment[];
   caveats: Record<string, string>;
 }

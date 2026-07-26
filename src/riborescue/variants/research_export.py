@@ -59,6 +59,7 @@ class ResearchAggregate:
     nmd: dict
     frontiers: dict
     condition_coverage_top: list[dict]
+    experiments: list[dict]
     caveats: dict
 
     def to_json(self) -> str:
@@ -71,6 +72,7 @@ class ResearchAggregate:
                 "nmd": self.nmd,
                 "frontiers": self.frontiers,
                 "condition_coverage_top": self.condition_coverage_top,
+                "experiments": self.experiments,
                 "caveats": self.caveats,
             },
             indent=2,
@@ -87,8 +89,14 @@ def build_research_aggregate(
     top: int = 50,
     aenmd: pd.DataFrame | None = None,
     nmdetective: pd.DataFrame | None = None,
+    experiments: pd.DataFrame | None = None,
 ) -> ResearchAggregate:
     """Assemble the researcher aggregate from the disease and context tables.
+
+    `experiments`, when given, carries the roadmap: which measurement would settle which open
+    question. Its rows go through unchanged, because the distinction between what an experiment
+    directly measures and who it might reach if it generalises is the point of the table and is not
+    something to summarise away.
 
     `top` bounds the per-entity list to the largest by eligible denominator, so the payload stays
     small; the frontiers and completeness counts are whole-set. `clinvar_release` and `commit` are
@@ -162,6 +170,7 @@ def build_research_aggregate(
             "conditions": diseases_frontier,
         },
         condition_coverage_top=top_rows,
+        experiments=([] if experiments is None else experiments.to_dict(orient="records")),
         caveats={
             "entities": (
                 "A MedGen concept is a ClinVar condition — a disease, but possibly a finding, "
