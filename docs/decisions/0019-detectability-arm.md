@@ -70,8 +70,8 @@ qualifying universe. Nothing about the assay is redefined here.
 **The reference effect is GSE144140's G418 contrast, per quantity.** A minimum detectable effect
 means nothing without something to detect, and the only pre-declarable size is one measured
 elsewhere: the HEK293T G418-against-DMSO differences from a dataset that passed its calibration and
-completed its analysis (`downstream_occupancy` +0.00954, `termination_occupancy` −0.01147,
-`frame_gap` +0.18301, selected set; the published-window figures are used for the published-window
+completed its analysis (`downstream_occupancy` +0.00962, `termination_occupancy` −0.01160,
+`frame_gap` +0.18059, selected set; the published-window figures are used for the published-window
 arm). The question the arm answers is therefore fixed and concrete: *could this design have seen an
 effect the size of the one G418 produces in HEK293T?* Using a suppressor tRNA's effect size, which
 is unknown, would make the question circular; using the fibroblast effect would make it a
@@ -146,7 +146,13 @@ the column names, the refusal to write elsewhere and the fixed vocabulary above 
 between those two readings, and they are load-bearing rather than decorative.
 
 The reference effect ties this arm to GSE144140, so if that dataset's analysis is ever revised, the
-detectability figures move with it and must be recomputed rather than quoted from here.
+detectability figures move with it and must be recomputed rather than quoted from here. That has
+already happened once: replacing a hand-rolled interval overlap with a library implementation
+excluded nine further transcripts whose 3' untranslated region runs into a neighbouring gene's
+coding sequence, moving the reference `frame_gap` from +0.18301 to +0.18059 over 486 transcripts
+rather than 495. The arm was recomputed against the new figures and every conclusion is unchanged —
+the same minimum detectable effects, the same replicate requirements, the same quantities
+unreachable at any depth. The figures above are the recomputed ones.
 
 The same machinery applies to any future dataset that fails on depth alone, which is the more useful
 consequence: what this project can say about a dataset it cannot use is now a computation rather
