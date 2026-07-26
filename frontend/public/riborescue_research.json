@@ -2,7 +2,7 @@
   "provenance": {
     "contracts_version": "0.3.0",
     "clinvar_release": "20260715",
-    "commit": "d242ecd",
+    "commit": "aa2e1b9",
     "qualifying_variants": 71378,
     "scoreable_variants": 70376,
     "condition_entities": 6058
