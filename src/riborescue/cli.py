@@ -12,6 +12,7 @@ import pandera.pandas
 
 from riborescue._version import __version__
 from riborescue.core.contracts import Consequence, EvalConfig
+from riborescue.core.falsification import read_ledger
 from riborescue.core.handoff import UpstreamHandoff
 from riborescue.core.inputs import INPUTS, UnknownInputError, data_root, fetch
 from riborescue.core.tables import (
@@ -92,6 +93,7 @@ from riborescue.variants.evaluation import (
     evaluate,
     split,
 )
+from riborescue.variants.experiment_designer import frontier, propose, read_programs
 from riborescue.variants.kinetics import (
     MODELS,
     codon_scores,
@@ -1577,6 +1579,79 @@ def permutation_report_command(null: Path, observed: Path, out: Path) -> None:
             click.echo(
                 f"  {row.drug:>10}: gain {row.gain:+.5f}  p = {row.p_familywise:.3f}  {verdict}"
             )
+
+
+@main.command("experiments")
+@click.option(
+    "--programs",
+    default=Path("experiments/programs.tsv"),
+    show_default=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The authored programmes: each one's question, protocol and decision rule.",
+)
+@click.option(
+    "--contexts",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The placed variants, for how many each programme would inform.",
+)
+@click.option(
+    "--diseases",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Variant to condition, for how many conditions each programme would inform.",
+)
+@click.option(
+    "--ledger",
+    default=Path("ledger/falsification.tsv"),
+    show_default=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The recorded claims, so a programme is credited only for the ones still open.",
+)
+@click.option(
+    "--landscape",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The amenability landscape, which carries the decay verdict some reach rules need.",
+)
+@_OUT
+def experiments_command(
+    programs: Path, contexts: Path, diseases: Path, ledger: Path, landscape: Path | None, out: Path
+) -> None:
+    """Rank the experiments that would resolve the project's open questions.
+
+    Never says a therapy will work. Says which measurement would settle which uncertainty, on
+    separate axes with no combined score, because reach and feasibility do not trade against each
+    other at any rate this project could defend.
+    """
+
+    try:
+        authored = read_programs(programs)
+    except (ValueError, OSError) as error:
+        raise click.ClickException(str(error)) from error
+
+    placed = read_table(contexts)
+    placed = placed.loc[placed["scoreable"].astype(bool)]
+    if landscape is not None:
+        verdicts = read_table(landscape)[["variant_id", "escapes_decay_by_rule"]]
+        placed = placed.merge(verdicts, on="variant_id", how="left")
+        placed["escapes_decay_by_rule"] = placed["escapes_decay_by_rule"].fillna(False)
+    ranked = frontier(propose(authored, placed, read_table(diseases), read_ledger(ledger)))
+    write_table(ranked, out)
+
+    click.echo(f"{len(ranked)} programmes over {len(placed):,} placed variants\n")
+    for row in ranked.sort_values(
+        ["on_frontier", "claims_resolved", "variants_informed"], ascending=False
+    ).itertuples():
+        mark = "on the frontier" if row.on_frontier else f"behind {row.dominated_by}"
+        click.echo(f"  {row.experiment_id}  ({mark})")
+        click.echo(f"    {row.question}")
+        click.echo(
+            f"    informs {row.variants_informed:,} variants, {row.genes_informed:,} genes, "
+            f"{row.conditions_informed:,} conditions | "
+            f"closes {row.claims_resolved} open claim(s) | "
+            f"evidence {row.evidence_grade}, complexity {row.complexity} | "
+            f"replicates: {str(row.replicates).split(',')[0]}"
+        )
 
 
 @main.command("support-atlas")

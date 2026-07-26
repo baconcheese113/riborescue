@@ -270,6 +270,10 @@ head-to-head = "bash scripts/run_head_to_head.sh"
 # permutation index, each shard resuming from what it already wrote. Under an hour, and the only
 # heavy job that should be running.
 permutation-null = "bash scripts/run_permutation_null.sh"
+# Which experiment would settle which open question. Never says a therapy will work.
+experiments = """riborescue experiments \
+  --contexts results/clinvar_contexts.tsv --diseases results/diseases.tsv \
+  --landscape results/amenability_landscape.tsv --out results/experiments.tsv"""
 permutation-report = """riborescue permutation-report results/kinetics/permutation_null/null.tsv \
   --observed results/kinetics/permutation_null/null.0_observed.tsv \
   --out results/kinetics/permutation_null/familywise.tsv"""
