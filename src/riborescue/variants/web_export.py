@@ -19,6 +19,7 @@ from typing import Any, cast
 
 import pandas as pd
 
+from riborescue.core.contracts import CONTRACTS_VERSION
 from riborescue.core.sequences import STOP_CODONS, as_dna, as_rna
 
 __all__ = [
@@ -135,6 +136,7 @@ class WebTable:
         # NaN/Infinity, which are not JSON and make the browser's parser reject the whole file.
         return json.dumps(
             {
+                "contracts_version": CONTRACTS_VERSION,
                 "status": self.status,
                 "therapies": self.therapies,
                 "therapy_names": {t: therapy_name(t) for t in self.therapies},

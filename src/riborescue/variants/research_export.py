@@ -18,6 +18,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from riborescue.core.contracts import CONTRACTS_VERSION
 from riborescue.variants.aenmd import model_agreement
 from riborescue.variants.disease_coverage import disease_coverage, disease_reach_frontier
 from riborescue.variants.nmd_rules import disagreement_atlas, nmd_predictors
@@ -135,6 +136,7 @@ def build_research_aggregate(
 
     return ResearchAggregate(
         provenance={
+            "contracts_version": CONTRACTS_VERSION,
             "clinvar_release": clinvar_release,
             "commit": commit,
             "qualifying_variants": int(contexts["variant_id"].nunique()),

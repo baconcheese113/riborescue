@@ -16,11 +16,11 @@ abundance is unknown and cannot be adjusted for.
 import gzip
 import math
 import re
-from collections import defaultdict
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+import bioframe
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -49,7 +49,6 @@ __all__ = [
 _GENE_NAME = re.compile(r'gene_name "([^"]+)"')
 _GENE_ID = re.compile(r'gene_id "([^"]+)"')
 _TRANSCRIPT_ID = re.compile(r'transcript_id "([^"]+)"')
-_BIN = 100_000
 
 MANE_SELECT_TAG = "MANE_Select"
 
@@ -202,23 +201,38 @@ which side of the coding sequence a bare `UTR` falls on is worked out from the c
 """
 
 
-def _downstream_utrs(gtf: Path) -> tuple[dict, list]:
-    """The coding extent of every transcript, and the untranslated regions to place against it."""
+_INTERVAL = ["chrom", "start", "end", "strand", "gene_id", "transcript_id"]
 
-    coding_extent: dict[str, tuple[int, int]] = {}
-    utrs: list[tuple[str, str, int, int, str, str]] = []
+
+def _coding_and_untranslated(gtf: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """The coding and untranslated regions of a GTF, as two interval frames.
+
+    Read in one streaming pass and kept as six columns, so the frames hold what an overlap needs and
+    not the twenty other attributes of every record. GTF coordinates are 1-based and inclusive at
+    both ends; `start` is moved back one so the frames are half-open, which is what makes an overlap
+    over them mean the same thing the annotation does.
+    """
+
+    coding: list[tuple] = []
+    untranslated: list[tuple] = []
     for field in _features(gtf, UTR_FEATURES | {"CDS"}):
         gene = _GENE_ID.search(field[8])
         transcript = _TRANSCRIPT_ID.search(field[8])
         if gene is None or transcript is None:
             continue
-        start, end = int(field[3]), int(field[4])
-        if field[2] == "CDS":
-            low, high = coding_extent.get(transcript.group(1), (start, end))
-            coding_extent[transcript.group(1)] = (min(low, start), max(high, end))
-        else:
-            utrs.append((field[0], field[6], start, end, gene.group(1), transcript.group(1)))
-    return coding_extent, utrs
+        row = (
+            field[0],
+            int(field[3]) - 1,
+            int(field[4]),
+            field[6],
+            gene.group(1),
+            transcript.group(1),
+        )
+        (coding if field[2] == "CDS" else untranslated).append(row)
+    return (
+        pd.DataFrame(coding, columns=_INTERVAL),
+        pd.DataFrame(untranslated, columns=_INTERVAL),
+    )
 
 
 def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
@@ -233,30 +247,26 @@ def overlapping_downstream_cds(gtf: Path) -> frozenset[str]:
     coding sequence has no 3' untranslated region to speak of and takes no part.
     """
 
-    coding: dict[tuple[str, str, int], list[tuple[int, int, str]]] = defaultdict(list)
-    for field in _features(gtf, frozenset({"CDS"})):
-        gene = _GENE_ID.search(field[8])
-        if gene is None:
-            continue
-        start, end = int(field[3]), int(field[4])
-        for window in range(start // _BIN, end // _BIN + 1):
-            coding[(field[0], field[6], window)].append((start, end, gene.group(1)))
+    coding, untranslated = _coding_and_untranslated(gtf)
+    if coding.empty or untranslated.empty:
+        return frozenset()
 
-    coding_extent, utrs = _downstream_utrs(gtf)
-    contaminated: set[str] = set()
-    for chrom, strand, start, end, gene, transcript in utrs:
-        extent = coding_extent.get(transcript)
-        if extent is None:
-            continue
-        cds_start, cds_end = extent
-        if not (start > cds_end if strand == "+" else end < cds_start):
-            continue
-        for window in range(start // _BIN, end // _BIN + 1):
-            for other_start, other_end, other_gene in coding.get((chrom, strand, window), ()):
-                if other_gene != gene and other_start <= end and start <= other_end:
-                    contaminated.add(transcript)
-                    break
-    return frozenset(contaminated)
+    extent = coding.groupby("transcript_id").agg(cds_start=("start", "min"), cds_end=("end", "max"))
+    placed = untranslated.join(extent, on="transcript_id", how="inner")
+    downstream = placed.loc[
+        np.where(
+            placed["strand"] == "+",
+            placed["start"] >= placed["cds_end"],
+            placed["end"] <= placed["cds_start"],
+        )
+    ]
+    if downstream.empty:
+        return frozenset()
+
+    against = bioframe.overlap(
+        downstream[_INTERVAL], coding, on=["strand"], how="inner", suffixes=("", "_cds")
+    )
+    return frozenset(against.loc[against["gene_id"] != against["gene_id_cds"], "transcript_id"])
 
 
 COUNT_COLUMNS = [

@@ -2,6 +2,7 @@ import json
 
 import pandas as pd
 
+from riborescue.core.contracts import CONTRACTS_VERSION
 from riborescue.variants.web_export import GateStatus, build_web_table, diverse_sample
 
 
@@ -103,6 +104,13 @@ def test_the_two_sri_compounds_are_never_left_to_be_confused():
     detail = build_web_table(_landscape(), _amenability()).status["readthrough_detail"]
     assert "SRI-37240" in detail and "SRI-41315" in detail
     assert "different molecules" in detail
+
+
+def test_the_payload_stamps_the_contract_version_it_was_written_under():
+    """A consumer reading a stored payload has to know which schema produced it."""
+
+    parsed = json.loads(build_web_table(_landscape(), _amenability()).to_json())
+    assert parsed["contracts_version"] == CONTRACTS_VERSION
 
 
 def test_every_therapy_carries_the_compound_it_names():

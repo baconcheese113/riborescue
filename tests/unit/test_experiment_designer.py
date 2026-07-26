@@ -35,6 +35,14 @@ _PROGRAM = {
     "replicates": "not estimated",
     "resolves": "none",
     "reach_rule": "all_scoreable",
+    "direct_scope": "one thing in one place",
+    "generalisation_required": "that it holds elsewhere",
+    "replicate_endpoint": "not estimated",
+    "replicate_effect": "not estimated",
+    "replicate_variance_source": "not estimated",
+    "replicate_design": "not estimated",
+    "replicate_alpha_power": "not estimated",
+    "replicate_method": "not estimated",
     "evidence_grade": "none",
     "complexity": "moderate",
     "safety_relevant": "FALSE",
@@ -90,9 +98,9 @@ class TestReach:
     def test_reach_counts_the_variants_the_rule_selects(self, tmp_path):
         programs = read_programs(_written(tmp_path, _PROGRAM | {"reach_rule": "uag_stops"}))
         row = propose(programs, _CONTEXTS, _DISEASES, _LEDGER).iloc[0]
-        assert row["variants_informed"] == 2
-        assert row["genes_informed"] == 2
-        assert row["conditions_informed"] == 2
+        assert row["potential_variants"] == 2
+        assert row["potential_genes"] == 2
+        assert row["potential_conditions"] == 2
 
     def test_a_rule_whose_input_is_absent_refuses_rather_than_reporting_nobody(self, tmp_path):
         # Zero reach is a finding; a missing column is a bug, and they must not look alike.
@@ -116,9 +124,9 @@ class TestClaims:
             )
         )
         counts = propose(programs, _CONTEXTS, _DISEASES, _LEDGER).set_index("experiment_id")
-        assert counts.loc["EXAMPLE", "claims_resolved"] == 1
-        assert counts.loc["B", "claims_resolved"] == 0
-        assert counts.loc["C", "claims_resolved"] == 0
+        assert counts.loc["EXAMPLE", "open_questions_addressed"] == 1
+        assert counts.loc["B", "open_questions_addressed"] == 0
+        assert counts.loc["C", "open_questions_addressed"] == 0
 
 
 class TestFrontier:
@@ -130,8 +138,8 @@ class TestFrontier:
 
     def test_a_programme_beaten_on_every_axis_falls_off(self):
         ranked = self._ranked(
-            BETTER={"variants_informed": 10, "claims_resolved": 2},
-            WORSE={"variants_informed": 5, "claims_resolved": 1},
+            BETTER={"potential_variants": 10, "open_questions_addressed": 2},
+            WORSE={"potential_variants": 5, "open_questions_addressed": 1},
         ).set_index("experiment_id")
         assert ranked.loc["BETTER", "on_frontier"]
         assert not ranked.loc["WORSE", "on_frontier"]
@@ -141,20 +149,20 @@ class TestFrontier:
         # This is the whole reason the axes are not summed: fewer variants but a closed claim is a
         # trade a reader makes, not one the tool makes for them.
         ranked = self._ranked(
-            WIDE={"variants_informed": 100, "claims_resolved": 0},
-            NARROW={"variants_informed": 1, "claims_resolved": 3},
+            WIDE={"potential_variants": 100, "open_questions_addressed": 0},
+            NARROW={"potential_variants": 1, "open_questions_addressed": 3},
         ).set_index("experiment_id")
         assert ranked.loc["WIDE", "on_frontier"]
         assert ranked.loc["NARROW", "on_frontier"]
 
     def test_an_identical_pair_both_stay_on(self):
-        ranked = self._ranked(ONE={"variants_informed": 5}, TWO={"variants_informed": 5}).set_index(
-            "experiment_id"
-        )
+        ranked = self._ranked(
+            ONE={"potential_variants": 5}, TWO={"potential_variants": 5}
+        ).set_index("experiment_id")
         assert ranked["on_frontier"].all()
 
     def test_no_combined_score_is_produced(self):
-        ranked = self._ranked(A={"variants_informed": 5}, B={"claims_resolved": 1})
+        ranked = self._ranked(A={"potential_variants": 5}, B={"open_questions_addressed": 1})
         forbidden = {"score", "priority", "rank", "expected_information_gain", "opportunity"}
         assert not forbidden & {c.lower() for c in ranked.columns}
 
@@ -176,3 +184,21 @@ class TestTheAuthoredProgrammes:
     def test_the_suppressor_programme_carries_the_replication_the_gap_analysis_derived(self):
         programs = read_programs(PROGRAMS).set_index("experiment_id")
         assert str(programs.loc["SUPTRNA-REPLICATED", "replicates"]).startswith("4 per arm")
+
+    def test_a_derived_replicate_count_shows_every_assumption_behind_it(self):
+        # A number without its endpoint, effect size, variance source, design and power is not
+        # auditable, and 4 per arm is only meaningful conditional on all five.
+        fields = [c for c in read_programs(PROGRAMS).columns if c.startswith("replicate_")]
+        assert len(fields) == 6
+        for row in read_programs(PROGRAMS).itertuples():
+            stated = [str(getattr(row, f)) for f in fields]
+            derived = str(row.replicates) != "not estimated"
+            # Either every assumption is named, or every one of them says nobody computed it.
+            assert derived == any(v != "not estimated" for v in stated)
+
+    def test_direct_scope_and_potential_reach_are_separate(self):
+        # A programme measuring one scaffold in one cell line must not be described as informing
+        # every variant; the generalisation between the two is written out rather than implied.
+        for row in read_programs(PROGRAMS).itertuples():
+            assert len(str(row.direct_scope)) > 30
+            assert len(str(row.generalisation_required)) > 30

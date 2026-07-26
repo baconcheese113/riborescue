@@ -1640,15 +1640,16 @@ def experiments_command(
 
     click.echo(f"{len(ranked)} programmes over {len(placed):,} placed variants\n")
     for row in ranked.sort_values(
-        ["on_frontier", "claims_resolved", "variants_informed"], ascending=False
+        ["on_frontier", "open_questions_addressed", "potential_variants"], ascending=False
     ).itertuples():
         mark = "on the frontier" if row.on_frontier else f"behind {row.dominated_by}"
         click.echo(f"  {row.experiment_id}  ({mark})")
         click.echo(f"    {row.question}")
+        click.echo(f"    directly measures: {row.direct_scope}")
         click.echo(
-            f"    informs {row.variants_informed:,} variants, {row.genes_informed:,} genes, "
-            f"{row.conditions_informed:,} conditions | "
-            f"closes {row.claims_resolved} open claim(s) | "
+            f"    could reach {row.potential_variants:,} variants, {row.potential_genes:,} genes, "
+            f"{row.potential_conditions:,} conditions IF it generalises | "
+            f"addresses {row.open_questions_addressed} open question(s) | "
             f"evidence {row.evidence_grade}, complexity {row.complexity} | "
             f"replicates: {str(row.replicates).split(',')[0]}"
         )

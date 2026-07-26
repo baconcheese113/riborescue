@@ -2,6 +2,7 @@ import json
 
 import pandas as pd
 
+from riborescue.core.contracts import CONTRACTS_VERSION
 from riborescue.variants.research_export import build_research_aggregate
 
 
@@ -112,4 +113,5 @@ def test_the_json_is_strictly_valid_and_round_trips():
     assert "NaN" not in text
     parsed = json.loads(text)
     assert parsed["provenance"]["condition_entities"] == 2
+    assert parsed["provenance"]["contracts_version"] == CONTRACTS_VERSION
     assert "unmet_need" in parsed["caveats"]

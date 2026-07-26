@@ -19,9 +19,17 @@ on it when nothing else beats it on every axis at once. Blending reach, feasibil
 into one number would hide the trade-off a reader is there to make, and would invite calling a
 weighted sum something it is not.
 
-**Nothing is invented.** A replicate count is either derived from a measured variance, with the
-assumption shown, or reported as `not estimated`. Cost is not modelled at all; complexity is a
-declared tier, not a currency.
+**Reach is two different quantities and they are never merged.** `direct_scope` is what the
+experiment actually puts under measurement — one variant, one scaffold, one cell line — and it is
+authored, because only the protocol knows it. `potential_*` is who would benefit *if the result
+generalises*, which is computed, and every programme states the generalisation that would have to
+hold. A safety experiment in one tissue with one scaffold does not directly inform seventy thousand
+variants, and a column that said so would be a promise rather than a count.
+
+**Nothing is invented.** A replicate count is either derived from a measured variance — with its
+endpoint, effect size, variance source, design, alpha, power and method each recorded beside it — or
+reported as `not estimated` in all of them. Cost is not modelled at all; complexity is a declared
+tier, not a currency.
 """
 
 from __future__ import annotations
@@ -44,10 +52,10 @@ PROGRAMS = Path("experiments/programs.tsv")
 """The authored half: one row per programme, its question and its protocol."""
 
 AXES = (
-    "variants_informed",
-    "genes_informed",
-    "conditions_informed",
-    "claims_resolved",
+    "potential_variants",
+    "potential_genes",
+    "potential_conditions",
+    "open_questions_addressed",
     "evidence_gap",
     "feasibility",
 )
@@ -117,6 +125,14 @@ _REQUIRED = (
     "replicates",
     "resolves",
     "reach_rule",
+    "direct_scope",
+    "generalisation_required",
+    "replicate_endpoint",
+    "replicate_effect",
+    "replicate_variance_source",
+    "replicate_design",
+    "replicate_alpha_power",
+    "replicate_method",
     "evidence_grade",
     "complexity",
     "safety_relevant",
@@ -159,12 +175,14 @@ def propose(
 ) -> pd.DataFrame:
     """Attach the computed axes to each authored programme.
 
-    Reach is counted over the variants the named rule selects, and the conditions those variants map
-    to, so a programme addressing a common stop codon outranks one addressing a rare context on
-    reach without either being scored against the other overall.
+    The counted reach is *potential*: who would benefit if the result generalises, over the variants
+    the named rule selects and the conditions those variants map to. What the experiment actually
+    measures is `direct_scope`, which is authored beside it, and the generalisation standing between
+    the two is written out per programme rather than left for a reader to infer.
 
-    `claims_resolved` counts only the recorded claims that are still open — a programme that would
-    re-confirm something already supported is not credited for closing it.
+    `open_questions_addressed` counts only the recorded claims still open, and is named for what an
+    experiment can do before it runs. Nothing guarantees closure in advance, and a column called
+    `closes` would say otherwise.
     """
 
     open_claims = set(ledger.loc[~ledger["verdict"].isin(["supported", "refuted"]), "claim_id"])
@@ -183,10 +201,10 @@ def propose(
         computed.append(
             {
                 "experiment_id": row.experiment_id,
-                "variants_informed": len(variants),
-                "genes_informed": reached["gene_symbol"].nunique(),
-                "conditions_informed": conditions.nunique(),
-                "claims_resolved": len(named & open_claims),
+                "potential_variants": len(variants),
+                "potential_genes": reached["gene_symbol"].nunique(),
+                "potential_conditions": conditions.nunique(),
+                "open_questions_addressed": len(named & open_claims),
                 "claims_named": "; ".join(sorted(named)),
                 "evidence_gap": _EVIDENCE_GAP[str(row.evidence_grade)],
                 "feasibility": _FEASIBILITY[str(row.complexity)],

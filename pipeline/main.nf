@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 /*
- * RiboRescue — three workflows, selected with --step.
+ * RiboRescue — four workflows, selected with --step.
  *
  *   --step amenability   ClinVar's pathogenic nonsense variants, placed on their MANE Select
  *                        transcripts, scored under each therapy, ranked by suppressor design, and

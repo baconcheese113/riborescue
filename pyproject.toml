@@ -19,6 +19,8 @@ dependencies = [
     "pooch>=1.8",
     "biopython>=1.83",
     "click>=8.1",
+    "dnaio>=1.2",
+    "cutadapt>=5.2",
 ]
 
 [project.optional-dependencies]
@@ -59,6 +61,7 @@ python = "3.12.*"
 cyvcf2 = ">=0.34.0,<0.35"
 dnaio = ">=1.2.4,<2"
 cutadapt = ">=5.2,<6"
+bioframe = ">=0.8.0,<0.9"
 
 [tool.pixi.feature.base.pypi-dependencies]
 riborescue = { path = "." }

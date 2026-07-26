@@ -213,6 +213,6 @@ class TestTheMeasuredTable:
     def test_the_p_site_finds_proline_slow_instead(self):
         # Peptidyl-prolyl transfer is intrinsically slow, and it is the P site that sees it. A table
         # whose A and P conventions gave the same answer would mean the shift was not applied.
-        table = pd.read_csv("results/kinetics/gse144140/codon_occupancy.p.published.tsv", sep="\t")
+        table = self._table("codon_occupancy.p.published.tsv")
         means = table.groupby("amino_acid")["occupancy"].mean()
         assert means.idxmax() == "P"
