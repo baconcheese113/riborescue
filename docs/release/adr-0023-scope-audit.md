@@ -119,4 +119,4 @@ Four of the five limits in §4 are closed; the fifth is a true description, not 
 - **Minus-strand test** — added. `test_a_minus_strand_transcript_is_scored_on_its_own_reading_frame` scores the same stop through the minus-strand path, where offsets count down and the alleles are complemented.
 - **The one-editor characterisation stands.** BE4max still contributes zero guides across the scoreable set; "BE4max + ABE7.10" names what was searched, and the number remains an ABE7.10-with-NGG number. This is reported, not fixed.
 
-A notebook entry now records what building the layer cost. Both ADRs no longer collide: this layer's record is **ADR-0023**; `0022-the-stalling-endpoint-reconciled.md` keeps 0022. The ADR's `Status` line reads `proposed · undecided`, which the decision above is free to change.
+A notebook entry now records what building the layer cost. Both ADRs no longer collide: this layer's record is **ADR-0023**; `0022-the-stalling-endpoint-reconciled.md` keeps 0022. The ADR's `Status` line reads `accepted · Decider: Joseph`.
