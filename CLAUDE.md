@@ -69,9 +69,11 @@ riboWaltz, which pins an older R than the reproduction oracle. Run a task elsewh
 - **ruff** for lint and format. Line length 100.
 - **pytest** with `--import-mode=importlib` and `--strict-markers`; no `__init__.py` under `tests/`.
   Markers: `control`, `parity`, `integration`, `slow`.
-- Data **contracts** (`contracts.py`) are the validation boundary: **Pydantic v2 + pandera**,
-  frozen models, validation that refuses bad state rather than coercing it. Plain dataclasses and
-  **Click** elsewhere.
+- **`tables.py` is the validation boundary**: every table crossing a pipeline step is read and
+  written through it, checked against **pandera** schemas that refuse bad state rather than coercing
+  it. `contracts.py` is the vocabulary those schemas validate *to* — the closed sets a column may
+  hold, and the reporter geometry every feature window is measured against. **Pydantic** models
+  where a record is passed around rather than a table; plain dataclasses and **Click** elsewhere.
 - Scientific logic is Python called from Nextflow; no analysis logic in Groovy.
 - Prefer a well-maintained library over new code when it genuinely reduces complexity.
 
@@ -79,9 +81,9 @@ riboWaltz, which pins an older R than the reproduction oracle. Run a task elsewh
 
 Generate files with the tool that owns them only when the output is lean; hand-write the rest.
 `pixi init` / `pixi add` own the toolchain manifest. The Nextflow pipeline is **hand-authored and
-minimal** — `main.nf` with `TRAIN` and `SCORE` entry workflows, `nextflow.config`, a small `conf/`,
-and nf-test — because it consumes `nf-core/riboseq` as an external pinned pipeline and authors no
-modules of its own. `nf-core pipelines create` is not used: it emits dozens of official-pipeline
+minimal** — `main.nf` with the `HANDOFF`, `READS`, `LABELS`, `TRIAGE` and `AMENABILITY` entry
+workflows, `nextflow.config`, a small `conf/`, and nf-test — because it consumes `nf-core/riboseq`
+as an external pinned pipeline and authors almost no modules of its own. `nf-core pipelines create` is not used: it emits dozens of official-pipeline
 files we do not need. Tooling runs natively in the WSL2 environment on `linux-64`.
 
 ## Provenance
