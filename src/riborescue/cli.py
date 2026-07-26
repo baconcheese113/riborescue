@@ -106,7 +106,12 @@ from riborescue.variants.native_stop_predictions import (
     native_stop_features,
 )
 from riborescue.variants.nmd_rules import disagreement_atlas, nmd_predictors
-from riborescue.variants.permutation_null import load_folds, null_gains, observed_gains
+from riborescue.variants.permutation_null import (
+    familywise_pvalues,
+    load_folds,
+    null_gains,
+    observed_gains,
+)
 from riborescue.variants.readthrough_model import fit, relative_error_quantile
 from riborescue.variants.research_export import build_research_aggregate
 from riborescue.variants.residue import coverage_by_design
@@ -1531,6 +1536,47 @@ def head_to_head_command(
             f"{row.gain:+.4f} [{row.ci_low:+.4f}, {row.ci_high:+.4f}] {mark}, "
             f"{row.share_of_headroom:+.1%} of the {row.headroom:.3f} left under the ceiling"
         )
+
+
+@main.command("permutation-report")
+@click.argument("null", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option(
+    "--observed",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="The unshuffled per-round gains the shards wrote beside the null.",
+)
+@_OUT
+def permutation_report_command(null: Path, observed: Path, out: Path) -> None:
+    """Place each drug's observed gain in the null its shuffles built.
+
+    ADR-0021. One table per shuffle family, each drug's gain against the distribution of the largest
+    gain any drug reached under the same shuffled mapping.
+    """
+
+    draws = read_table(null)
+    measured = read_table(observed)
+    if (repeated := int(draws.duplicated(["shuffle", "permutation", "drug"]).sum())) != 0:
+        raise click.ClickException(f"{null} holds {repeated} duplicate permutations")
+
+    reports = []
+    for family, block in draws.groupby("shuffle", sort=True):
+        reports.append(familywise_pvalues(measured, block).assign(shuffle=family))
+    report = pd.concat(reports, ignore_index=True)
+    write_table(report, out)
+
+    for family, block in report.groupby("shuffle", sort=True):
+        first = block.iloc[0]
+        click.echo(
+            f"\n{family}: null of the per-permutation maximum over "
+            f"{int(first['permutations'])} draws, mean {first['null_mean']:+.5f}, "
+            f"resolution {first['resolution']:.3f}"
+        )
+        for row in block.itertuples():
+            verdict = "inside the null" if row.p_familywise > 0.05 else "clears the null"
+            click.echo(
+                f"  {row.drug:>10}: gain {row.gain:+.5f}  p = {row.p_familywise:.3f}  {verdict}"
+            )
 
 
 @main.command("support-atlas")
