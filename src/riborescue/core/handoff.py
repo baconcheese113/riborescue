@@ -31,9 +31,6 @@ class UpstreamHandoff(BaseModel):
     pipeline: str
     revision: str
     results_root: Path
-    psite_offsets: Path
-    codon_coverage: Path
-    cds_coverage: Path
     rnaseq_counts: Path
     rnaseq_tpm: Path
     alignments: tuple[Path, ...]
@@ -56,9 +53,6 @@ class UpstreamHandoff(BaseModel):
         return value
 
     @field_validator(
-        "psite_offsets",
-        "codon_coverage",
-        "cds_coverage",
         "rnaseq_counts",
         "rnaseq_tpm",
         "alignments",

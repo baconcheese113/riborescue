@@ -42,7 +42,7 @@ def test_validate_labels_counts_the_censored_measurements():
 def test_validate_handoff_accepts_the_fixture_manifest():
     result = CliRunner().invoke(main, ["validate-handoff", str(DATA / "handoff.json")])
     assert result.exit_code == 0
-    assert "nf-core/riboseq 1.2.0, 7 declared outputs" in result.output
+    assert "nf-core/riboseq 1.2.0, 4 declared outputs" in result.output
 
 
 def test_validate_handoff_checks_the_files_it_names():

@@ -16,7 +16,7 @@ def _manifest(**overrides: object) -> dict[str, object]:
 def test_the_committed_fixture_manifest_is_valid():
     handoff = UpstreamHandoff.from_json(FIXTURE)
     assert handoff.revision == "1.2.0"
-    assert len(tuple(handoff.outputs())) == 7
+    assert len(tuple(handoff.outputs())) == 4
 
 
 def test_every_declared_output_is_resolved_against_the_results_root():
@@ -35,9 +35,6 @@ def test_an_absent_output_is_reported_by_name():
         update={"results_root": Path("nowhere")}
     )
     assert {name for name, _ in handoff.missing()} == {
-        "psite_offsets",
-        "codon_coverage",
-        "cds_coverage",
         "rnaseq_counts",
         "rnaseq_tpm",
         "alignments",
