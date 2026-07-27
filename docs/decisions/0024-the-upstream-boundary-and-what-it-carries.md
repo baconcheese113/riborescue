@@ -2,6 +2,10 @@
 
 **Status:** accepted · **Date:** 2026-07-26 · **Deciders:** Joseph
 
+**Amends:** ADR-0003, whose workflow inventory and handoff contents this record replaces. The
+rest of that decision — the external upstream, processes calling the CLI and nothing else, the
+validated manifest — is unchanged.
+
 ## Context
 
 ADR-0003 put `nf-core/riboseq` outside this repository and made `UpstreamHandoff` the only door

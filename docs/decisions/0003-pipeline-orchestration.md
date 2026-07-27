@@ -1,6 +1,13 @@
 # ADR-0003 — Pipeline orchestration and the upstream handoff
 
-**Status:** accepted · **Date:** 2026-07-19 · **Deciders:** Joseph, Mahan
+**Status:** accepted, amended in part by [ADR-0024](0024-the-upstream-boundary-and-what-it-carries.md)
+· **Date:** 2026-07-19 · **Deciders:** Joseph, Mahan
+
+> The workflow inventory below is the one this record fixed and is no longer what the pipeline
+> holds: `READS` was added for local preprocessing, `TRAIN` and `SCORE` are now `LABELS` and
+> `TRIAGE`, and the handoff carries four outputs rather than seven. ADR-0024 states where the
+> upstream boundary falls today. Everything else here — the external upstream, processes calling
+> the CLI and nothing else, the validated manifest, nf-test over committed fixtures — still governs.
 
 ## Context
 
