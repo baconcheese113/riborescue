@@ -168,4 +168,3 @@ def test_no_control_is_silently_removed():
         assert name.removeprefix("shuffle_") in recorded, (
             f"control '{name}' is registered but has no recorded outcome"
         )
-
