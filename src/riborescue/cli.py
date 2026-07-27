@@ -4,6 +4,7 @@ import math
 import subprocess
 import time
 from pathlib import Path
+from typing import cast
 
 import click
 import pandas as pd
@@ -24,6 +25,17 @@ from riborescue.core.tables import (
     TriageOutput,
     read_table,
     write_table,
+)
+from riborescue.evidence_export import (
+    build_evidence,
+    codon_signature,
+    frame_by_length,
+    kinetics_null,
+    model_parity,
+    periodicity,
+    read_arms,
+    readthrough_contrast,
+    safety_concordance,
 )
 from riborescue.riboseq.calibration import load_manifest, read_manifest, select_lengths
 from riborescue.riboseq.codon_occupancy import (
@@ -136,6 +148,24 @@ from riborescue.variants.web_export import (
 )
 
 __all__ = ["main"]
+
+EMPTY_ARMS = pd.DataFrame({"sample": [], "treatment": [], "replicate": []})
+"""No samplesheet given: libraries carry no arm label and every merge on it is a left join."""
+
+
+def _head_commit() -> str:
+    """The short commit an artifact was built from, or empty where git cannot say."""
+
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return ""
+
 
 TRAINING_CONTEXT = "HEK293T; Toledano et al. reporter library"
 """The cell line and construct every readthrough label was measured in.
@@ -1010,16 +1040,7 @@ def export_research(
     never per-variant rows, so the dashboard ships without loading the variant set.
     """
 
-    if not commit:
-        try:
-            commit = subprocess.run(
-                ["git", "rev-parse", "--short", "HEAD"],
-                capture_output=True,
-                text=True,
-                check=True,
-            ).stdout.strip()
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            commit = ""
+    commit = commit or _head_commit()
 
     aggregate = build_research_aggregate(
         read_table(table),
@@ -1038,6 +1059,121 @@ def export_research(
         f"{aggregate.provenance['qualifying_variants']} variants, "
         f"{len(aggregate.condition_coverage_top)} in the top list"
     )
+
+
+_OPTIONAL = click.Path(exists=True, dir_okay=False, path_type=Path)
+
+
+@main.command("export-evidence")
+@click.option("--dataset", default="gse144140", show_default=True, help="The profiled experiment.")
+@click.option(
+    "--samplesheet", type=_OPTIONAL, help="Staged runs, naming each library's treatment arm."
+)
+@click.option(
+    "--readthrough",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Directory of contrast tables, as `run_readthrough.sh` writes them.",
+)
+@click.option("--calibration", type=_OPTIONAL, help="The calibration manifest for the dataset.")
+@click.option("--frames", type=_OPTIONAL, help="Three-frame counts per footprint length.")
+@click.option("--metaprofile", type=_OPTIONAL, help="P-site counts around the start and stop.")
+@click.option(
+    "--codon-occupancy",
+    "codon_tables",
+    multiple=True,
+    type=_OPTIONAL,
+    help="Codon occupancy table; repeat for the A and P sites.",
+)
+@click.option("--permutation-null", "null_table", type=_OPTIONAL, help="Familywise p-values.")
+@click.option("--predicted", type=_OPTIONAL, help="Native stops scored by the amenability model.")
+@click.option("--metrics", type=_OPTIONAL, help="Per-drug held-out r² from the oracle.")
+@click.option("--reliability", type=_OPTIONAL, help="Per-drug replicate reliability ceiling.")
+@_OUT
+def export_evidence(
+    dataset: str,
+    samplesheet: Path | None,
+    readthrough: Path | None,
+    calibration: Path | None,
+    frames: Path | None,
+    metaprofile: Path | None,
+    codon_tables: tuple[Path, ...],
+    null_table: Path | None,
+    predicted: Path | None,
+    metrics: Path | None,
+    reliability: Path | None,
+    out: Path,
+) -> None:
+    """Build the evidence payload: the controls, the calibration, and the checks behind them.
+
+    Every section is optional. What is not passed is absent from the payload rather than empty, so
+    a machine that ran none of the sequencing still writes a file the page can read.
+    """
+
+    arms = read_arms(samplesheet, dataset) if samplesheet is not None else EMPTY_ARMS
+    sections: dict[str, object] = {}
+
+    if readthrough is not None:
+        contrasts = {}
+        for effects in sorted(readthrough.glob("*_vs_*.unpaired.tsv")):
+            name = effects.name.removesuffix(".unpaired.tsv")
+            libraries = effects.with_name(f"{name}.unpaired_by_library.tsv")
+            if not libraries.exists():
+                continue
+            contrasts[name] = readthrough_contrast(read_table(effects), read_table(libraries), arms)
+        if contrasts:
+            sections["readthrough"] = contrasts
+
+    kept: tuple[int, ...] = ()
+    if calibration is not None:
+        manifest = load_manifest(calibration)
+        kept = manifest.lengths
+        sections["calibration"] = {
+            "dataset": manifest.dataset,
+            "lengths": list(manifest.lengths),
+            "surveyed": list(manifest.surveyed),
+            "passes": manifest.passes,
+            "libraries": [
+                {
+                    "sample": lib.sample,
+                    "psites": lib.psites,
+                    "frame0_share": round(lib.frame0_share, 5),
+                    "dominant_length": lib.dominant_length,
+                    "offset_from_5": lib.offset_from_5,
+                    "failures": list(lib.failures),
+                }
+                for lib in manifest.libraries
+            ],
+        }
+    if frames is not None:
+        by_length = frame_by_length(read_table(frames), kept)
+        sections.setdefault("calibration", {})
+        cast(dict, sections["calibration"])["frame_by_length"] = by_length
+
+    if metaprofile is not None:
+        sections["periodicity"] = periodicity(read_table(metaprofile), arms)
+    if codon_tables:
+        sections["codon_occupancy"] = codon_signature([read_table(p) for p in codon_tables])
+    if null_table is not None:
+        sections["kinetics_null"] = kinetics_null(read_table(null_table))
+    if predicted is not None:
+        sections["safety"] = safety_concordance(read_table(predicted))
+    if metrics is not None and reliability is not None:
+        sections["model_parity"] = model_parity(read_table(metrics), read_table(reliability))
+
+    payload = build_evidence(
+        {
+            "dataset": dataset,
+            "commit": _head_commit(),
+            # Every section is measured on this one experiment; nothing here generalises past it.
+            "scope": "confirmatory, one dataset, one laboratory and protocol family",
+        },
+        **sections,
+    )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(payload.to_json())
+    present = [name for name in sections]
+    click.echo(f"evidence payload → {out}")
+    click.echo(f"  sections: {', '.join(present) if present else 'none'}")
 
 
 @main.command("contexts")

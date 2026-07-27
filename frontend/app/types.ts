@@ -106,6 +106,7 @@ export interface SafetyAtlas {
 }
 
 export interface WebTable {
+  contracts_version: string;
   status: {
     readthrough_control: string;
     readthrough_detail: string;
@@ -241,4 +242,120 @@ export interface ResearchAggregate {
   condition_coverage_top: ConditionCoverage[];
   experiments: Experiment[];
   caveats: Record<string, string>;
+}
+
+
+/** The evidence payload: the controls, the calibration, and the checks behind them. */
+export interface EvidenceQuantity {
+  quantity: string;
+  mean_difference: number | null;
+  ci_low: number | null;
+  ci_high: number | null;
+  consistent: boolean;
+}
+
+export interface EvidenceLibrary {
+  sample: string;
+  treatment: string | null;
+  transcripts: number;
+  downstream_occupancy?: number | null;
+  termination_occupancy?: number | null;
+  frame_gap?: number | null;
+}
+
+export interface EvidenceContrast {
+  quantities: EvidenceQuantity[];
+  libraries: EvidenceLibrary[];
+}
+
+export interface FrameByLength {
+  length: number;
+  frame0: number;
+  frame1: number;
+  frame2: number;
+  frame0_share: number | null;
+  library_share: number | null;
+  kept: boolean;
+}
+
+export interface EvidenceCalibration {
+  dataset: string;
+  lengths: number[];
+  surveyed: number[];
+  passes: boolean;
+  libraries: {
+    sample: string;
+    psites: number;
+    frame0_share: number;
+    dominant_length: number;
+    offset_from_5: number;
+    failures: string[];
+  }[];
+  frame_by_length?: FrameByLength[];
+}
+
+export interface PeriodicityPoint {
+  region: "start" | "stop";
+  treatment: string | null;
+  distance: number;
+  scaled: number | null;
+  libraries: number;
+}
+
+export interface CodonOccupancy {
+  codon: string;
+  amino_acid: string;
+  site: "a" | "p";
+  occupancy: number | null;
+  occupancy_sd: number | null;
+  libraries: number;
+}
+
+export interface KineticsNull {
+  permutations_completed: number;
+  permutations_required: number;
+  analysis_status: "complete" | "incomplete";
+  resolution: number | null;
+  rows: KineticsNullRow[];
+}
+
+export interface KineticsNullRow {
+  drug: string;
+  shuffle: string;
+  gain: number | null;
+  null_mean: number | null;
+  null_sd: number | null;
+  null_max: number | null;
+  p_familywise: number | null;
+  permutations: number;
+}
+
+export interface SafetyConcordance {
+  rho: number;
+  low: number;
+  high: number;
+  analysed: number;
+  canonical_stops_scored: number;
+  quadrants: Record<string, number>;
+  points: { gene: string; predicted: number | null; measured: number | null; group: string }[];
+}
+
+export interface ModelParity {
+  drug: string;
+  r2_mean: number | null;
+  r2_sd: number | null;
+  rounds: number;
+  ceiling: number | null;
+}
+
+export interface EvidenceTable {
+  contracts_version: string;
+  provenance: { dataset: string; commit: string; scope: string };
+  readthrough: Record<string, EvidenceContrast> | null;
+  calibration: EvidenceCalibration | null;
+  periodicity: PeriodicityPoint[] | null;
+  codon_occupancy: CodonOccupancy[] | null;
+  kinetics_null: KineticsNull | null;
+  safety: SafetyConcordance | null;
+  model_parity: ModelParity[] | null;
 }

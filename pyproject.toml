@@ -340,11 +340,29 @@ export-web-safety = { cmd = "riborescue export-web --landscape results/amenabili
 export-web-example = { cmd = "riborescue export-web --landscape results/amenability_landscape.tsv --amenability results/variant_therapy_scores.tsv --sample 48 --nmd results/nmd.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue.json", depends-on = ["nmd", "base-editing"] }
 # The researcher dashboard's aggregate: coverage frontiers and per-disease coverage, no variant rows.
 # The tiers variant adds the two independent NMD models' agreement, which needs their environments.
+# The evidence page's payload: the controls, the calibration and the checks behind them.
+# Every input is optional, so a machine that ran no sequencing still writes a readable file.
+export-evidence = { cmd = """riborescue export-evidence --dataset gse144140 \
+  --samplesheet results/staged_runs.tsv \
+  --readthrough results/readthrough/gse144140 \
+  --calibration results/psite/gse144140/calibration.json \
+  --frames results/psite/gse144140/frame_by_length.tsv \
+  --metaprofile results/psite/gse144140/metaprofile.tsv \
+  --codon-occupancy results/kinetics/gse144140/codon_occupancy.a.selected.tsv \
+  --codon-occupancy results/kinetics/gse144140/codon_occupancy.p.selected.tsv \
+  --permutation-null results/kinetics/permutation_null/familywise.tsv \
+  --predicted results/atlas/gse144140_predicted.tsv \
+  --metrics tests/fixtures/oracle/metrics.tsv \
+  --reliability tests/fixtures/oracle/reliability.tsv \
+  --out frontend/public/riborescue_evidence.json""" }
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
 export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
 app-install = { cmd = "npm install", cwd = "frontend" }
 app-dev = { cmd = "npm run dev", cwd = "frontend" }
 app-build = { cmd = "npm run build", cwd = "frontend" }
+# The payload types are hand-written against what the exporters emit, so the compiler checking them
+# against the pages that read them is the only thing that says the two agree.
+app-typecheck = { cmd = "npm run typecheck", cwd = "frontend" }
 # Serve the built export. This is what ships, and it is the preview to check a page against; the
 # dev server renders the same pages through a different runtime.
 app-preview = { cmd = "python -m http.server 3001 --directory out", cwd = "frontend", depends-on = ["app-build"] }
