@@ -33,8 +33,9 @@ with uncertainty shown by default.
 
 The toolchain lives in Pixi on `linux-64` (Ubuntu, WSL2, or the dev container), so the host machine
 stays clean. One lockfile pins Python, Node, Nextflow, R and every tool; `pixi install` resolves it.
-It holds three environments: `default` to develop in, `runtime` for what the container ships, and
-`psite` for riboWaltz, which pins an older R than the reproduction oracle.
+It holds five: `default` to develop in, `runtime` for what the container ships, and three that
+exist only because their tools cannot share a solve — `psite` for riboWaltz, `aenmd` for its
+Bioconductor stack, and `nmdetective` for a CUDA build of PyTorch.
 
 Pixi is the only prerequisite — it brings everything else, Node included:
 

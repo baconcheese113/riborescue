@@ -59,9 +59,10 @@ pixi run app-dev         Next.js dev server
 Pixi runs tasks through a portable shell, not bash: loops and other reserved words are rejected. A
 task that needs them calls a script in `scripts/` instead of inlining the shell.
 
-Environments are `default` to develop in, `runtime` for what the container ships, and `psite` for
-riboWaltz, which pins an older R than the reproduction oracle. Run a task elsewhere with
-`pixi run -e <env> <task>`.
+Five environments. `default` is to develop in and `runtime` is what the container ships; the other
+three exist because their tools cannot share a solve — `psite` for riboWaltz, which pins an older R
+than the reproduction oracle, `aenmd` for its Bioconductor stack, and `nmdetective` for a CUDA build
+of PyTorch. Run a task outside the default with `pixi run -e <env> <task>`.
 
 ## Code conventions
 
@@ -82,9 +83,11 @@ riboWaltz, which pins an older R than the reproduction oracle. Run a task elsewh
 Generate files with the tool that owns them only when the output is lean; hand-write the rest.
 `pixi init` / `pixi add` own the toolchain manifest. The Nextflow pipeline is **hand-authored and
 minimal** — `main.nf` with the `HANDOFF`, `READS`, `LABELS`, `TRIAGE` and `AMENABILITY` entry
-workflows, `nextflow.config`, a small `conf/`, and nf-test — because it consumes `nf-core/riboseq`
-as an external pinned pipeline and authors almost no modules of its own. `nf-core pipelines create` is not used: it emits dozens of official-pipeline
-files we do not need. Tooling runs natively in the WSL2 environment on `linux-64`.
+workflows, `nextflow.config`, a small `conf/`, and nf-test. Its `modules/local/` holds thin wrappers
+around the read-processing tools `READS` runs, each one a container and a command; the scientific
+steps wrap the `riborescue` CLI and decide nothing themselves. `nf-core pipelines create` is not
+used: it emits dozens of official-pipeline files we do not need. Tooling runs natively in the WSL2
+environment on `linux-64`.
 
 ## Provenance
 
