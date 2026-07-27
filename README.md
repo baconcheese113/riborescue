@@ -14,100 +14,110 @@ with uncertainty shown by default.
 > **Research use only.** RiboRescue makes no clinical or diagnostic claims and produces no
 > patient-facing recommendations.
 
-## Repository layout
+## Two arms, and which one you can run
 
-| Path | What lives here |
-|---|---|
-| `src/riborescue/` | The Python package: data contracts, variant triage, the evaluation harness, and the CLI |
-| `tests/` | `pytest` suites — unit, property-based (`hypothesis`), and protected negative controls |
-| `pipeline/` | The hand-authored Nextflow pipeline: Ribo-seq read processing and the scored variant × therapy table |
-| `scripts/` | R analysis (reproduction oracle, P-site calibration) and data-fetch scripts |
-| `frontend/` | The static web app (Next.js) that presents the table |
-| `data/` | Fetched inputs — from public sources, verified by checksum, never committed |
-| [`results/`](results/) | Small course results and project conclusions |
-| `docs/decisions/` | Architecture decision records — the reasoning behind each major technical choice |
-| `Dockerfile` | The runtime image Nextflow processes use, carrying the `riborescue` command |
-| `.github/workflows/` | The gate that runs on every push: lint, types, tests, reproduction parity, pipeline, image |
+Everything here is either **predicted** or **measured**, and the project never blends the two. Which
+arm you can run depends entirely on the machine you have.
+
+| | **Predicted** | **Measured** |
+|---|---|---|
+| What it is | A model scoring 70k ClinVar variants against six compounds | Ribosome profiling of real cells, reading where ribosomes actually sit |
+| What you need | A laptop. **16 GB RAM is enough** | A workstation: STAR builds a ~32 GB index |
+| Time | Minutes | Hours, plus a large download |
+| What you get | The scored table and the whole web app | The readthrough control, the native-stop safety atlas, the evidence page |
+
+**If you have a normal computer, run the predicted arm.** It is the majority of the project and it
+needs no sequencing data at all. Start there.
 
 ## Getting started
 
-The toolchain lives in Pixi on `linux-64` (Ubuntu, WSL2, or the dev container), so the host machine
-stays clean. One lockfile pins Python, Node, Nextflow, R and every tool; `pixi install` resolves it.
-It holds five: `default` to develop in, `runtime` for what the container ships, and three that
-exist only because their tools cannot share a solve — `psite` for riboWaltz, `aenmd` for its
-Bioconductor stack, and `nmdetective` for a CUDA build of PyTorch.
-
-Pixi is the only prerequisite — it brings everything else, Node included:
+The toolchain lives in Pixi on `linux-64` (Ubuntu, WSL2, or the dev container), so your machine
+stays clean — Pixi is the only thing you install, and it brings Python, Node, Nextflow and R itself.
 
 ```bash
 curl -fsSL https://pixi.sh/install.sh | bash   # then restart the shell
-pixi install        # resolve the pinned toolchain
-pixi run check      # lint, type-check, and run the full test suite
-pixi run fetch      # fetch the public inputs (ClinVar, MANE, GENCODE), verified by checksum
+pixi install                                   # resolve the pinned toolchain
+pixi run check                                 # lint, type-check, run the tests
 ```
 
-**On a laptop, without sequencing (≈16 GB RAM).** The scored table and the web app are entirely
-dry-lab: they need no Ribo-seq. Skip it — the alignment builds a ~32 GB STAR index and wants a
-workstation — and run only the variant chain, which fits comfortably:
+### The predicted arm, on a laptop
 
 ```bash
-pixi run fetch clinvar_grch38 mane_annotation mane_transcripts mane_proteins   # dry-lab inputs only
-pixi run clinvar && pixi run contexts       # ClinVar nonsense variants, placed on MANE
+pixi run fetch clinvar_grch38 mane_annotation mane_transcripts mane_proteins
+pixi run clinvar && pixi run contexts       # ClinVar nonsense variants, placed on MANE transcripts
 pixi run score && pixi run landscape        # the scored variant × therapy table
-pixi run diseases                           # ClinVar conditions → MedGen/OMIM/Orphanet, for coverage
-pixi run site                               # → the two viewer JSONs, then builds the app
-pixi run app-dev                            # serve at http://localhost:3000
+pixi run diseases                           # ClinVar conditions → MedGen/OMIM/Orphanet
+pixi run site                               # build the viewer payloads and the static app
+pixi run app-dev                            # http://localhost:3000
 ```
 
-`site` writes both `riborescue.json` (the per-variant example the explorer and patient views read)
-and `riborescue_research.json` (the coverage aggregate the researcher dashboard reads), then builds
-the static bundle. The app has three views over that data: **/patient** searches an example subset
-and lays out each therapy as a card with evidence slots; **/researcher** draws the suppressor-tRNA
-coverage frontiers and per-disease coverage with their denominators; **/explorer** is the full
-per-variant table. The native-stop safety panel and the two independent NMD models are the parts that
-need the Ribo-seq atlas and their own environments; add them with `pixi run export-web-safety` where
-`results/atlas/` exists, otherwise the app simply omits them.
+`site` writes `riborescue.json` (the per-variant example the explorer and patient views read) and
+`riborescue_research.json` (the coverage aggregate behind the researcher dashboard). The app has
+three views over them: **/patient** lays each therapy out as a card with its evidence slots,
+**/researcher** draws the coverage frontiers with their denominators, and **/explorer** is the full
+per-variant table.
 
-**Reproduce the published model** — refit it and check parity to the R oracle:
+To refit the published model and check it still matches the R oracle:
 
 ```bash
-pixi run oracle
-pixi run test-slow
+pixi run oracle && pixi run test-slow
 ```
 
-**Score the variants** — ClinVar's nonsense variants placed on transcripts and scored per therapy:
+### The measured arm, on a workstation
+
+Sequencing is the half that needs real hardware. Reads are fetched and verified, aligned, then
+calibrated with riboWaltz before any contrast runs:
 
 ```bash
-cd pipeline && nextflow run . --step amenability -profile local \
-    --clinvar ../data/clinvar/*.vcf.gz \
-    --mane_annotation ../data/mane/*.gff.gz \
-    --mane_transcripts ../data/mane/*_rna.fna.gz \
-    --mane_proteins ../data/mane/*_protein.faa.gz \
-    --training '../tests/fixtures/oracle/features_*.tsv.gz' \
-    --held_out '../tests/fixtures/oracle/predictions_*.tsv.gz'
-```
-
-**Process the Ribo-seq data** — QC, trimming, rRNA depletion, alignment, then P-site calibration:
-
-```bash
-pixi run stage-runs         # fetch the FASTQ named in pipeline/assets/, verified
+pixi run stage-runs         # fetch the FASTQ named in pipeline/assets/, checksum-verified
 pixi run reads              # FastQC → cutadapt → deplete → STAR → metrics
 pixi run -e psite psite     # riboWaltz P-site offsets and periodicity
 ```
 
-A single `riborescue` command backs every pipeline step; `pixi run riborescue --help` lists them.
+With those in place, the measured results and the panels that depend on them:
+
+```bash
+pixi run readthrough-gse144140   # does a drug really push ribosomes past a stop?
+pixi run atlas && pixi run atlas-predict
+pixi run export-web-safety       # adds the native-stop safety panel to the app
+pixi run export-evidence         # the evidence payload: controls, calibration, codon signature
+```
+
+These need the sequencing results to exist and stop rather than invent them, which is why the
+predicted arm never calls them.
+
+### Running it as a pipeline
+
+A single `riborescue` command backs every step — `pixi run riborescue --help` lists them all. The
+Nextflow entry workflows live in [`pipeline/`](pipeline/README.md), which documents how to run
+variant scoring and read processing as pipeline steps rather than one task at a time.
+
+## For the course
+
+The BIFS 619 requirements — quality control, read cleaning, alignment, and gene expression over the
+Calu-6 RNA-seq samples — are documented with their outputs in
+[`results/README.md`](results/README.md), which names the figure and table behind each requirement
+and the command that regenerates them.
 
 ## How it fits together
 
-- **Development** happens through Pixi — one lockfile pins Python, Nextflow and R identically across
-  machines.
-- **The pipeline** runs offline on a workstation. It is not hosted; anyone with Docker and Nextflow
-  reproduces its outputs from pinned inputs.
-- **Results** publish to Zenodo with a DOI; a static app reads a compact JSON export and deploys to the
-  edge with no backend.
+Development happens through Pixi, so one lockfile pins every tool identically across machines. The
+pipeline runs offline and is not hosted — anyone with Docker and Nextflow reproduces its outputs
+from pinned inputs. Results publish to Zenodo with a DOI, and the static app reads a compact JSON
+export with no backend.
 
-The reasoning behind each major technical choice is recorded in
-[`docs/decisions/`](docs/decisions/).
+| Path | What lives here |
+|---|---|
+| `src/riborescue/` | The Python package: data contracts, variant triage, the evaluation harness, and the CLI |
+| `tests/` | `pytest` — unit, property-based (`hypothesis`), and protected negative controls |
+| `pipeline/` | The hand-authored Nextflow pipeline |
+| `scripts/` | R analysis (reproduction oracle, P-site calibration) and data-fetch scripts |
+| `frontend/` | The static web app (Next.js) that presents the table |
+| `data/` | Fetched inputs — public sources, verified by checksum, never committed |
+| [`results/`](results/) | Small course results and project conclusions |
+| [`docs/decisions/`](docs/decisions/) | Decision records — why each major choice was made, indexed with a reading order |
+| `Dockerfile` | The runtime image Nextflow processes use |
+| `.github/workflows/` | The gate on every push: lint, types, tests, parity, pipeline, image |
 
 ---
 
