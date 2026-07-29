@@ -356,7 +356,8 @@ export-evidence = { cmd = """riborescue export-evidence --dataset gse144140 \
   --reliability tests/fixtures/oracle/reliability.tsv \
   --out frontend/public/riborescue_evidence.json""" }
 # The whole scored set as one columnar payload, so the lookup view covers every variant rather than
-# a sample. Regenerated from the result tables; too large to commit, so the build makes it.
+# a sample. Regenerated from the result tables, and committed alongside the smaller payloads because
+# Cloudflare Pages builds the app with `next build` alone and cannot run this.
 export-index = { cmd = "python scripts/build_variant_index.py" }
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
 export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }

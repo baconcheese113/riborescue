@@ -1,12 +1,14 @@
 # frontend
 
 A minimal static viewer for the variant × therapy table. Next.js with `output: export`, so it
-builds to plain files and deploys to Cloudflare Pages without a server. It reads one file,
-`public/riborescue.json`, written by `riborescue export-web` — the app never touches a BAM or a
-results table directly, only that compact JSON.
+builds to plain files and deploys to Cloudflare Pages without a server. It reads the JSON payloads
+in `public/` and nothing else — the app never touches a BAM or a results table directly.
 
 Pages builds it from this directory: root `frontend`, build command `npm run build`, output
-directory `out`. Both viewer JSONs are committed, so the build needs neither Pixi nor the pipeline.
+directory `out`. That build runs `next build` alone, with no Pixi, no Python and no `results/`, so
+**every payload the browser fetches is committed** — including `riborescue_index.json` at 10 MB,
+which the lookup view fetches at runtime. A payload left out of the repository 404s in production no
+matter what regenerates it locally.
 
 The `overrides` in `package.json` are not optional. Next pins `postcss` at exactly 8.4.31 and
 `sharp` at `^0.34.5`, and both carry advisories in every published Next release, so the versions
