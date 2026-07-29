@@ -1,3 +1,4 @@
+import "@fontsource-variable/inter";
 import "./globals.css";
 import type { ReactNode } from "react";
 import { Nav } from "./nav";

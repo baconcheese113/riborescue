@@ -172,9 +172,13 @@ export interface Experiment {
   replicate_method: string;
   evidence_grade: string;
   complexity: string;
-  safety_relevant: string;
+  safety_relevant: boolean;
   provenance: string;
   claims_named: string;
+  resolves: string;
+  reach_rule: string;
+  evidence_gap: number;
+  feasibility: number;
   potential_variants: number;
   potential_genes: number;
   potential_conditions: number;
@@ -242,6 +246,17 @@ export interface ResearchAggregate {
   condition_coverage_top: ConditionCoverage[];
   experiments: Experiment[];
   caveats: Record<string, string>;
+}
+
+export interface LandscapeThreshold {
+  readthrough_threshold: number;
+  variants: number;
+  escapes_decay: number;
+  reaches_threshold: number;
+  reaches_threshold_lower_bound: number;
+  most_insertions_tolerable: number;
+  all_conditions: number;
+  all_conditions_lower_bound: number;
 }
 
 

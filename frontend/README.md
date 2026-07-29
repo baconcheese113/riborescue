@@ -12,8 +12,8 @@ The `overrides` in `package.json` are not optional. Next pins `postcss` at exact
 `sharp` at `^0.34.5`, and both carry advisories in every published Next release, so the versions
 have to be forced from here.
 
-The table (sort, filter, search) is TanStack Table; the app owns only the rendering and the two
-status banners, so there is little here to maintain and it can be replaced wholesale.
+The app owns the visual explanations and lookup interactions. Scientific values stay in the
+exported JSON rather than the components.
 
 ```
 pixi run export-web-example   # regenerate public/riborescue.json from results/
@@ -23,9 +23,7 @@ pixi run app-build            # static export to frontend/out/
 pixi run app-preview          # build, then serve the export at http://localhost:3001
 ```
 
-`app-preview` is what a page should be checked against. The export is what deploys, and the dev
-server renders the same pages through a different runtime — under WSL2 its client bundle has been
-seen not to mount on `/researcher` while the export renders it in full.
+`app-preview` serves the same static export that deploys. Use it for browser validation.
 
 To point it at a real dataset rather than the committed example, run `riborescue export-web` without
 `--sample` over the full `results/amenability_landscape.tsv` and drop the JSON in `public/`.

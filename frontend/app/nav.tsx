@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// The four routes share one bar. Active state is drawn from the path, links are real anchors so the
-// keyboard and the browser's history both work, and the whole thing wraps on a narrow screen.
+// Active state is drawn from the path, links are real anchors so the keyboard and the browser's
+// history both work, and the whole thing wraps on a narrow screen.
 const ROUTES: [string, string][] = [
   ["/", "Home"],
-  ["/patient", "Patient"],
-  ["/researcher", "Researcher"],
-  ["/explorer", "Explorer"],
+  ["/evidence", "Evidence"],
+  ["/lookup", "Look up a variant"],
+  ["/variants", "Variants"],
+  ["/atlas", "Safety atlas"],
+  ["/next", "What would settle it"],
+  ["/timeline", "How it was built"],
+  ["/methods", "Methods"],
 ];
 
 export function Nav() {

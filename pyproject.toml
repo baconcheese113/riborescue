@@ -355,6 +355,9 @@ export-evidence = { cmd = """riborescue export-evidence --dataset gse144140 \
   --metrics tests/fixtures/oracle/metrics.tsv \
   --reliability tests/fixtures/oracle/reliability.tsv \
   --out frontend/public/riborescue_evidence.json""" }
+# The whole scored set as one columnar payload, so the lookup view covers every variant rather than
+# a sample. Regenerated from the result tables; too large to commit, so the build makes it.
+export-index = { cmd = "python scripts/build_variant_index.py" }
 export-research = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
 export-research-tiers = { cmd = "riborescue export-research results/diseases.tsv --contexts results/clinvar_contexts.tsv --clinvar-release 20260715 --aenmd results/aenmd_verdicts.tsv --nmdetective results/nmdetective.tsv --experiments results/experiments.tsv --base-editing results/base_editing.tsv --out frontend/public/riborescue_research.json", depends-on = ["diseases", "contexts", "base-editing"] }
 app-install = { cmd = "npm install", cwd = "frontend" }
@@ -369,7 +372,7 @@ app-preview = { cmd = "python -m http.server 3001 --directory out", cwd = "front
 # Regenerate the viewer's data from the result tables and build the static bundle in one step.
 # The explorer and patient views read an example slice, not the full set, so the app never ships a
 # 70k-row browser payload; the researcher view reads the whole-set coverage aggregate instead.
-site = { depends-on = ["export-web-example", "export-research", "app-install", "app-build"] }
+site = { depends-on = ["export-web-example", "export-research", "export-index", "app-install", "app-build"] }
 
 [tool.ruff]
 line-length = 100
